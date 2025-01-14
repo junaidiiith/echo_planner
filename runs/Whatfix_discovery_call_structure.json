@@ -1,0 +1,58 @@
+{
+  "sections": [
+    {
+      "name": "Introduction",
+      "subsection_names": [
+        "Greetings",
+        "Initial Questions",
+        "Context Setting"
+      ]
+    },
+    {
+      "name": "Business Needs",
+      "subsection_names": [
+        "Challenges",
+        "Pain Points",
+        "Goals",
+        "Priorities"
+      ]
+    },
+    {
+      "name": "Solution Discussion",
+      "subsection_names": [
+        "Product Overview",
+        "Features and Benefits",
+        "Success Stories"
+      ]
+    },
+    {
+      "name": "Requirements Gathering",
+      "subsection_names": [
+        "User Base",
+        "Applications",
+        "Customization Needs"
+      ]
+    },
+    {
+      "name": "Objections and Pricing",
+      "subsection_names": [
+        "Addressing Concerns",
+        "Customized Pricing",
+        "ROI Expectations",
+        "Pricing Inquiry",
+        "Competitive Landscape",
+        "Unique Selling Points"
+      ]
+    },
+    {
+      "name": "Next Steps",
+      "subsection_names": [
+        "Implementation Process",
+        "Training and Support",
+        "Follow-up",
+        "Demo Request",
+        "Proposal Discussion"
+      ]
+    }
+  ]
+}

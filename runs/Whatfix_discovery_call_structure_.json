@@ -1,0 +1,80 @@
+{
+  "sections": [
+    {
+      "name": "Introduction",
+      "subsection_names": [
+        "Greetings",
+        "Goal Setting",
+        "Introduction to Whatfix",
+        "Client Background"
+      ]
+    },
+    {
+      "name": "Business Needs",
+      "subsection_names": [
+        "Challenges",
+        "Pain Points",
+        "Goals and Objectives",
+        "Current State",
+        "Current Approach"
+      ]
+    },
+    {
+      "name": "Current State Assessment",
+      "subsection_names": ["Current Challenges", "Business Goals"]
+    },
+    {
+      "name": "Solution Discussion",
+      "subsection_names": [
+        "Whatfix's Digital Adoption Platform",
+        "Key Features and Benefits",
+        "Solution Overview",
+        "Features and Benefits",
+        "Success Stories"
+      ]
+    },
+    {
+      "name": "Competitive Analysis and Alternatives",
+      "subsection_names": [
+        "Competitor Comparison",
+        "Differentiation",
+        "Pricing and Implementation"
+      ]
+    },
+    {
+      "name": "Implementation and Support",
+      "subsection_names": [
+        "Implementation Process",
+        "Customized Support",
+        "Ongoing Optimization"
+      ]
+    },
+    {
+      "name": "Pricing and ROI",
+      "subsection_names": [
+        "Pricing Model",
+        "ROI Expectations",
+        "Cost Savings",
+        "Pricing and Implementation"
+      ]
+    },
+    {
+      "name": "Use Cases and Case Studies",
+      "subsection_names": ["Success Stories", "ROI and Business Outcomes"]
+    },
+    {
+      "name": "Next Steps",
+      "subsection_names": [
+        "Follow-up Discussions",
+        "Customized Demo",
+        "Pilot Program",
+        "Demo and Proposal",
+        "Timeline and Implementation Plan"
+      ]
+    },
+    {
+      "name": "Closing",
+      "subsection_names": ["Final Thoughts", "Thank You and Goodbye"]
+    }
+  ]
+}

@@ -1,0 +1,64 @@
+{
+  "sections": [
+    {
+      "name": "Introduction",
+      "subsection_names": [
+        "Greeting",
+        "Goal Setting",
+        "Initial Value Proposition"
+      ]
+    },
+    {
+      "name": "Needs Assessment",
+      "subsection_names": [
+        "Business Challenges",
+        "Pain Points",
+        "Goals and Requirements",
+        "Challenges"
+      ]
+    },
+    {
+      "name": "Solution Discussion",
+      "subsection_names": [
+        "Platform Overview",
+        "Product Demo",
+        "Key Features",
+        "Key Features and Benefits",
+        "Technical Capabilities",
+        "Benefits"
+      ]
+    },
+    {
+      "name": "Implementation and Proof of Concept",
+      "subsection_names": [
+        "Process",
+        "Implementation Process",
+        "Pilot or PoC Discussion",
+        "Timeline and Resources",
+        "Resource Allocation"
+      ]
+    },
+    {
+      "name": "Handling Objections and Concerns",
+      "subsection_names": [
+        "Security and Governance",
+        "Pricing and ROI",
+        "Integration and Support",
+        "Pricing Model",
+        "Return on Investment",
+        "Cost Savings"
+      ]
+    },
+    {
+      "name": "Next Steps",
+      "subsection_names": [
+        "Next Steps and Follow-up",
+        "Pilot Project",
+        "Implementation Plan",
+        "Follow-up Meeting",
+        "Timeline",
+        "Stakeholder Confirmation"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,290 @@
+{
+  "buyer_seller_context_data": {
+    "seller_research": {
+      "website": "https://whatfix.com/",
+      "products": [
+        "Digital Adoption Platform",
+        "Simulated Application Environments",
+        "No-code Application Analytics"
+      ],
+      "solutions": [
+        "In-app guidance",
+        "On-demand user support",
+        "Customer contextual messages",
+        "Digital adoption"
+      ],
+      "use_cases": [
+        "User onboarding",
+        "User adoption",
+        "Digital transformation"
+      ],
+      "pricing": "Custom pricing plans (Standard, Premium, Enterprise), with prices starting at $1,200 - $2,000 per month"
+    },
+    "buyer_research": {
+      "website": "https://techwave.net/",
+      "description": "Techwave is a global leader in providing IT and engineering services across industries. We're bringing a digital revolution, empowering you with top-of-the-line solutions.",
+      "company_size": 2711,
+      "industry": "Information Technology and Services",
+      "goals": [
+        "Empowering clients through digital transformation",
+        "Enabling clients to succeed in the digital era",
+        "Providing exceptional customer experience through innovative solutions"
+      ],
+      "product_requirements": [
+        "Cloud-based solutions",
+        "Artificial intelligence and machine learning integration",
+        "Cybersecurity measures",
+        "Data analytics and visualization tools"
+      ],
+      "pricing_requirements": [
+        "Custom pricing plans",
+        "Flexible payment terms",
+        "Scalable solutions that adapt to growth"
+      ]
+    },
+    "competitive_info": {
+      "competitors": [
+        {
+          "name": "Apty",
+          "pros": [
+            "No-code editor",
+            "Robust analytics",
+            "Improved user experience"
+          ],
+          "cons": [
+            "Steeper learning curve",
+            "Higher pricing"
+          ],
+          "differentiators": [
+            "Enhanced user onboarding",
+            "Advanced analytics"
+          ]
+        },
+        {
+          "name": "Appcues",
+          "pros": [
+            "Flexible pricing model",
+            "Supports up to 2,500 unique users"
+          ],
+          "cons": [
+            "Limited advanced analytics"
+          ],
+          "differentiators": [
+            "Affordable pricing",
+            "Easy to use"
+          ]
+        },
+        {
+          "name": "Inline Manual",
+          "pros": [
+            "Easy to use",
+            "Cost-effective"
+          ],
+          "cons": [
+            "Limited advanced analytics",
+            "No-code editor"
+          ],
+          "differentiators": [
+            "Simple pricing model",
+            "User-friendly interface"
+          ]
+        },
+        {
+          "name": "Userflow",
+          "pros": [
+            "Cost-effective",
+            "User-friendly interface"
+          ],
+          "cons": [
+            "Limited advanced analytics",
+            "No-code editor"
+          ],
+          "differentiators": [
+            "Easy to use",
+            "Simple pricing model"
+          ]
+        },
+        {
+          "name": "Userpilot",
+          "pros": [
+            "Cost-effective",
+            "Advanced analytics"
+          ],
+          "cons": [
+            "Steeper learning curve",
+            "Higher pricing"
+          ],
+          "differentiators": [
+            "Enhanced user onboarding",
+            "Robust analytics"
+          ]
+        },
+        {
+          "name": "UserGuiding",
+          "pros": [
+            "Cost-effective",
+            "Advanced analytics"
+          ],
+          "cons": [
+            "Steeper learning curve",
+            "Higher pricing"
+          ],
+          "differentiators": [
+            "Enhanced user onboarding",
+            "Robust analytics"
+          ]
+        },
+        {
+          "name": "WalkMe",
+          "pros": [
+            "Advanced analytics",
+            "Improved user experience"
+          ],
+          "cons": [
+            "Higher pricing",
+            "Steep learning curve"
+          ],
+          "differentiators": [
+            "Enhanced user onboarding",
+            "Robust analytics"
+          ]
+        }
+      ]
+    }
+  },
+  "pre_call_data__call_0": {
+    "pre_call_data": {
+      "requirements_feature_mapping": {
+        "Cloud-based solutions": "Whatfix's Digital Adoption Platform and Analytics Solution can be delivered as cloud-based solutions, meeting TechWave Enterprises' need for scalable and flexible solutions.",
+        "Artificial intelligence and machine learning integration": "Whatfix's solution integrates with existing systems and infrastructure, providing a seamless and unified experience for users, and can be tailored to meet TechWave Enterprises' unique requirements and goals.",
+        "Cybersecurity measures": "Whatfix's solution can be integrated with existing security measures, providing an additional layer of protection for TechWave Enterprises' systems and data.",
+        "Data analytics and visualization tools": "Whatfix's Analytics Solution provides actionable insights and metrics, enabling TechWave Enterprises to measure the ROI of their digital transformation initiatives and make data-driven decisions.",
+        "Custom pricing plans": "Whatfix offers custom pricing plans (Standard, Premium, Enterprise), meeting TechWave Enterprises' requirement for flexible pricing.",
+        "Flexible payment terms": "Whatfix offers flexible payment terms, meeting TechWave Enterprises' requirement for scalable solutions that adapt to growth.",
+        "Digital adoption": "Whatfix's Digital Adoption Platform can help TechWave Enterprises achieve digital transformation by simplifying digital service adoption and empowering employees with top-notch technology."
+      },
+      "unsupported_requirements": [],
+      "goals_feature_mappings": {
+        "Empowering clients through digital transformation": "Whatfix's Digital Adoption Platform can help TechWave Enterprises achieve digital transformation by simplifying digital service adoption and empowering employees with top-notch technology.",
+        "Enabling clients to succeed in the digital era": "Whatfix's solution can be integrated with existing systems and infrastructure, providing a seamless and unified experience for users, and can be tailored to meet TechWave Enterprises' unique requirements and goals.",
+        "Providing exceptional customer experience through innovative solutions": "Whatfix's solution can be integrated with existing security measures, providing an additional layer of protection for TechWave Enterprises' systems and data, and can provide actionable insights and metrics to enhance the customer experience."
+      },
+      "unsupported_goals": []
+    },
+    "anticipated_qopcs": {
+      "qopcs": [
+        {
+          "type_": "painpoint",
+          "content": "TechWave Enterprises' clients may struggle with digital transformation due to the lack of streamlined digital service adoption, leading to a negative user experience and decreased productivity.",
+          "resolution": "Whatfix's Digital Adoption Platform can help clients simplify digital service adoption and empower employees with top-notch technology, thereby enhancing the overall user experience and increasing productivity."
+        },
+        {
+          "type_": "painpoint",
+          "content": "TechWave Enterprises' clients may face cybersecurity challenges when implementing new digital technologies, leading to potential data breaches and system downtime.",
+          "resolution": "Whatfix's solution can be integrated with existing security measures, providing an additional layer of protection for TechWave Enterprises' systems and data."
+        },
+        {
+          "type_": "question",
+          "content": "Can Whatfix's solution be tailored to meet TechWave Enterprises' unique requirements and goals?",
+          "resolution": "Yes, Whatfix's solution can be integrated with existing systems and infrastructure, providing a seamless and unified experience for users and can be tailored to meet TechWave Enterprises' unique requirements and goals."
+        },
+        {
+          "type_": "question",
+          "content": "How will Whatfix's solution enhance the customer experience for TechWave Enterprises' clients?",
+          "resolution": "Whatfix's Analytics Solution provides actionable insights and metrics, enabling TechWave Enterprises to measure the ROI of their digital transformation initiatives and make data-driven decisions, thereby enhancing the customer experience."
+        },
+        {
+          "type_": "objection",
+          "content": "Whatfix's solution may be too expensive for TechWave Enterprises' clients.",
+          "resolution": "Whatfix offers custom pricing plans (Standard, Premium, Enterprise), meeting TechWave Enterprises' requirement for flexible pricing and scalable solutions that adapt to growth."
+        },
+        {
+          "type_": "objection",
+          "content": "I'm concerned that Whatfix's solution may not integrate seamlessly with our existing systems and infrastructure.",
+          "resolution": "Whatfix's solution can be integrated with existing systems and infrastructure, providing a seamless and unified experience for users and meeting TechWave Enterprises' unique requirements and goals."
+        },
+        {
+          "type_": "challenge",
+          "content": "Identifying the right digital transformation technologies and solutions can be a complex task, requiring significant time and resources.",
+          "resolution": "Whatfix can help simplify digital service adoption and empower employees with top-notch technology, thereby enhancing the overall user experience and increasing productivity."
+        }
+      ]
+    }
+  },
+  "transcript__call_0": {
+    "messages": [
+      {
+        "user": "Sales Representative",
+        "content": "Hello, Thank you for taking the time to speak with me today. I'd like to start by learning more about TechWave Enterprises. Could you please tell me a little about your company and what you do?"
+      },
+      {
+        "user": "Technical Lead, TechWave Enterprises",
+        "content": "Thank you for having me. We're a global leader in providing IT and engineering services across various industries. We're currently undergoing a digital transformation initiative to improve our processes and employee adoption of our software applications."
+      },
+      {
+        "user": "Sales Representative",
+        "content": "That sounds like an exciting project! Can you tell me more about the specific challenges you're facing during this digital transformation?"
+      },
+      {
+        "user": "Technical Lead, TechWave Enterprises",
+        "content": "Yes, one of the main pain points is ensuring consistent onboarding and adoption of our software applications across different departments and teams. We've tried various methods in the past, but none have been highly successful."
+      },
+      {
+        "user": "Sales Representative",
+        "content": "I see. Onboarding and adoption can be a complex challenge. What aspects of the onboarding process are proving to be the most difficult for you? Are there any specific software applications that are causing more challenges than others?"
+      },
+      {
+        "user": "Technical Lead, TechWave Enterprises",
+        "content": "It's mainly the lack of standardization in the onboarding process, lack of adequate training, and difficulty in measuring the effectiveness of our onboarding efforts. Specifically, our ERP services and digital services are the most challenging to onboard."
+      },
+      {
+        "user": "Sales Representative",
+        "content": "These are common pain points for many organizations. Can you walk me through an example of how you're currently handling onboarding and what results you're seeing? Are there any specific metrics you're using to measure success or failure?"
+      },
+      {
+        "user": "Technical Lead, TechWave Enterprises",
+        "content": "Yes, currently, we're using a mix of traditional training methods and manual documentation. However, this has led to inconsistent adoption rates and poor knowledge retention. We're currently using metrics such as time-to-competency and user adoption rates to measure success."
+      },
+      {
+        "user": "Sales Representative",
+        "content": "I understand. What about the tools and technologies you're using? Are there any existing solutions in place that you're using for onboarding? Have you explored any digital adoption platforms?"
+      },
+      {
+        "user": "Technical Lead, TechWave Enterprises",
+        "content": "Actually, we're exploring using a few different tools, including documentation and learning management systems, but we haven't found one that perfectly fits our needs. We've looked at digital adoption platforms, but we're not sure which one is the best fit for our organization."
+      },
+      {
+        "user": "Sales Representative",
+        "content": "It sounds like you're looking for a more comprehensive solution that can help with standardization, training, and measuring effectiveness. Can I take a closer look at your onboarding process and see if there's anything we can do to help? Perhaps we could discuss how our Digital Adoption Platform can help address some of the pain points you're experiencing."
+      },
+      {
+        "user": "Technical Lead, TechWave Enterprises",
+        "content": "I think that would be really helpful. It would be great to see how you approach onboarding and what you've learned along the way. I'd also love to hear more about your Digital Adoption Platform and how it can help us achieve our digital transformation goals."
+      },
+      {
+        "user": "Sales Representative",
+        "content": "That sounds great. Before we move forward, I just want to confirm a few things. You're looking for a solution that can help with standardization, training, and measuring effectiveness. Is that correct?"
+      },
+      {
+        "user": "Technical Lead, TechWave Enterprises",
+        "content": "Yes, that's correct. We're looking for a solution that can help us streamline our onboarding process, improve training, and provide better metrics to measure success."
+      },
+      {
+        "user": "Sales Representative",
+        "content": "I see. And what is your timeline looking like for implementing a new onboarding solution? Are you looking to start seeing results within the next few months or year?"
+      },
+      {
+        "user": "Technical Lead, TechWave Enterprises",
+        "content": "We're hoping to start seeing results within the next few months. We have a aggressive timeline for implementing new solutions and we need to see quick returns on investment."
+      },
+      {
+        "user": "Sales Representative",
+        "content": "I understand. Based on our conversation today, I think our Digital Adoption Platform could be a great fit for your organization. I'd like to propose a pilot project to test our solution and provide a customized demo to show you how it can help address your pain points. Would that work for you?"
+      },
+      {
+        "user": "Technical Lead, TechWave Enterprises",
+        "content": "That sounds like a great idea. I'd love to see how your solution can help us streamline our onboarding process and improve our employee adoption rates. Let's move forward with the pilot project and customized demo."
+      }
+    ]
+  }
+}
