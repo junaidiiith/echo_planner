@@ -1,3 +1,4 @@
+import copy
 from tqdm.asyncio import tqdm
 from crewai_tools import SerperDevTool
 from crewai import Crew, LLM
@@ -6,10 +7,9 @@ from echo.constants import *
 from pydantic import BaseModel, Field
 from typing import Dict, List
 from echo.utils import add_pydanctic_structure, format_response
-from echo.step_templates.section_extraction_and_mapping import FilledSections, Transcript
+from echo.step_templates.generic import Transcript, save_client_call_data, embed_client_call_data
 from echo.utils import get_crew as get_crew_obj
 import echo.utils as utils
-
 
 class SellerInfo(BaseModel):
 	name: str = Field(..., title="Seller's Name", description="The name of the seller.")
@@ -57,29 +57,29 @@ class SellerCompetitorAnalysisResponse(BaseModel):
 	competitors: List[CompetitorComparison] = Field(..., title="Competitor Analysis", description="The list of competitors of the seller.")
 
 
-class QOPC(BaseModel):
-	type_: str = Field(..., title="QOPC Type", description="The type of the QOPC ('question', 'objection', 'painpoint', 'challenge').")
-	content: str = Field(..., title="QOPC Content", description="The content of the QOPC.")
-	
+class ObjectionResolutionPair(BaseModel):
+    objection: str = Field(..., title="Objection", description="The objection raised by the buyer.")
+    resolution: str = Field(..., title="Resolution", description="The resolution provided by the seller.")
 
-class QOPCs(BaseModel):
-	qopcs: List[QOPC] = Field(..., title="QOPCs", description="The list of possible questions, objections, pain points, and challenges for the call.")
-
-
-class RequirementsAndGoals(BaseModel):
-	requirements: List[str] = Field(..., title="Buyer's Requirements", description="The requirements of the buyer.")
-	goals: List[str] = Field(..., title="Buyer's Goals", description="The goals of the buyer.")
-
-
-class QOPCRGs(BaseModel):
-	qopcs: QOPCs = Field(..., title="QOPCs", description="The list of possible questions, objections, pain points, and challenges for the call.")
-	requirements: List[str] = Field(..., title="Buyer's Requirements", description="The requirements of the buyer.")
-	goals: List[str] = Field(..., title="Buyer's Goals", description="The goals of the buyer.")
-
-class AnalysisResults(BaseModel):
-    pain_points: List[str] = Field(..., title="Pain Points", description="The pain points identified in the call.")
-    challenges: List[str] = Field(..., title="Challenges", description="The challenges identified in the call.")
+class AnticipatedPainsAndObjections(BaseModel):
+    pains: List[str] = Field(..., title="Pain Points", description="The pain points identified in the call.")
     objections: List[str] = Field(..., title="Objections", description="The objections identified in the call.")
+
+
+class BuyerDataExtracted(BaseModel):
+    pain_points: List[str] = Field(..., title="Pain Points", description="The pain points identified in the call.")
+    objections: List[str] = Field(..., title="Objections", description="The objections identified in the call.")
+    time_lines: List[str] = Field(..., title="Time Lines", description="The time lines identified in the call.")
+    success_indicators: List[str] = Field(..., title="Success Indicators", description="The success indicators identified in the call.")
+    budget_constraints: List[str] = Field(..., title="Budget Constraints", description="The budget constraints identified in the call.")
+    competition: List[str] = Field(..., title="Competitors", description="The competitors identified in the call.")
+    decision_committee: List[str] = Field(..., title="Decision Committee Members", description="The members of the decision committee identified in the call.")
+    
+
+class SellerDataExtracted(BaseModel):
+    discovery_questions: List[str] = Field(..., title="Discovery Questions", description="The discovery questions asked by the seller.")
+    decision_making_process_questions: List[str] = Field(..., title="Decision Making Process Questions", description="The decision making process questions asked by the seller.")
+    objection_resolution_pairs: List[ObjectionResolutionPair] = Field(..., title="Objection Resolution Pairs", description="The objection resolution pairs identified in the call.")
     insights: List[str] = Field(..., title="Insights", description="The insights identified in the call.")
     improvements: List[str] = Field(..., title="Areas of Improvement", description="The areas of improvement identified in the call.")
 
@@ -118,7 +118,7 @@ agent_templates = {
                 "You are an expert in simulating realistic sales calls."
                 "You have been tasked with simulating a detailed call between buyer and {seller}."
                 "Your goal is to provide a realistic and engaging simulation of the call."
-                "The sales call simulation should be tailored to address the buyer's specific goals, requirements, pain points, and challenges."
+                "The sales call simulation should be structured, engaging, and informative."
             )
         )
     },
@@ -127,7 +127,7 @@ agent_templates = {
             role="Data Extraction Specialist",
             goal="Extract the required information from the call transcripts.",
             backstory=(
-                "You are an expert in extracting information from research reports and call transcripts based on the provided schema."
+                "You are an expert in extracting information from research reports and call transcripts."
                 "Your goal is to extract the required information from the call transcripts to provide insights to the sales team."
             )
         )
@@ -139,7 +139,8 @@ agent_templates = {
             backstory=(
                 "You are an expert in analyzing discovery sales calls and identifying key insights."
                 "Your goal is to analyze the sales call between buyer and {seller}."
-                "Your goal is identify the key pain points, challenges, objections, key insights, areas of improvement, and potential strategies for future calls."
+                "Your goal is to identify the pain points and objections, areas of improvement, and potential strategies for future calls."
+                ""
             )
         )
     }
@@ -157,6 +158,7 @@ task_templates = {
                 "The response should conform to the provided schema.\n"
                 "You need to extract the following information in the following pydantic structure -\n"
                 "{pydantic_structure}\n"
+                "Make sure there are no comments in the response JSON and it should be a valid JSON."
             ),
             output_pydantic=SellerInfo,
             agent="PreCallResearchAgent"	
@@ -173,6 +175,7 @@ task_templates = {
                 "The response should conform to the provided schema.\n"
                 "You need to extract the following information in the following pydantic structure -\n"
                 "{pydantic_structure}\n"
+                "Make sure there are no comments in the response JSON and it should be a valid JSON."
             ),
             output_pydantic=SellerPricingModels,
             agent="PreCallResearchAgent"	
@@ -190,6 +193,7 @@ task_templates = {
                 "The response should conform to the schema of ClientResearchResponse.\n"
                 "You need to extract the following information in the following pydantic structure -\n"
                 "{pydantic_structure}\n"
+                "Make sure there are no comments in the response JSON and it should be a valid JSON."
             ),
             agent="PreCallResearchAgent",
             context=["SellerIndustryResearchTask", "SellerPricingModelTask"],
@@ -207,12 +211,13 @@ task_templates = {
                 "The response should conform to the provided schema.\n"
                 "You need to extract the following information in the following pydantic structure -\n"
                 "{pydantic_structure}\n"
+                "Make sure there are no comments in the response JSON and it should be a valid JSON."
             ),
             agent="PreCallResearchAgent",
             context=["SellerIndustryResearchTask", "SellerPricingModelTask", "BuyerResearcher"],
             output_pydantic=SellerCompetitorAnalysisResponse,
         ),
-        "QOPCDiscoveryTask": dict(
+        "BuyerPainsAndObjectionsDiscoveryTask": dict(
             name="Anticipating possible questions, objections, pain points, and challenges",
             description=(
                 "Identify the possible questions, objections, pain points, and challenges that may arise during the sales discovery call between {buyer} and {seller}."
@@ -225,36 +230,15 @@ task_templates = {
                 "The response should conform to the provided schema.\n"
                 "You need to extract the following information in the following pydantic structure -\n"
                 "{pydantic_structure}\n"
+                "Make sure there are no comments in the response JSON and it should be a valid JSON."
             ),
-            output_pydantic=QOPCs,
+            output_pydantic=AnticipatedPainsAndObjections,
             context=[
                 "SellerIndustryResearchTask", 
                 "SellerPricingModelTask", 
                 "BuyerResearcher",
                 "CompetitorAnalysisTask"
             ],
-            agent="DiscoveryCallPreparationAgent"
-        ),
-        "RequirementsAndGoalsDiscoveryTask": dict(
-            name="Buyer's Requirements and Goals Discovery",
-            description=(
-                "Identify the buyer's requirements and goals for the sales discovery call between {buyer} and {seller}."
-                "The buyer's requirements and goals are crucial for understanding the buyer's needs and aligning them with the {seller}'s offerings."
-                "The requirements and goals are supposed to help the sales team tailor the discovery call to address the buyer's specific needs."
-            ),
-            expected_output=(
-                "The buyer's requirements and goals for the sales call between {buyer} and {seller}.\n"
-                "The response should conform to the provided schema.\n"
-                "You need to extract the following information in the following pydantic structure -\n"
-                "{pydantic_structure}\n"
-            ),
-            context=[
-                "SellerIndustryResearchTask", 
-                "SellerPricingModelTask", 
-                "BuyerResearcher",
-                "CompetitorAnalysisTask"
-            ],
-            output_pydantic=RequirementsAndGoals,
             agent="DiscoveryCallPreparationAgent"
         )
     },
@@ -262,8 +246,10 @@ task_templates = {
         "CallSimulationTask": dict(
             name="Simulate Discovery Call",
             description=(
-                "Simulate a very elaborated, detailed discovery call between {buyer} and {seller}."
-                "You are provided with the {buyer}'s and {seller}'s information as well as the competitive landscape."
+                "Simulate a very elaborated, detailed discovery call between a {buyer} and {seller}."
+                "The {buyer}'s team can be represented by one or more persons during the call.\n"
+                "You need to simulate the call as a conversation between the {seller}'s sales person and the {buyer}'s team.\n"
+                "You are provided with the {buyer}'s and {seller}'s information as well as the competitive landscape.\n"
                 
                 "You need to the following as context -"
                 "\n1.) anticipated Questions, Objections, Pain Points, and Challenges\n"
@@ -275,14 +261,21 @@ task_templates = {
                 "The {buyer}'s team will talk mostly in their own vocabulary that they use in their company."
                 "The {seller}'s team person is supposed to be very confident, inquistive, empathetic and understanding."
 
-                "Your goal is to provide a realistic and engaging simulation of the call."
-                "The sales call simuation should be a very realistic simulation of a discovery call."
-                "The sales call MUST clearly cover the {buyer}'s goals, requirements, potential pain points, challenges, and objections."
-                "The goal of the discovery call is to discover the goals, requirements, potential pain points, challenges, and objections of the buyer."
-                "The contents of each message should be as detailed and realistic as possible like a human conversation."
-                "The call should be structured and flow naturally like a real discovery call."
-                "The call should have a smooth flow and should be engaging and informative."
-                "The call should not end abruptly and should have a proper conclusion."
+                "Your goal is to provide a realistic and engaging simulation of the call. "
+                "The sales call simuation should be a very realistic simulation of a discovery call. "
+                "The sales call MUST clearly cover the {buyer}'s goals, requirements, pain points and objections. "
+                "The sales call simulation MUST be tailored to address the buyer's specific goals, requirements, pain points, and objections."
+                "The sales call simulation MUST find out the decision-making process and the committee involved for the buyer. "
+                "The sales cal simulation MUST find out the competition that the buyer is considering. "
+                "The sales call simulation MUST find out the success indicators for the buyer. "
+                "The sales call simulation MUST find out the time lines for the buyer. "
+                "The sales call simulation MUST find out the budget constraints for the buyer. "
+                
+                "The goal of the discovery call is to discover the goals, requirements, potential pain points, challenges, and objections of the buyer. "
+                "The contents of each message should be as detailed and realistic as possible like a human conversation. "
+                "The call should be structured and flow naturally like a real discovery call. "
+                "The call should have a smooth flow and should be engaging and informative. "
+                "The call should not end abruptly and should have a proper conclusion. "
         
                 "You are provided with the following context -\n"
                 "{seller}'s research information {seller_research}\n"
@@ -290,66 +283,35 @@ task_templates = {
                 "\n{buyer}'s research information\n{buyer_research}\n"
                 "\nCompetitive Information:\n{competitive_info}\n"
                 "\nAnticipated questions, objections, pain points and challenges:\n{anticipated_qopcs}\n"
-                "\nBuyer's requirements and goals:\n{requirements_goals}\n"
             ),
             expected_output=(
                 "A realistic simulation of the discovery call between {buyer} and {seller}."
                 "You need to extract the following information in the following pydantic structure -\n"
                 "{pydantic_structure}\n"
+                "Make sure there are no comments in the response JSON and it should be a valid JSON."
             ),
             agent="CallSimulationAgent",
             output_pydantic=Transcript
         )
     },
-    EXTRACTION: {
-        "DataExtractionTask": dict(
-            name="Extract Data from Call Transcript",
-            description=(
-                "Analyze a sales call transcript and map the content of the conversation to a predefined schema by extracting relevant information for each section and subsection. \n"
-                "Using the provided schema as a template, extract relevant information from the sales call transcript and populate each section and subsection. \n"
-                "The goal is to generate a structured, concise, and accurate report that reflects the content of the transcript."
-                """
-                Task Details:
-
-                1. Input:
-                    •	Schema Template: A pre-defined schema containing sections and subsections.
-                    •	Transcript: A detailed transcript of a sales call.
-
-                2. Requirements:
-                    •	Section and Subsection Mapping: Extract information from the transcript and populate each section and subsection according to the schema.
-                    •	The content of the section should be the summarized version of the contents of the subsections.
-                    •	Conciseness and Clarity: Provide clear, concise, and relevant content without copying verbatim from the transcript unless necessary.
-                    •	Completeness: Ensure that all sections and subsections are filled, even if the transcript has limited information (e.g., note “not mentioned” for missing content).
-                    •	Context Preservation: Ensure the content reflects the context of the conversation accurately, especially for subjective parts (e.g., client goals and objections).
-                    
-                
-                Below is the schema that you need to follow for the extraction of the data from the call transcript.
-                {schema}
-                
-                And below is the transcript that you need to extract the data from.
-                {discovery_transcript}
-                """                
-            ),
-            expected_output=(
-                "A structured representation of the transcript, with each section and subsection filled according to the provided schema.\n"
-                "Each subsection should contain the relevant information based on the transcript.\n"
-                "The content of the section should be the summarized version of the contents of the subsections.\n"
-                "You need to extract the following information in the following pydantic structure -\n"
-                "{pydantic_structure}\n"
-            ),
-            agent="DataExtractionAgent",
-            output_pydantic=FilledSections
-        )
-    },
     ANALYSIS: {
-        "DiscoveryCallAnalysisTask": dict(
+        "BuyerDataExtraction": dict(
             name="Analyze Discovery Call",
             description=(
-                "Analyze the sales call between {buyer} and {seller} to identify the key pain points, challenges, objections, insights, and areas of improvement."
-                "The analysis should focus on the buyer's requirements, goals, anticipated QOPCs, and the seller's responses."
-                "The goal is to provide insights to the sales team for improving future calls and addressing the buyer's needs effectively."
-                "You are provided with the following context -\n"
+                "Given a the discovery sales call transcript between {buyer} and {seller} to identify the following key elements about the {buyer}'s data -\n"
+                
+                "1. Buyer's Pain Points - The pain points expressed by the buyer during the call.\n"
+                "2. Buyer's Objections - The objections raised by the buyer during the call.\n"
+                "3. Buyer's Time Lines - The time lines mentioned by the buyer during the call.\n"
+                "4. Buyer's Success Indicators - The success indicators mentioend by the buyer during the call.\n"
+                "5. Buyer's Budget Constraints - The budget constraints expressed by the buyer during the call.\n"
+                "6. Buyer's Decision Committee - The members of the decision mentioned by the buyer during the call.\n"
+                "7. Buyer's Competition - The competitors mentioned by the buyer during the call.\n"
+                                
+                "The goal is to provide insights to the sales team for improving future calls and addressing the buyer's needs effectively and also to prepare for the demo call."
                 "The discovery call transcript:\n{discovery_transcript}\n"
+                
+                "You are provided with the following context -\n"
                 "{seller}'s research information {seller_research}\n"
                 "{seller}'s pricing model {seller_pricing}\n"
                 "\n{buyer}'s research information\n{buyer_research}\n"
@@ -359,9 +321,41 @@ task_templates = {
                 "An analysis of the sales call between {buyer} and {seller} identifying the key pain points, challenges, objections, insights, and areas of improvement."
                 "You need to extract the following information in the following pydantic structure -\n"
                 "{pydantic_structure}\n"
+                "Make sure there are no comments in the response JSON and it should be a valid JSON."
             ),
             agent="DiscoveryCallAnalysisAgent",
-            output_pydantic=AnalysisResults
+            output_pydantic=BuyerDataExtracted
+        ),
+        "SellerDataExtraction": dict(
+            name="Analyze Discovery Call",
+            description=(
+                "Given a the discovery sales call transcript between {buyer} and {seller} to identify the following key elements from the {seller}'s perspective -\n"
+                
+                "1. Seller's Discovery Questions - The discovery questions asked by the seller during the call.\n"
+                "2. Seller's Decision Making Process Questions - The decision making process questions asked by the seller during the call.\n"
+                "3. Seller's Objection Resolution Pairs - The objection resolution pairs identified by the seller during the call, i.e., for each objection raised by {buyer}, the resolution that the {seller} provided. \n"
+                "4. Seller's Insights - The insights identified by the seller during the call.\n"
+                "5. Seller's Areas of Improvement - The areas of improvement identified by the seller during the call.\n"
+                                
+                "The goal is to provide insights to the sales team for improving future calls and addressing the buyer's needs effectively and also to prepare for the demo call."
+                "The discovery call transcript:\n{discovery_transcript}\n"
+                
+                "You are provided with the following context -\n"
+                "{seller}'s research information {seller_research}\n"
+                "{seller}'s pricing model {seller_pricing}\n"
+                "\n{buyer}'s research information\n{buyer_research}\n"
+                "\nCompetitive Seller's Information:\n{competitive_info}\n"
+                "Below data provides the objections raised by the buyer - \n"
+            ),
+            expected_output=(
+                "An analysis of the sales call between {buyer} and {seller} identifying the key pain points, challenges, objections, insights, and areas of improvement."
+                "You need to extract the following information in the following pydantic structure -\n"
+                "{pydantic_structure}\n"
+                "Make sure there are no comments in the response JSON and it should be a valid JSON."
+            ),
+            agent="DiscoveryCallAnalysisAgent",
+            context=["BuyerDataExtraction"],
+            output_pydantic=SellerDataExtracted
         )
     }
 }
@@ -380,24 +374,65 @@ inputs = {
         "buyer_research",
         "competitive_info",
         "anticipated_qopcs",
-        "requirements_goals"
     ],   
 }
 
-# def utils.check_data_exists(client_name):
-#     if not os.path.exists(f"runs/{client_name}.json"):
-#         return False
-#     return True
-    # data = json.load(open(f"runs/{client_name}.json"))
-    # return all(
-    #     [k in data for k in [
-    #         "seller_research", 
-    #         "seller_pricing", 
-    #         "buyer_research", 
-    #         "competitive_info", 
-    #         "anticipated_qopcs", 
-    #         "requirements_goals"
-    #     ]])
+
+buyer_call_format = (
+    "Buyer Info: {buyer_research}\n"
+    "Objections raised by the buyer: {discovery_analysis_buyer_data.objections}\n"
+    "Pain Points raised by the buyer: {discovery_analysis_buyer_data.pain_points}\n"
+    "Time Lines mentioned by the buyer: {discovery_analysis_buyer_data.time_lines}\n"
+    "Success Indicators mentioned by the buyer: {discovery_analysis_buyer_data.success_indicators}\n"
+    "Budget Constraints mentioned by the buyer: {discovery_analysis_buyer_data.budget_constraints}\n"
+    "Competition mentioned by the buyer: {discovery_analysis_buyer_data.competition}\n"
+    "Decision Committee mentioned by the buyer: {discovery_analysis_buyer_data.decision_committee}\n"
+)
+
+buyer_keys = {
+    "Buyer Research": "buyer_research",
+    "Buyer Objections": "discovery_analysis_buyer_data.objections",
+    "Pain Points Raised": "discovery_analysis_buyer_data.pain_points",
+    "Time Lines mentioned": "discovery_analysis_buyer_data.time_lines",
+    "Success Indicators mentioned": "discovery_analysis_buyer_data.success_indicators",
+    "Budget Constraints mentioned": "discovery_analysis_buyer_data.budget_constraints",
+    "Competition mentioned": "discovery_analysis_buyer_data.competition",
+    "Decision Committee mentioned": "discovery_analysis_buyer_data.decision_committee",
+}
+
+
+seller_call_format = (
+    "Seller Info: {seller_research}\n"
+    "Seller Pricing: {seller_pricing}\n"
+    "Discovery Questions asked by the seller: {discovery_analysis_seller_data.discovery_questions}\n"
+    "Decision Making Process Questions asked by the seller: {discovery_analysis_seller_data.decision_making_process_questions}\n"
+    "Objection Resolution Pairs: {discovery_analysis_seller_data.objection_resolution_pairs}\n"
+)
+
+
+seller_keys = {
+    "Seller Research": "seller_research",
+    "Seller Pricing": "seller_pricing",
+    "Discovery Questions asked": "discovery_analysis_seller_data.discovery_questions",
+    "Decision Making Process Questions asked": "discovery_analysis_seller_data.decision_making_process_questions",
+    "Objection Resolution Pairs": "discovery_analysis_seller_data.objection_resolution_pairs",
+}
+
+
+def get_client_data_to_embed(client_name, user_type):
+    data = utils.get_client_data(client_name)
+    if user_type == BUYER:
+        return utils.replace_keys_with_values(buyer_call_format, data)
+    else:
+        return utils.replace_keys_with_values(seller_call_format, data)
+
+
+def get_client_data_to_save(client_name, user_type):
+    data = utils.get_client_data(client_name)
+    if user_type == BUYER:
+        return utils.get_nested_key_values(buyer_keys, data)
+    else:
+        return utils.get_nested_key_values(seller_keys, data)
 
 
 def process_research_data_output(output: CrewOutput):
@@ -406,7 +441,6 @@ def process_research_data_output(output: CrewOutput):
     buyer_research = format_response(output.tasks_output[2])
     competitive_info = format_response(output.tasks_output[3])
     qopcs = format_response(output.tasks_output[4])
-    requirements_goals = format_response(output.tasks_output[5])
     
     return {
         "seller_research": seller_research,
@@ -414,7 +448,16 @@ def process_research_data_output(output: CrewOutput):
         "buyer_research": buyer_research,
         "competitive_info": competitive_info,
         "anticipated_qopcs": qopcs,
-        "requirements_goals": requirements_goals,
+    }
+
+
+def process_analysis_data_output(output: CrewOutput):
+    buyer_data = format_response(output.tasks_output[0])
+    seller_data = format_response(output.tasks_output[1])
+    
+    return {
+        "discovery_analysis_buyer_data": buyer_data,
+        "discovery_analysis_seller_data": seller_data,
     }
     
 
@@ -449,36 +492,19 @@ async def aget_simulation_data_for_client(inputs: dict, llm: LLM, **crew_config)
         "seller_pricing", 
         "buyer_research", 
         "competitive_info", 
-        "anticipated_qopcs", 
-        "requirements_goals"
+        "anticipated_qopcs",
     ]]), f"Invalid input data for simulation call: {inputs.keys()}"
     if utils.check_data_exists(inputs['buyer']):
         data = utils.get_client_data(inputs['buyer'])
         if 'discovery_transcript' in data:
-            return data['discovery_transcript']
+            return data
     
     crew = get_crew(SIMULATION, llm, **crew_config)
     add_pydanctic_structure(crew, inputs)
     response = await crew.kickoff_async(inputs=inputs)
-    return format_response(response.tasks_output[0])
-
-
-async def aextract_data_from_transcript_for_client(inputs: dict, llm: LLM, **crew_config):
-    assert all([k in inputs for k in [
-        "seller", 
-        "buyer", 
-        "schema",
-        "discovery_transcript"
-    ]]), "Invalid input data for simulation"
-    if utils.check_data_exists(inputs['buyer']):
-        data = utils.get_client_data(inputs['buyer'])
-        if 'discovery_transcript_structured' in data:
-            return data['discovery_transcript_structured']
-    
-    crew = get_crew(EXTRACTION, llm, **crew_config)
-    add_pydanctic_structure(crew, inputs)
-    response = await crew.kickoff_async(inputs=inputs)
-    return format_response(response.tasks_output[0])
+    return {
+        "discovery_transcript": format_response(response.tasks_output[0])
+    }
 
 
 async def aanalyze_data_for_client(inputs: dict, llm: LLM, **crew_config):
@@ -493,82 +519,73 @@ async def aanalyze_data_for_client(inputs: dict, llm: LLM, **crew_config):
     ]]), f"Invalid input data for simulation: {inputs.keys()}"
     if utils.check_data_exists(inputs['buyer']):
         data = utils.get_client_data(inputs['buyer'])
-        if 'discovery_analysis_results' in data:
-            return data['discovery_analysis_results']
+        if 'discovery_analysis_buyer_data' in data:
+            return data
     
     crew = get_crew(ANALYSIS, llm, **crew_config)
     add_pydanctic_structure(crew, inputs)
     response = await crew.kickoff_async(inputs=inputs)
-    return format_response(response.tasks_output[0])
+    return process_analysis_data_output(response)
 
 
 async def aget_research_data(clients: List[str], inputs: dict, llm: LLM, **crew_config):
     assert all([k in inputs for k in ["seller", "n_competitors"]]), "Invalid input data for research"
-    research_data = dict()
+    research_data: Dict[str, Dict] = dict()
     for client in tqdm(clients, desc="Getting Research Data"):
         print(f"Getting Research Data for {client}")
-        inputs['buyer'] = client
-        research_data[client] = await aget_research_data_for_client(inputs, llm, **crew_config)
-        utils.save_client_data(client, research_data[client])
+        data: Dict = copy.deepcopy(inputs)
+        data['buyer'] = client
+        response = await aget_research_data_for_client(data, llm, **crew_config)
+        data.update(response)
+        utils.save_client_data(client, data)
+        research_data[client] = data
     
     return research_data
 
 
 async def asimulate_data(clients: List[str], inputs: dict, llm: LLM, **crew_config):
     research_data = await aget_research_data(clients, inputs, llm, **crew_config)
-    simulation_data = dict()
+    simulation_data: Dict[str, Dict] = dict()
     for client in tqdm(clients, desc="Simulating Data"):
         print(f"Simulating Data for {client}")
-        data = research_data[client]
-        inputs.update(data)
-        data['discovery_transcript'] = await aget_simulation_data_for_client(inputs, llm, **crew_config)
+        data: Dict = copy.deepcopy(research_data[client])
+        data.update(inputs)
+        response = await aget_simulation_data_for_client(data, llm, **crew_config)
+        data.update(response)
         utils.save_client_data(client, data)
         simulation_data[client] = data
 
     return simulation_data
 
 
-async def aextract_data_from_transcript(
-    clients: List[str], 
-    schema_json: Dict, 
-    inputs: dict, 
-    llm: LLM, 
-    **crew_config
-):
-    extracted_data = dict()
-    simulation_data = await asimulate_data(clients, inputs, llm, **crew_config)
-    
-    for client in tqdm(clients, desc="Extracting Data"):
-        print(f"Extracting Data for {client}")
-        data = simulation_data[client]
-        inputs.update(data)
-        inputs['schema'] = schema_json
-        data['discovery_transcript_structured'] = await aextract_data_from_transcript_for_client(inputs, llm, **crew_config)
-        utils.save_client_data(client, data)
-        
-        extracted_data[client] = data
-    
-    return extracted_data
-
-
 async def aget_analysis(
     clients: List[str], 
-    schema_json,
     inputs: dict, 
     llm: LLM, 
     **crew_config
 ):
     analysis_data = dict()
-    extracted_data = await aextract_data_from_transcript(
-        clients, schema_json, inputs, llm, **crew_config
-    )
+    simulation_data = await asimulate_data(clients, inputs, llm, **crew_config)
     
     for client in tqdm(clients, desc="Analyzing Data"):
-        data: Dict = extracted_data[client]
+        data: Dict = copy.deepcopy(simulation_data[client])
         data.update(inputs)
-        data['discovery_analysis_results'] = await aanalyze_data_for_client(data, llm, **crew_config)
+        response = await aanalyze_data_for_client(data, llm, **crew_config)
+        data.update(response)
+        utils.save_client_data(client, data)
         analysis_data[client] = data
-    
-    utils.save_clients_data(analysis_data)
+        
+        save_client_data_to_db(client, inputs['seller'])
     
     return analysis_data
+
+
+def save_client_data_to_db(client_name, seller_name):
+    inputs = {
+        SELLER: seller_name,
+        BUYER: client_name,
+    }
+    print(f"Saving Data for {client_name}")
+    save_client_call_data(client_name, BUYER, DISCOVERY, inputs, get_client_data_to_save(client_name, BUYER))
+    save_client_call_data(client_name, SELLER, DISCOVERY, inputs, get_client_data_to_save(client_name, SELLER))
+    embed_client_call_data(client_name, BUYER, DISCOVERY, inputs, get_client_data_to_embed(client_name, BUYER))

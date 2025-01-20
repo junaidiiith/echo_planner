@@ -5,7 +5,14 @@ from crewai import LLM
 from crewai.crews.crew_output import CrewOutput
 from echo.constants import *
 from tqdm.asyncio import tqdm
+from echo.memory import LTMSQLiteStorage, RAGStorage
 from echo.utils import add_pydanctic_structure, get_crew, format_response
+from echo.utils import (
+    get_db_type, 
+    get_sql_client, 
+    get_rag_client, 
+    get_current_time
+)
 
 
 class Message(BaseModel):
@@ -244,3 +251,74 @@ async def aget_call_structure(
     with open(f"{save_path}", "w") as f:
         f.write(structure)
     return structure
+
+
+def embed_clients_data(user_type, clients, metadata):
+    assert user_type in [BUYER, SELLER], f"user_type must be one of {BUYER}, {SELLER}"
+    data = {
+        DISCOVERY: dict(),
+        DEMO: dict()
+    }
+    for call_type in [DISCOVERY, DEMO]:
+        print(f"Saving {user_type} call data for {call_type}")
+        for client in clients:
+            data[call_type][client] = embed_client_call_data(
+                client, 
+                user_type, 
+                call_type,
+                metadata
+            )
+            
+    print(f"Saved {user_type} call data for {clients}")
+    
+    return data
+
+
+def save_clients_data(user_type, clients, metadata):
+    assert user_type in [BUYER, SELLER], f"user_type must be one of {BUYER}, {SELLER}"
+    data = {
+        DISCOVERY: dict(),
+        DEMO: dict()
+    }
+    for call_type in [DISCOVERY, DEMO]:
+        print(f"Saving {user_type} call data for {call_type}")
+        for client in clients:
+            data[call_type][client] = save_client_call_data(
+                client, 
+                user_type, 
+                call_type,
+                metadata
+            )
+            
+    print(f"Saved {user_type} call data for {clients}")
+    
+    return data
+    
+
+
+def save_client_call_data(client_name, user_type, call_type, inputs, data):
+    assert user_type in [BUYER, SELLER], f"user_type must be one of {BUYER}, {SELLER}"
+    print(f"Saving {user_type} call data for {client_name}")
+    sql_client: LTMSQLiteStorage = get_sql_client(db_type=get_db_type(user_type))
+    buyer, seller = inputs['buyer'], inputs['seller']
+    sql_client.save(
+        buyer=buyer, 
+        seller=seller, 
+        call_type=call_type, 
+        data=data, 
+    )
+    
+    return data
+
+
+def embed_client_call_data(client_name, user_type, call_type, metadata, data):
+    assert user_type in [BUYER, SELLER], f"user_type must be one of {BUYER}, {SELLER}"
+    print(f"Saving {user_type} call data for {client_name}")
+    rag_client: RAGStorage = get_rag_client(db_type=get_db_type(user_type))
+    metadata['call_type'] = call_type
+    rag_client.save(
+        value=data, 
+        metadata=metadata, 
+    )
+    
+    return data

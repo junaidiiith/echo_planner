@@ -15,6 +15,63 @@ import appdirs
 import contextlib
 import io
 
+import json
+import sqlite3
+from typing import Any, Dict, List, Optional
+import hashlib
+import time
+
+from echo.constants import EMBED_STRING_HASH_KEY
+
+
+def sha256_hash(text: str) -> str:
+    return hashlib.sha256(text.encode()).hexdigest()
+
+def get_current_time():
+    timestamp = time.strftime('%Y-%m-%d %H:%M:%S')
+    return timestamp
+
+class Printer:
+    def print(self, content: str, color: Optional[str] = None):
+        if color == "purple":
+            self._print_purple(content)
+        elif color == "red":
+            self._print_red(content)
+        elif color == "bold_green":
+            self._print_bold_green(content)
+        elif color == "bold_purple":
+            self._print_bold_purple(content)
+        elif color == "bold_blue":
+            self._print_bold_blue(content)
+        elif color == "yellow":
+            self._print_yellow(content)
+        elif color == "bold_yellow":
+            self._print_bold_yellow(content)
+        else:
+            print(content)
+
+    def _print_bold_purple(self, content):
+        print("\033[1m\033[95m {}\033[00m".format(content))
+
+    def _print_bold_green(self, content):
+        print("\033[1m\033[92m {}\033[00m".format(content))
+
+    def _print_purple(self, content):
+        print("\033[95m {}\033[00m".format(content))
+
+    def _print_red(self, content):
+        print("\033[91m {}\033[00m".format(content))
+
+    def _print_bold_blue(self, content):
+        print("\033[1m\033[94m {}\033[00m".format(content))
+
+    def _print_yellow(self, content):
+        print("\033[93m {}\033[00m".format(content))
+
+    def _print_bold_yellow(self, content):
+        print("\033[1m\033[93m {}\033[00m".format(content))
+
+
 
 @contextlib.contextmanager
 def suppress_logging(
@@ -74,11 +131,6 @@ class BaseRAGStorage(ABC):
         self.allow_reset = allow_reset
         self.embedder_config = embedder_config
         
-    @abstractmethod
-    def _sanitize_role(self, role: str) -> str:
-        """Sanitizes agent roles to ensure valid directory names."""
-        pass
-
     @abstractmethod
     def save(self, value: Any, metadata: Dict[str, Any]) -> None:
         """Save a value with metadata to the storage."""
@@ -303,9 +355,24 @@ class RAGStorage(BaseRAGStorage):
                 name=self.type, embedding_function=self.embedder_config
             )
 
+    def check_text_embedded(self, text: str, metadata: Dict) -> bool:
+        text_hash = sha256_hash(text)
+        try:
+            filter_criteria = {EMBED_STRING_HASH_KEY: text_hash}
+            filter_criteria.update(metadata)
+            results = self.collection.get(
+                where=filter_criteria, include=["metadatas"]
+            )
+            return len(results["metadatas"]) > 0
+        except Exception as e:
+            logging.error(f"Error checking if text is embedded: {str(e)}")
+            return False
+    
+    
     def save(self, value: Any, metadata: Dict[str, Any]) -> None:
         if not hasattr(self, "app") or not hasattr(self, "collection"):
             self._initialize_app()
+        
         try:
             self._generate_embedding(value, metadata)
         except Exception as e:
@@ -336,6 +403,18 @@ class RAGStorage(BaseRAGStorage):
                 if result["score"] >= score_threshold:
                     results.append(result)
 
+            if filter is not None:
+                results = [
+                    result
+                    for result in results
+                    if all(
+                        [
+                            result["metadata"].get(key) == value
+                            for key, value in filter.items()
+                        ]
+                    )
+                ]
+            
             return results
         except Exception as e:
             logging.error(f"Error during {self.type} search: {str(e)}")
@@ -345,6 +424,12 @@ class RAGStorage(BaseRAGStorage):
         if not hasattr(self, "app") or not hasattr(self, "collection"):
             self._initialize_app()
 
+        if self.check_text_embedded(text, metadata):
+            print(f"Text already embedded in {self.type}")
+            logging.info(f"Text already embedded in {self.type}")
+            return
+        metadata = metadata or {}
+        metadata[EMBED_STRING_HASH_KEY] = sha256_hash(text)
         self.collection.add(
             documents=[text],
             metadatas=[metadata or {}],
@@ -373,3 +458,194 @@ class RAGStorage(BaseRAGStorage):
         return OpenAIEmbeddingFunction(
             api_key=os.getenv("OPENAI_API_KEY"), model_name="text-embedding-3-small"
         )
+
+
+
+class LTMSQLiteStorage:
+    """
+    An updated SQLite storage class for LTM data storage.
+    """
+
+    def __init__(
+        self, 
+        db_type: str = f"long_term_memory_storage.db",
+        reset: bool = False,
+    ) -> None:
+        self.db_path = f"{db_storage_path()}/{db_type}.db"
+        self._printer: Printer = Printer()
+        self._initialize_db(reset)
+
+    def _initialize_db(self, reset=False):
+        """
+        Initializes the SQLite database and creates LTM table
+        """
+        try:
+            with sqlite3.connect(self.db_path) as conn:
+                if reset:
+                    print("Deleting existing table")
+                    conn.execute("DROP TABLE IF EXISTS seller_data")
+                    conn.commit()
+                
+                conn.execute('PRAGMA foreign_keys = ON;')
+                cursor = conn.cursor()
+                cursor.execute(
+                    """
+                    CREATE TABLE IF NOT EXISTS seller_data (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        seller TEXT,
+                        buyer TEXT,
+                        call_type TEXT,
+                        data JSON,
+                        datetime TEXT
+                    )
+                """
+                )
+
+                conn.commit()
+        except sqlite3.Error as e:
+            self._printer.print(
+                content=f"MEMORY ERROR: An error occurred during database initialization: {e}",
+                color="red",
+            )
+
+
+    def check_if_exists(self, seller, buyer, call_type, metadata: Dict) -> int:
+        """
+        Checks if a row exists in the LTM table
+        return:
+            0: if the row does not exist
+            1: if the row exists but metadata does not match
+            2: if the row exists and metadata matches
+        """
+        query = "SELECT * FROM seller_data WHERE seller = ? AND buyer = ? AND call_type = ?"
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
+            cursor.execute(query, (seller, buyer, call_type))
+            row = cursor.fetchone()
+            if row:
+                try:
+                    row_metadata: Dict = json.loads(row[4])
+                except json.JSONDecodeError:
+                    import ast
+                    try:
+                        row_metadata = json.loads(json.dumps(ast.literal_eval(row[4])))
+                    except json.JSONDecodeError as e:
+                        raise json.JSONDecodeError(f"Could not decode the value: {row[4]} with error: {e}")
+                    
+                if all(
+                    [
+                        key in row_metadata
+                        for key in metadata
+                    ]
+                ):
+                    print(f"Row already exists!")
+                    return True
+        return False
+                
+        
+    def save(
+        self,
+        seller: str,
+        buyer: str,
+        call_type: str,
+        data: Dict[str, Any]
+    ) -> None:
+        datetime = get_current_time()
+        """Saves data to the LTM table with error handling."""
+        record_exists =  self.check_if_exists(seller, buyer, call_type, data)
+        assert record_exists in [0, 1, 2], f"Invalid record_exists value: {record_exists}"
+        if record_exists == 2:
+            logging.info(f"Record already exists for seller: {seller}, buyer: {buyer}, call_type: {call_type}")
+            return 
+        else:
+            try:
+                with sqlite3.connect(self.db_path) as conn:
+                    cursor = conn.cursor()
+                    if record_exists == 1:
+                        query = "UPDATE seller_data SET data = ?, datetime = ? WHERE seller = ? AND buyer = ? AND call_type = ?"
+                        cursor.execute(query, (json.dumps(data), datetime, seller, buyer, call_type))
+                    
+                    else:
+                        query = "INSERT INTO seller_data (seller, buyer, call_type, data, datetime) VALUES (?, ?, ?, ?, ?)"
+                        cursor.execute(query, (seller, buyer, call_type, json.dumps(data), datetime))
+                    conn.commit()
+            except sqlite3.Error as e:
+                self._printer.print(
+                    content=f"MEMORY ERROR: An error occurred while saving to LTM: {e}",
+                    color="red",
+                )
+        return None
+
+    def load(
+        self, 
+        buyer: str,
+        seller: str, 
+        call_type: str, 
+        data: Dict=None, 
+        latest_n: int
+    =-1) -> Optional[List[Dict[str, Any]]]:
+        """Queries the LTM table by task description with error handling."""
+        latest_n = latest_n if latest_n > 0 else 3
+        query = 'SELECT seller, buyer, call_type, data FROM seller_data WHERE seller = ? AND buyer = ? AND call_type = ? '
+        params = [seller, buyer, call_type]
+        if data:
+            for key, value in data.items():
+                query += f' AND json_extract(data, \'$.{key}\') = ?'
+                params.append(value)
+        
+        query += f' ORDER BY datetime DESC LIMIT {latest_n}'
+        
+        try:
+            rows = self.run_query(query, params)
+            if rows:
+                return [
+                    {
+                        "seller": row[0],
+                        "buyer": row[1],
+                        "call_type": row[2],
+                        "data": json.loads(row[3]),
+                    }
+                    for row in rows
+                ]
+        except Exception as e:
+            self._printer.print(
+                content=f"MEMORY ERROR: An error occurred while querying LTM: {e}",
+                color="red",
+            )
+        return None
+    
+    
+    def run_query(
+        self, 
+        query: str, 
+        params: List[str] = None
+    ) -> Optional[List[Dict[str, Any]]]:
+        """Queries the LTM table by task description with error handling."""
+        if not params:
+            params = []
+            
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
+            cursor.execute(query, params)
+            rows = cursor.fetchall()
+            if rows:
+                return [r for r in rows]
+        
+        return []
+        
+    def reset(
+        self,
+    ) -> None:
+        """Resets the LTM table with error handling."""
+        try:
+            with sqlite3.connect(self.db_path) as conn:
+                cursor = conn.cursor()
+                cursor.execute("DELETE FROM long_term_memories")
+                conn.commit()
+
+        except sqlite3.Error as e:
+            self._printer.print(
+                content=f"MEMORY ERROR: An error occurred while deleting all rows in LTM: {e}",
+                color="red",
+            )
+        return None

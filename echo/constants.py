@@ -2,6 +2,8 @@ RESEARCH = 'research'
 SIMULATION = 'simulation'
 EXTRACTION = 'extraction'
 ANALYSIS = 'analysis'
+SAVE_DATA = 'save_data'
+EMBED_DATA = 'embed_data'
 
 SECTION_EXTRACTION = 'extraction'
 SECTION_MERGER = 'merger'
@@ -9,6 +11,8 @@ SECTION_MERGER = 'merger'
 DISCOVERY = 'discovery'
 DEMO = 'demo'
 
+BUYER = 'buyer'
+SELLER = 'seller'
 
 ALLOWED_KEYS = [
     "seller_research",
@@ -16,16 +20,15 @@ ALLOWED_KEYS = [
     "buyer_research",
     "competitive_info",
     "anticipated_qopcs",
-    "requirements_goals",
     "discovery_transcript",
-    "discovery_transcript_structured",
-    "discovery_analysis_results",
+    "discovery_analysis_buyer_data",
+    "discovery_analysis_seller_data",
     
+    "demo_features",
     "demo_transcript",
-    "demo_transcript_structured",
-    "demo_analysis_results",
-    "features",
-    "goal_or_requirement_feature_map",
-    "roi_feature_map",
-    "qopc_feature_map",
+    "demo_analysis_buyer_data",
+    "demo_analysis_seller_data",
 ]
+
+
+EMBED_STRING_HASH_KEY = 'embed_string_hash'

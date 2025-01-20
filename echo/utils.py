@@ -1,12 +1,30 @@
+import re
+import ast
 import json
 import os
+import time
 from typing import List, Dict, get_origin, get_args
+from dotenv import load_dotenv
 from pydantic import BaseModel
 from crewai import LLM, Agent, Task, Crew
-from echo.constants import ALLOWED_KEYS
-from echo.settings import save_dir
+from echo.constants import ALLOWED_KEYS, BUYER, SELLER
+from echo.memory import LTMSQLiteStorage, RAGStorage
+from echo.settings import save_dir, buyer_db_name, seller_db_name
 
 
+load_dotenv()
+
+def format_response(x):
+    if x.pydantic:
+        return x.pydantic.model_dump_json(indent=2)
+    try: 
+        print("Trying to parse with Ast...")
+        data = ast.literal_eval(x.raw)
+        print("Parsed successfully with Ast...")
+        return data
+    except Exception as e:
+        return x.raw
+    
 format_response = lambda x: x.pydantic.model_dump_json(indent=2) if x.pydantic else x.raw
 
 def get_model_code_with_comments(model: BaseModel) -> str:
@@ -122,6 +140,12 @@ def get_client_data(client_name):
     with open(f"{save_dir}/{client_name}.json") as f:
         return json.load(f)
 
+
+def get_refined_data(client_name):
+    data = get_client_data(client_name)
+    return {k: data[k] for k in data if k in ALLOWED_KEYS}
+
+
 def save_client_data(client_name, data):
     os.makedirs(save_dir, exist_ok=True)
     ndata = {k: data[k] for k in data if k in ALLOWED_KEYS}
@@ -135,3 +159,115 @@ def save_clients_data(response_data: Dict):
         save_client_data(client_name, client_response)
         
     return client_data
+
+
+def remove_keys(keys: List[str]):
+    for file in os.listdir(save_dir):
+        with open(f"{save_dir}/{file}") as f:
+            data = json.load(f)
+        for key in keys:
+            if key in data:
+                del data[key]
+        with open(f"{save_dir}/{file}", "w") as f:
+            json.dump(data, f, indent=2)
+
+    
+def get_nested_value(key, nested_dict):
+    def get_structured_value(value):
+        if isinstance(value, str):
+            try:
+                value = json.loads(value)
+            except:
+                pass
+        return value
+    
+    """Extract value from nested dictionary using dot-separated keys."""
+    keys = key.split('.')
+    value: Dict = json.loads(nested_dict) if isinstance(nested_dict, str) else nested_dict
+    for k in keys:
+        if isinstance(value, str):
+            try:
+                value = json.loads(value)
+            except json.JSONDecodeError:
+                try:
+                    value = json.loads(json.dumps(ast.literal_eval(value)))
+                except json.JSONDecodeError as e:
+                    raise json.JSONDecodeError(f"Could not decode the value: {value} with error: {e}")
+            
+        if k in value:
+            value = value[k]
+        else:
+            raise KeyError(f"Key '{key}' not found in the dictionary with keys: {value.keys()}")
+    return get_structured_value(value)
+
+
+def replace_keys_with_values(string, dictionary):
+    
+    def get_printable_value(value):
+        if isinstance(value, list):
+            return '\n\t' + '\n\t'.join([f"{i+1}. {get_printable_value(v)}" for i, v in enumerate(value)])
+        if isinstance(value, dict):
+            return ',\n'.join([f"{k} - {get_printable_value(value[k])}" for k in value])
+        return value
+
+    # Regex to find keys enclosed in curly braces
+    pattern = r'\{([^{}]+)\}'
+
+    # Replace keys with their corresponding values
+    def replacer(match):
+        key = match.group(1)  # Extract the key inside curly braces
+        try:
+            value = get_nested_value(key, dictionary)
+            value = get_printable_value(value)
+            return value
+        except KeyError:
+            print(f"Key '{key}' not found in the dictionary")
+            return match.group(0)  # If key is not found, keep it as is
+
+    return re.sub(pattern, replacer, string)
+
+
+def get_nested_key_values(key_location_dict: Dict, dictionary: Dict):
+    return {k: get_nested_value(v, dictionary) for k, v in key_location_dict.items()}
+
+
+def get_llm():
+    llm = LLM(
+        model=os.getenv("FIREWORKS_MODEL_NAME"),
+        base_url="https://api.fireworks.ai/inference/v1",
+        api_key=os.getenv("FIREWORKS_API_KEY")
+    )
+    return llm
+
+
+def get_rag_client(db_type, allow_reset=True, embedder_config=None, path=None):
+    rag_storage = RAGStorage(
+        type=db_type,
+        allow_reset=allow_reset,
+        embedder_config=embedder_config,
+        path=path
+    )
+    return rag_storage
+
+
+def get_sql_client(db_type, reset=False):
+    sql_storage = LTMSQLiteStorage(
+        db_type=db_type,
+        reset=reset,
+    )
+    
+    return sql_storage
+
+
+def get_db_type(user_type):
+    if user_type == BUYER:
+        return buyer_db_name
+    elif user_type == SELLER:
+        return seller_db_name
+    else:
+        raise ValueError("User type must be one of 'buyer' or 'seller'")
+    
+
+def get_current_time():
+    timestamp = time.strftime('%Y-%m-%d %H:%M:%S')
+    return timestamp

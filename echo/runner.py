@@ -1,28 +1,25 @@
 import json
 from crewai import LLM
-from dotenv import load_dotenv
 import os
+from echo.utils import get_llm
+
 from echo.step_templates.discovery import asimulate_data as asimulate_discovery_data
-from echo.step_templates.discovery import aextract_data_from_transcript as aextract_discovery_data_from_transcript
 from echo.step_templates.discovery import aget_analysis as aget_discovery_analysis
 
 from echo.step_templates.demo import asimulate_data as asimulate_demo_data
-from echo.step_templates.demo import aextract_data_from_transcript as aextract_demo_data_from_transcript
 from echo.step_templates.demo import aget_analysis as aget_demo_analysis
-from echo.step_templates.section_extraction_and_mapping import aget_call_structure as aget_call_structure_from_transcripts
+from echo.step_templates.generic import aget_call_structure as aget_call_structure_from_transcripts
+
+from echo.step_templates.discovery import get_client_data_to_embed as get_discovery_data_to_embed
+from echo.step_templates.demo import get_client_data_to_embed as get_demo_data_to_embed
+
+from echo.step_templates.discovery import get_client_data_to_save as get_discovery_data_to_save
+from echo.step_templates.demo import get_client_data_to_save as get_demo_data_to_save
+
+
 
 from echo.constants import *
 
-
-load_dotenv()
-
-def get_llm():
-    llm = LLM(
-        model=os.getenv("FIREWORKS_MODEL_NAME"),
-        base_url="https://api.fireworks.ai/inference/v1",
-        api_key=os.getenv("FIREWORKS_API_KEY")
-    )
-    return llm
 
 
 test_clients = [
@@ -49,17 +46,19 @@ inputs = {
 call_fns = {
     DISCOVERY: {
         SIMULATION: asimulate_discovery_data,
-        EXTRACTION: aextract_discovery_data_from_transcript,
-        ANALYSIS: aget_discovery_analysis
+        ANALYSIS: aget_discovery_analysis,
+        EMBED_DATA: get_discovery_data_to_embed,
+        SAVE_DATA: get_discovery_data_to_save
     },
     DEMO: {
         SIMULATION: asimulate_demo_data,
-        EXTRACTION: aextract_demo_data_from_transcript,
-        ANALYSIS: aget_demo_analysis
+        ANALYSIS: aget_demo_analysis,
+        EMBED_DATA: get_demo_data_to_embed,
+        SAVE_DATA: get_demo_data_to_save
     }
 }
 
-async def aget_call_structure(call_type, clients, inputs, llm=None, **crew_config):
+async def aget_call_structure(call_type, clients, inputs, llm: LLM = None, **crew_config):
     """
     Required that the transcripts are already simulated/created
     """
@@ -85,7 +84,7 @@ async def aget_call_structure(call_type, clients, inputs, llm=None, **crew_confi
     return call_structure
 
 
-async def simulate_calls(call_type, clients, inputs, llm=None, **crew_config):
+async def simulate_calls(call_type, clients, inputs, llm: LLM = None, **crew_config):
     assert call_type in [DISCOVERY, DEMO], f"call_type must be one of {DISCOVERY}, {DEMO}"
     if llm is None:
         llm = get_llm()
@@ -94,30 +93,21 @@ async def simulate_calls(call_type, clients, inputs, llm=None, **crew_config):
     return simulated_call_data
 
 
-async def extract_data_from_transcript(call_type, clients, schema_json, inputs, llm=None, **crew_config):
+async def get_analysis(call_type, clients, inputs, llm: LLM = None, **crew_config):
     assert call_type in [DISCOVERY, DEMO], f"call_type must be one of {DISCOVERY}, {DEMO}"
     if llm is None:
         llm = get_llm()
         
-    extracted_data = await call_fns[call_type][EXTRACTION](clients, schema_json, inputs, llm=llm, **crew_config)
-    return extracted_data
-
-
-async def get_analysis(call_type, clients, schema_json, inputs, llm=None, **crew_config):
-    assert call_type in [DISCOVERY, DEMO], f"call_type must be one of {DISCOVERY}, {DEMO}"
-    if llm is None:
-        llm = get_llm()
-        
-    analysed_call_data = await call_fns[call_type][ANALYSIS](clients, schema_json, inputs, llm, **crew_config)
+    analysed_call_data = await call_fns[call_type][ANALYSIS](clients, inputs, llm, **crew_config)
     return analysed_call_data
 
 
-async def make_call(call_type, clients, schema_json, inputs, llm=None, **crew_config):
+async def make_call(call_type, clients, inputs, llm: LLM = None, **crew_config):
     assert call_type in [DISCOVERY, DEMO], f"call_type must be one of {DISCOVERY}, {DEMO}"
     if llm is None:
         llm = get_llm()
-        
+    
+    print(f"Making {call_type} call for {clients}")
     await call_fns[call_type][SIMULATION](clients, inputs, llm, **crew_config)
-    await call_fns[call_type][EXTRACTION](clients, schema_json, inputs, llm=llm, **crew_config)
-    analysed_call_data = await call_fns[call_type][ANALYSIS](clients, schema_json, inputs, llm, **crew_config)
+    analysed_call_data = await call_fns[call_type][ANALYSIS](clients, inputs, llm, **crew_config)
     return analysed_call_data
