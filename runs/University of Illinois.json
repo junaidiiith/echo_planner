@@ -1,14 +1,480 @@
 {
-  "seller_research": "{\n  \"name\": \"Whatfix\",\n  \"website\": \"https://whatfix.com/\",\n  \"description\": \"Whatfix is a digital adoption platform that provides organizations with a no-code editor to create in-app guidance on any application that looks 100% native.\",\n  \"industry\": \"Software as a Service (SaaS)\",\n  \"products\": [\n    \"Digital Adoption Platform\",\n    \"In-app Guidance\",\n    \"Simulated Training\",\n    \"Application Analytics\"\n  ],\n  \"solutions\": [\n    \"Onboarding\",\n    \"Training\",\n    \"Support\",\n    \"Digital Transformation\"\n  ],\n  \"use_cases\": [\n    \"Employee Onboarding\",\n    \"Customer Onboarding\",\n    \"Software Adoption\",\n    \"Change Management\"\n  ]\n}",
-  "seller_pricing": "{\n  \"pricing_models\": [\n    {\n      \"type\": \"Custom\",\n      \"description\": \"Pricing models are customized and tailor-made according to the customer's needs.\",\n      \"price\": \"Upon request\",\n      \"duration\": \"N/A\"\n    },\n    {\n      \"type\": \"Subscription\",\n      \"description\": \"Premium only subscription plans with a flat per-application fee, plus user license fees.\",\n      \"price\": \"Starting at $15,500 (one-time payment)\",\n      \"duration\": \"1 month\"\n    },\n    {\n      \"type\": \"Yearly\",\n      \"description\": \"Pricing model available for yearly subscription.\",\n      \"price\": \"Not disclosed\",\n      \"duration\": \"1 year\"\n    },\n    {\n      \"type\": \"Monthly\",\n      \"description\": \"Pricing model available for monthly subscription.\",\n      \"price\": \"Not disclosed\",\n      \"duration\": \"1 month\"\n    },\n    {\n      \"type\": \"Onetime (Perpetual License)\",\n      \"description\": \"Pricing model available for onetime perpetual license.\",\n      \"price\": \"Not disclosed\",\n      \"duration\": \"Lifetime\"\n    },\n    {\n      \"type\": \"Free\",\n      \"description\": \"Available for free trial or demo.\",\n      \"price\": \"Free\",\n      \"duration\": \"N/A\"\n    }\n  ]\n}",
-  "buyer_research": "{\n  \"name\": \"University of Illinois\",\n  \"website\": \"https://illinois.edu/\",\n  \"description\": \"A public land-grant research university in the Champaign\u2013Urbana metropolitan area, Illinois, United States.\",\n  \"industry\": \"Education\",\n  \"company_size\": 59000,  # Approximate number of students, faculty, and staff\n  \"goals\": [\"To provide a world-class education\", \"To conduct innovative research\", \"To engage in public service and outreach\"],\n  \"use_cases\": [\"Student onboarding\", \"Faculty training\", \"Staff development\", \"Online course creation\"],\n  \"challenges\": [\"Enhancing student engagement\", \"Improving faculty productivity\", \"Streamlining administrative processes\", \"Ensuring accessibility and equity\"],\n  \"stakeholders\": [\"Students\", \"Faculty members\", \"Staff\", \"Administrators\", \"Alumni\", \"Parents\"]\n}",
-  "competitive_info": "{\n  \"competitors\": [\n    {\n      \"name\": \"WalkMe\",\n      \"pros\": [\n        \"Enterprise-grade security\",\n        \"Boost digital adoption at scale with confidence\",\n        \"Personalized guidance and automation\"\n      ],\n      \"cons\": [\n        \"May not be suitable for small businesses\",\n        \"Steeper learning curve for complex workflows\"\n      ],\n      \"differentiators\": [\n        \"Robust governance, privacy, and security standards\",\n        \"Identifies where workflows break and provides personalized guidance and automation\"\n      ]\n    },\n    {\n      \"name\": \"Pendo\",\n      \"pros\": [\n        \"Improve employee productivity\",\n        \"Provide training inside your software applications\",\n        \"Help companies become product led and deliver digital experiences users love\"\n      ],\n      \"cons\": [\n        \"May not be suitable for small businesses\",\n        \"Requires significant investment in digital adoption solutions\"\n      ],\n      \"differentiators\": [\n        \"Product experience and digital adoption solutions\",\n        \"Helps improve employee productivity and optimize processes across your software applications\"\n      ]\n    },\n    {\n      \"name\": \"Newired\",\n      \"pros\": [\n        \"Easy to use and implement\",\n        \"Cost-effective digital adoption solution\",\n        \"Helps employees become proficient in software applications quickly\"\n      ],\n      \"cons\": [\n        \"Limited advanced features\",\n        \"May not be suitable for complex workflows\"\n      ],\n      \"differentiators\": [\n        \"Intuitive and user-friendly interface\",\n        \"Faster time-to-competency for employees\"\n      ]\n    }\n  ]\n}",
-  "anticipated_qopcs": "{\n  \"pains\": [\n    \"How can Whatfix help us enhance student engagement and improve faculty productivity?\",\n    \"Will Whatfix's digital adoption platform be able to integrate with our existing systems and applications?\",\n    \"How can we ensure that Whatfix's solution is accessible and equitable for all our students and staff?\",\n    \"What kind of support and training does Whatfix offer to ensure successful implementation and adoption?\",\n    \"How does Whatfix's pricing model align with our budget and ROI expectations?\",\n    \"What kind of analytics and insights will Whatfix provide to help us measure the effectiveness of their solution?\",\n    \"How can Whatfix help us streamline our administrative processes and reduce costs?\",\n    \"What kind of customization options does Whatfix offer to meet our specific needs and requirements?\"\n  ],\n  \"objections\": [\n    \"We are already invested in another digital adoption platform, how does Whatfix differentiate itself?\",\n    \"We are concerned about the complexity of implementing Whatfix's solution, how will it impact our IT resources?\",\n    \"We need a solution that can be implemented quickly, how long will it take to get Whatfix up and running?\",\n    \"We have a limited budget, how does Whatfix's pricing model compare to other solutions in the market?\",\n    \"We are not sure if Whatfix's solution is scalable enough to meet our growing needs and requirements\",\n    \"We have concerns about data security and privacy, how does Whatfix address these issues?\"\n  ]\n}",
-  "discovery_transcript": "{\n  \"messages\": [\n    {\n      \"user\": \"Whatfix Sales Person\",\n      \"content\": \"Hello, thank you for taking the time to speak with me today. My name is [Name], and I'm a sales representative from Whatfix. I understand that you're from the University of Illinois. Can you please introduce yourself and tell me a little bit about your role and responsibilities?\"\n    },\n    {\n      \"user\": \"University of Illinois Team\",\n      \"content\": \"Hi, thanks for having me. My name is [Name], and I'm the Director of Faculty Development at the University of Illinois. I oversee the training and development of our faculty members, and I'm always looking for ways to improve their productivity and efficiency.\"\n    },\n    {\n      \"user\": \"Whatfix Sales Person\",\n      \"content\": \"That's great. We've had success with universities similar to yours in the past. Can you tell me a little bit about your current onboarding process for new faculty members? What are some of the challenges you're facing, and how do you see digital adoption playing a role in improving that process?\"\n    },\n    {\n      \"user\": \"University of Illinois Team\",\n      \"content\": \"Our current onboarding process is mostly manual, with a lot of paperwork and in-person training sessions. It's time-consuming and often overwhelming for our new faculty members. We've been looking for ways to streamline that process and make it more efficient. We're also concerned about ensuring that our faculty members have the skills they need to effectively use our digital systems and tools.\"\n    },\n    {\n      \"user\": \"Whatfix Sales Person\",\n      \"content\": \"I understand. It sounds like you're facing some challenges with employee onboarding and training. Whatfix's digital adoption platform can help you streamline that process and make it more efficient. Our platform provides personalized, in-app guidance and training to help users quickly get up to speed on new systems and tools. Can I show you a quick demo of how our platform works?\"\n    },\n    {\n      \"user\": \"University of Illinois Team\",\n      \"content\": \"That sounds interesting. Yes, please show me a demo. I'd like to see how it works and how it can be customized to meet our specific needs.\"\n    },\n    {\n      \"user\": \"Whatfix Sales Person\",\n      \"content\": \"Great. I'll show you a quick demo of our platform. ( Demo ) As you can see, our platform provides a personalized, step-by-step guide for users to follow. It's fully customizable and can be integrated with your existing systems and applications. We've had great success with universities similar to yours in the past, and I think our platform could really help you improve your onboarding process and increase faculty productivity.\"\n    },\n    {\n      \"user\": \"University of Illinois Team\",\n      \"content\": \"That's very impressive. I can see how that would be helpful for our faculty members. Can you tell me more about your pricing model and how it compares to other digital adoption platforms on the market?\"\n    },\n    {\n      \"user\": \"Whatfix Sales Person\",\n      \"content\": \"Our pricing model is customized to meet the specific needs of each of our customers. We offer a range of plans, from subscription-based to perpetual licensing. We're confident that our platform provides a strong ROI, and we'd be happy to provide a customized quote for your university. In terms of comparison, our platform is highly customizable and provides a more personalized experience for users compared to other digital adoption platforms on the market.\"\n    },\n    {\n      \"user\": \"University of Illinois Team\",\n      \"content\": \"That's good to know. I think we'd be interested in exploring this further. What are the next steps, and what kind of support and training does Whatfix provide to ensure successful implementation and adoption?\"\n    },\n    {\n      \"user\": \"Whatfix Sales Person\",\n      \"content\": \"The next steps would be to schedule a follow-up meeting to discuss the project plan and timeline in more detail. We also provide comprehensive support and training to ensure successful implementation and adoption of our platform. This includes dedicated customer success management, onboarding and implementation support, and ongoing training and support to ensure that you're getting the most out of our platform.\"\n    },\n    {\n      \"user\": \"University of Illinois Team\",\n      \"content\": \"That sounds great. I think we're interested in moving forward. Can you send over some more information and a customized quote for our review?\"\n    },\n    {\n      \"user\": \"Whatfix Sales Person\",\n      \"content\": \"Absolutely. I'll send over some more information and a customized quote by the end of the day today. Thank you for your time, and I look forward to speaking with you again soon.\"\n    }\n  ]\n}",
-  "discovery_analysis_buyer_data": "{\n  \"pain_points\": [\n    \"manual onboarding process\",\n    \"time-consuming and overwhelming for new faculty members\",\n    \"ensuring faculty members have the skills to effectively use digital systems and tools\"\n  ],\n  \"objections\": [\n    \"none explicitly mentioned\"\n  ],\n  \"time_lines\": [\n    \"none explicitly mentioned\"\n  ],\n  \"success_indicators\": [\n    \"improving faculty productivity\",\n    \"streamlining the onboarding process\",\n    \"ensuring successful implementation and adoption of the platform\"\n  ],\n  \"budget_constraints\": [\n    \"none explicitly mentioned\"\n  ],\n  \"competition\": [\n    \"none explicitly mentioned\"\n  ],\n  \"decision_committee\": [\n    \"Director of Faculty Development\"\n  ]\n}",
-  "discovery_analysis_seller_data": "{\n  \"discovery_questions\": [\n    \"Can you please introduce yourself and tell me a little bit about your role and responsibilities?\",\n    \"Can you tell me a little bit about your current onboarding process for new faculty members? What are some of the challenges you're facing, and how do you see digital adoption playing a role in improving that process?\"\n  ],\n  \"decision_making_process_questions\": [],\n  \"objection_resolution_pairs\": [\n    {\n      \"objection\": \"none explicitly mentioned\",\n      \"resolution\": \"none explicitly mentioned\"\n    }\n  ],\n  \"insights\": [\n    \"The University of Illinois is facing challenges with employee onboarding and training.\",\n    \"The current onboarding process is manual, time-consuming, and overwhelming for new faculty members.\",\n    \"The University is looking for ways to streamline the onboarding process and ensure faculty members have the skills to effectively use digital systems and tools.\"\n  ],\n  \"improvements\": [\n    \"The seller could have asked more targeted questions to uncover specific pain points and challenges.\",\n    \"The seller could have provided more detailed information about the pricing model and how it compares to other digital adoption platforms.\",\n    \"The seller could have emphasized the benefits of Whatfix's platform, such as personalized, in-app guidance and training, to address the University's specific challenges.\"\n  ]\n}",
-  "demo_features": "{\n  \"features\": [\n    {\n      \"name\": \"Digital Adoption Platform\",\n      \"description\": \"Whatfix's digital adoption platform provides a no-code editor to create in-app guidance on any application that looks 100% native.\"\n    },\n    {\n      \"name\": \"In-app Guidance\",\n      \"description\": \"Whatfix's in-app guidance enables the creation of personalized, step-by-step guides within any application to enhance user experience and productivity.\"\n    },\n    {\n      \"name\": \"Simulated Training\",\n      \"description\": \"Whatfix's simulated training feature allows users to practice and learn new skills within a controlled environment, reducing errors and increasing proficiency.\"\n    },\n    {\n      \"name\": \"Application Analytics\",\n      \"description\": \"Whatfix's application analytics provide insights into user behavior and application adoption, enabling data-driven decisions to optimize the user experience.\"\n    },\n    {\n      \"name\": \"Onboarding\",\n      \"description\": \"Whatfix's onboarding solution streamlines the onboarding process, reducing time-to-competency and improving user adoption of digital systems and tools.\"\n    },\n    {\n      \"name\": \"Training\",\n      \"description\": \"Whatfix's training solution provides personalized, in-app training to ensure users have the skills to effectively use digital systems and tools.\"\n    },\n    {\n      \"name\": \"Support\",\n      \"description\": \"Whatfix's support solution enables organizations to provide contextual, in-app support to users, reducing support queries and improving user satisfaction.\"\n    },\n    {\n      \"name\": \"Digital Transformation\",\n      \"description\": \"Whatfix's digital transformation solution helps organizations navigate the complexities of digital adoption, ensuring a seamless transition to new digital systems and tools.\"\n    }\n  ]\n}",
-  "demo_transcript": "{\n  \"messages\": [\n    {\n      \"user\": \"Whatfix\",\n      \"content\": \"Hello everyone, thank you for taking the time to join today's demo call. My name is Sarah, and I'll be your Whatfix representative. We'll be going over our digital adoption platform and how it can help address the challenges you're facing with onboarding and training new faculty members.\"\n    },\n    {\n      \"user\": \"Director of Faculty Development\",\n      \"content\": \"Hello Sarah, thank you for having us. We're excited to learn more about Whatfix and how it can help us streamline our onboarding process and improve faculty productivity.\"\n    },\n    {\n      \"user\": \"Whatfix\",\n      \"content\": \"Excellent, let's get started then. Whatfix's digital adoption platform is designed to help organizations like yours navigate the complexities of digital transformation. Our platform provides a no-code editor to create in-app guidance on any application, making it easy to create personalized, step-by-step guides for your faculty members.\"\n    },\n    {\n      \"user\": \"Whatfix\",\n      \"content\": \"I'd like to demo our in-app guidance feature, which enables you to create interactive guides that are embedded directly within your digital systems and tools. This feature has been proven to enhance user experience and productivity.\"\n    },\n    {\n      \"user\": \"Whatfix\",\n      \"content\": \"Let me show you an example. (demonstrates the in-app guidance feature) As you can see, our guides are interactive and provide contextual support to users, reducing the need for manual training and support.\"\n    },\n    {\n      \"user\": \"Director of Faculty Development\",\n      \"content\": \"That's impressive. How does your platform handle simulated training and application analytics?\"\n    },\n    {\n      \"user\": \"Whatfix\",\n      \"content\": \"Our simulated training feature allows users to practice and learn new skills within a controlled environment, reducing errors and increasing proficiency. And our application analytics provide insights into user behavior and application adoption, enabling data-driven decisions to optimize the user experience.\"\n    },\n    {\n      \"user\": \"Whatfix\",\n      \"content\": \"I'd like to show you a case study from one of our previous clients, a university that was able to reduce their onboarding time by 75% and increase faculty productivity by 30% after implementing our platform.\"\n    },\n    {\n      \"user\": \"Director of Faculty Development\",\n      \"content\": \"That's impressive. We're concerned about the cost of implementation and the potential ROI. Can you provide more information on your pricing model and how it compares to other digital adoption platforms?\"\n    },\n    {\n      \"user\": \"Whatfix\",\n      \"content\": \"Absolutely. Our pricing model is based on the number of users and applications, and we offer a competitive pricing structure compared to other digital adoption platforms. I can provide you with a customized pricing quote based on your specific needs. Additionally, we offer a ROI calculator that can help you estimate the potential savings and benefits of implementing our platform.\"\n    },\n    {\n      \"user\": \"Director of Faculty Development\",\n      \"content\": \"That sounds reasonable. We're also concerned about the level of customization and support provided by Whatfix.\"\n    },\n    {\n      \"user\": \"Whatfix\",\n      \"content\": \"We understand that every organization is unique, and we offer customized solutions to meet your specific needs. Our support team is available 24/7 to ensure a seamless implementation and adoption of our platform. We also offer personalized onboarding and training to ensure your team is comfortable using our platform.\"\n    },\n    {\n      \"user\": \"Whatfix\",\n      \"content\": \"Before we conclude, I'd like to offer you a customized demo environment where you can test our platform with your own applications and users. This will give you a hands-on experience of how our platform can address your specific pain points and challenges.\"\n    },\n    {\n      \"user\": \"Director of Faculty Development\",\n      \"content\": \"That sounds like a great idea. We'd love to take you up on that offer. What are the next steps?\"\n    },\n    {\n      \"user\": \"Whatfix\",\n      \"content\": \"I'll send over the customized demo environment and a follow-up email with the pricing quote and ROI calculator. We can schedule a follow-up call in a few weeks to discuss your experience with the demo environment and answer any additional questions you may have.\"\n    }\n  ]\n}",
-  "demo_analysis_buyer_data": "{\n  \"interested_features\": [\n    {\"pain_point\": \"streamline onboarding process\"},\n    {\"pain_point\": \"improve faculty productivity\"},\n    {\"pain_point\": \"provide personalized, step-by-step guides\"},\n    {\"pain_point\": \"enhance user experience\"}\n  ],\n  \"skeptical_features\": [\n    {\"objection\": \"cost of implementation\"},\n    {\"objection\": \"level of customization and support\"}\n  ],\n  \"objections_raised\": [\"cost of implementation\", \"level of customization and support\"],\n  \"stakeholder_engagement\": [\n    {\"stakeholder\": \"Director of Faculty Development\", \"engagement_level\": \"high\"}\n  ],\n  \"feedback\": \"none\"\n}",
-  "demo_analysis_seller_data": "{\n  \"demo_features\": [\n    {\"name\": \"In-app guidance feature\", \"description\": \"Enables creating interactive guides that are embedded directly within digital systems and tools, enhancing user experience and productivity.\"},\n    {\"name\": \"Simulated training feature\", \"description\": \"Allows users to practice and learn new skills within a controlled environment, reducing errors and increasing proficiency.\"},\n    {\"name\": \"Application analytics\", \"description\": \"Provides insights into user behavior and application adoption, enabling data-driven decisions to optimize the user experience.\"},\n    {\"name\": \"No-code editor\", \"description\": \"Allows creating personalized, step-by-step guides for faculty members without requiring coding knowledge.\"}\n  ],\n  \"objection_handling\": [\n    {\"objection\": \"Cost of implementation and ROI\", \"resolution\": \"Customized pricing quote and ROI calculator provided\", \"status\": True},\n    {\"objection\": \"Level of customization and support\", \"resolution\": \"Offered customized solutions, 24/7 support, and personalized onboarding and training\", \"status\": True}\n  ],\n  \"success_stories\": [\"University that reduced onboarding time by 75% and increased faculty productivity by 30% after implementing Whatfix\"],\n  \"assets_used\": [\"ROI calculator\", \"Customized pricing quote\", \"Case study of previous client\"],\n  \"customizations\": [\"Customized demo environment\", \"Personalized onboarding and training\", \"24/7 support\"],\n  \"engagement_questions\": []\n}"
+  "seller_research": {
+    "name": "Whatfix",
+    "website": "https://whatfix.com/",
+    "description": "Whatfix is a digital adoption platform that provides organizations with a no-code editor to create in-app guidance on any application that looks 100% native.",
+    "industry": "Software/Technology",
+    "products": [
+      "Digital Adoption Platform",
+      "Analytics"
+    ],
+    "solutions": [
+      "In-app guidance",
+      "User experience",
+      "Step-by-step guidance",
+      "Self-help user support",
+      "Onboarding",
+      "Training",
+      "Support"
+    ],
+    "use_cases": [
+      "Accelerate product adoption",
+      "Provide modern and easy onboarding",
+      "Effective training",
+      "Better support to users",
+      "Scalable success with technology",
+      "Expanding capability",
+      "Unlocking productivity"
+    ]
+  },
+  "seller_pricing": {
+    "pricing_models": [
+      {
+        "type": "Custom Pricing",
+        "description": "Whatfix offers customized pricing based on the customer's needs. The pricing is composed of a flat fee, plus user license fees.",
+        "price": "Varies based on the customer's needs",
+        "duration": "Customizable duration"
+      },
+      {
+        "type": "Standard",
+        "description": "Digital Adoption platform: Standard plan with custom pricing",
+        "price": "Custom Pricing",
+        "duration": "Customizable duration"
+      },
+      {
+        "type": "Premium",
+        "description": "Digital Adoption platform: Premium plan with custom pricing",
+        "price": "Custom Pricing",
+        "duration": "Customizable duration"
+      }
+    ]
+  },
+  "buyer_research": {
+    "name": "University of Illinois",
+    "website": "https://illinois.edu/",
+    "description": "A public research university in the Champaign\u2013Urbana metropolitan area, Illinois, United States.",
+    "industry": "Education",
+    "company_size": "10,001+ employees",
+    "goals": [
+      "To provide high-quality education to students",
+      "To conduct innovative research and create new knowledge",
+      "To engage with the community and contribute to the economy"
+    ],
+    "use_cases": [
+      "Providing a diverse range of academic programs",
+      "Conducting research in various fields",
+      "Offering lifelong learning opportunities"
+    ],
+    "challenges": [
+      "Meeting the needs of a diverse student body",
+      "Securing funding for research and programs",
+      "Staying competitive in a rapidly changing higher education landscape"
+    ],
+    "stakeholders": [
+      "Students",
+      "Faculty members",
+      "Staff",
+      "Alumni",
+      "Community members"
+    ]
+  },
+  "competitive_info": {
+    "competitors": [
+      {
+        "name": "WalkMe",
+        "pros": [
+          "Powerful DAP",
+          "Offers a range of features",
+          "Designed to enhance user engagement",
+          "Streamline the user experience"
+        ],
+        "cons": [
+          "Setup can feel complex",
+          "Requires a dedicated team"
+        ],
+        "differentiators": [
+          "More focused on customer-facing use cases"
+        ]
+      },
+      {
+        "name": "Pendo",
+        "pros": [
+          "Superior product analytics",
+          "Comprehensive voice of the customer features",
+          "Robust enterprise readiness"
+        ],
+        "cons": [
+          "More expensive than Whatfix"
+        ],
+        "differentiators": [
+          "More focused on product analytics and customer feedback"
+        ]
+      },
+      {
+        "name": "Userpilot",
+        "pros": [
+          "Offers a range of features",
+          "Designed to enhance user engagement",
+          "Streamline the user experience"
+        ],
+        "cons": [
+          "Less known than WalkMe and Whatfix"
+        ],
+        "differentiators": [
+          "More focused on employee onboarding"
+        ]
+      }
+    ]
+  },
+  "anticipated_qopcs": {
+    "pains": [
+      "Difficulty in providing seamless onboarding experience for students and faculty members",
+      "Challenge in meeting the needs of a diverse student body",
+      "Insufficient funding for research and programs",
+      "Difficulty in staying competitive in a rapidly changing higher education landscape",
+      "Need for modern and easy onboarding",
+      "Inefficient training and support systems",
+      "Scalability issues with technology adoption",
+      "Limited capability in providing personalized learning experiences"
+    ],
+    "objections": [
+      "Whatfix may not be able to integrate with our existing systems",
+      "The cost of implementing Whatfix may be too high",
+      "We are unsure if Whatfix can handle the scale of our university's operations",
+      "We are concerned about the complexity of setting up and using Whatfix",
+      "We do not see a clear ROI from investing in a digital adoption platform like Whatfix",
+      "We are not convinced that Whatfix can provide a better user experience for our students and faculty members",
+      "We have had negative experiences with similar platforms in the past"
+    ]
+  },
+  "discovery_transcript": {
+    "messages": [
+      {
+        "user": "Whatfix Sales Person",
+        "content": "Hi, thank you for taking the time to speak with me today. I'm excited to learn more about the University of Illinois's goals and challenges. Can you start by telling me a little bit about your role and what brings you here today?"
+      },
+      {
+        "user": "University of Illinois's Team",
+        "content": "Hi, thank you for having me. My name is John, and I'm the Director of IT at the University of Illinois. We're always looking for ways to improve our student and faculty experience, and we've been exploring digital adoption platforms to help us achieve that goal."
+      },
+      {
+        "user": "Whatfix Sales Person",
+        "content": "That's great to hear. Can you elaborate on what you mean by improving the student and faculty experience? What specific challenges are you facing that you're hoping a digital adoption platform can help with?"
+      },
+      {
+        "user": "University of Illinois's Team",
+        "content": "Well, we have a very diverse student body, and we struggle to provide a seamless onboarding experience for all of them. We also have a lot of different systems and applications that faculty members need to use, and it can be overwhelming for them. We're looking for a way to make it easier for everyone to get up to speed quickly."
+      },
+      {
+        "user": "Whatfix Sales Person",
+        "content": "I completely understand. It sounds like you're facing some common challenges in the higher education space. Can you tell me a little bit more about what you're hoping to achieve with a digital adoption platform? Are there any specific metrics or KPIs that you're trying to improve?"
+      },
+      {
+        "user": "University of Illinois's Team",
+        "content": "We're really focused on improving our student satisfaction and retention rates. We've also been struggling with limited funding for research and programs, so we need to make sure that any solution we implement is going to provide a strong ROI."
+      },
+      {
+        "user": "Whatfix Sales Person",
+        "content": "I understand. It sounds like you're looking for a solution that can help you improve the student experience while also being mindful of your budget constraints. Can you tell me a little bit more about your current onboarding process for students and faculty members? What do you currently use to support them?"
+      },
+      {
+        "user": "University of Illinois's Team",
+        "content": "Right now, we're using a combination of in-person training sessions and online resources to support our students and faculty members. However, we're finding that it's not very scalable, and it's not providing the level of support that we need. We're looking for a more modern and easy-to-use solution that can help us provide a better experience for everyone."
+      },
+      {
+        "user": "Whatfix Sales Person",
+        "content": "I see. It sounds like you're looking for a solution that can provide a more personalized and scalable approach to onboarding and support. Have you considered any other digital adoption platforms besides Whatfix? Are there any other solutions that you're evaluating right now?"
+      },
+      {
+        "user": "University of Illinois's Team",
+        "content": "Yes, we've been evaluating a few different options, including WalkMe and Pendo. We're still in the early stages of our evaluation, but we're looking for a solution that can provide a strong ROI and help us achieve our goals."
+      },
+      {
+        "user": "Whatfix Sales Person",
+        "content": "I understand. We've worked with a number of higher education institutions in the past, and we're confident that our solution can help you achieve your goals. Can you tell me a little bit more about your decision-making process for this project? Who else is involved, and what are the key factors that you'll be considering when making a decision?"
+      },
+      {
+        "user": "University of Illinois's Team",
+        "content": "Our decision-making process typically involves a committee of stakeholders from across the university, including IT, academic affairs, and student affairs. We'll be evaluating solutions based on their ability to meet our needs, their scalability, and their ROI."
+      },
+      {
+        "user": "Whatfix Sales Person",
+        "content": "I understand. We've had success with similar implementations in the past, and we're confident that our solution can meet your needs. What's the timeline looking like for this project? Are you looking to implement a solution within a specific timeframe?"
+      },
+      {
+        "user": "University of Illinois's Team",
+        "content": "We're hoping to implement a solution within the next 6-9 months. We have a budget allocated for this project, and we're looking to move forward as quickly as possible."
+      },
+      {
+        "user": "Whatfix Sales Person",
+        "content": "I understand. We'll make sure to provide you with a customized proposal that outlines how our solution can help you achieve your goals. Is there anything else that you'd like to discuss or any other questions that you have for me?"
+      },
+      {
+        "user": "University of Illinois's Team",
+        "content": "No, that's all for now. Thank you for your time today. We'll be in touch soon to discuss next steps."
+      },
+      {
+        "user": "Whatfix Sales Person",
+        "content": "Thank you, John. It was great speaking with you today. I'll make sure to follow up with a customized proposal and next steps. Have a great day!"
+      }
+    ]
+  },
+  "discovery_analysis_buyer_data": {
+    "pain_points": [
+      "struggling to provide a seamless onboarding experience for students",
+      "faculty members are overwhelmed with different systems and applications",
+      "limited funding for research and programs",
+      "current onboarding process is not scalable",
+      "current onboarding process is not providing the level of support needed"
+    ],
+    "objections": [],
+    "time_lines": [
+      "next 6-9 months"
+    ],
+    "success_indicators": [
+      "improving student satisfaction and retention rates"
+    ],
+    "budget_constraints": [
+      "limited funding for research and programs",
+      "need to ensure a strong ROI"
+    ],
+    "competition": [
+      "WalkMe",
+      "Pendo"
+    ],
+    "decision_committee": [
+      "IT",
+      "academic affairs",
+      "student affairs"
+    ]
+  },
+  "discovery_analysis_seller_data": {
+    "discovery_questions": [
+      "Can you start by telling me a little bit about your role and what brings you here today?",
+      "What specific challenges are you facing that you're hoping a digital adoption platform can help with?",
+      "Can you tell me a little bit more about what you're hoping to achieve with a digital adoption platform?",
+      "Are there any specific metrics or KPIs that you're trying to improve?",
+      "Can you tell me a little bit more about your current onboarding process for students and faculty members?",
+      "What do you currently use to support them?",
+      "Have you considered any other digital adoption platforms besides Whatfix?",
+      "Are there any other solutions that you're evaluating right now?",
+      "What's the timeline looking like for this project?"
+    ],
+    "decision_making_process_questions": [
+      "Can you tell me a little bit more about your decision-making process for this project?",
+      "Who else is involved, and what are the key factors that you'll be considering when making a decision?"
+    ],
+    "objection_resolution_pairs": [
+      {
+        "objection": "limited funding for research and programs",
+        "resolution": "We'll make sure to provide you with a customized proposal that outlines how our solution can help you achieve your goals while also being mindful of your budget constraints."
+      }
+    ],
+    "insights": [
+      "The University of Illinois is struggling to provide a seamless onboarding experience for students and faculty members.",
+      "They are facing challenges with limited funding for research and programs.",
+      "They are looking for a digital adoption platform that can provide a strong ROI and help them achieve their goals.",
+      "They are evaluating multiple solutions, including WalkMe and Pendo."
+    ],
+    "improvements": [
+      "The seller could have asked more specific questions about the University's current onboarding process and pain points.",
+      "The seller could have provided more detailed information about Whatfix's pricing model and how it can meet the University's budget constraints."
+    ]
+  },
+  "demo_features": {
+    "features": [
+      {
+        "name": "In-app guidance",
+        "description": "Provide step-by-step guidance to users within the application to help them navigate and complete tasks efficiently."
+      },
+      {
+        "name": "User experience",
+        "description": "Enhance user experience by providing a seamless and intuitive interface that guides users through the application."
+      },
+      {
+        "name": "Step-by-step guidance",
+        "description": "Break down complex tasks into simple, easy-to-follow steps, ensuring users can complete tasks independently."
+      },
+      {
+        "name": "Self-help user support",
+        "description": "Offer users instant support and guidance, reducing the need for external assistance and enabling them to resolve issues quickly."
+      },
+      {
+        "name": "Onboarding",
+        "description": "Streamline the onboarding process for students and faculty members, ensuring they can quickly get started with the application."
+      },
+      {
+        "name": "Training",
+        "description": "Provide interactive and engaging training sessions that help users develop skills and knowledge efficiently."
+      },
+      {
+        "name": "Support",
+        "description": "Deliver timely and effective support to users, ensuring they receive the help they need to overcome challenges and achieve their goals."
+      },
+      {
+        "name": "Customized pricing",
+        "description": "Offer a pricing model that is tailored to the University's specific needs, ensuring a strong ROI and meeting budget constraints."
+      },
+      {
+        "name": "No-code editor",
+        "description": "Empower the University's team to create in-app guidance without requiring extensive coding knowledge, reducing development time and costs."
+      },
+      {
+        "name": "Scalable solution",
+        "description": "Provide a scalable solution that can adapt to the University's growing needs, ensuring a seamless experience for users."
+      }
+    ]
+  },
+  "demo_transcript": {
+    "messages": [
+      {
+        "user": "Whatfix",
+        "content": "Hello everyone, and welcome to our demo call today. My name is [Sales Person's Name], and I'll be walking you through the features and benefits of Whatfix's digital adoption platform. I'd like to start by thanking you for taking the time to join us today. Can I start by asking, have you all had a chance to review the agenda we sent over prior to this call?"
+      },
+      {
+        "user": "University of Illinois - IT",
+        "content": "Yes, we've reviewed the agenda. We're excited to see how Whatfix can help us address our onboarding challenges for students and faculty members."
+      },
+      {
+        "user": "Whatfix",
+        "content": "Great to hear that! Before we dive in, I just want to confirm that our objectives for this call are aligned. We're looking to demonstrate how Whatfix can help you streamline your onboarding process, improve student satisfaction and retention rates, and provide a strong ROI despite your limited funding for research and programs. Is that correct?"
+      },
+      {
+        "user": "University of Illinois - Academic Affairs",
+        "content": "That's correct. We're also interested in seeing how your platform can help our faculty members who are overwhelmed with different systems and applications."
+      },
+      {
+        "user": "Whatfix",
+        "content": "I completely understand. Our platform is designed to provide a seamless onboarding experience for users, regardless of their level of technical proficiency. Let me show you how our in-app guidance feature can help achieve that."
+      },
+      {
+        "user": "Whatfix",
+        "content": "[Demonstrate the in-app guidance feature] As you can see, our platform provides step-by-step guidance to users within the application, helping them navigate and complete tasks efficiently. This feature is particularly useful for faculty members who may not be familiar with certain systems and applications."
+      },
+      {
+        "user": "University of Illinois - Student Affairs",
+        "content": "That's really impressive. How does your platform handle customization? We have specific requirements for our onboarding process that need to be met."
+      },
+      {
+        "user": "Whatfix",
+        "content": "We understand that every organization has unique requirements. That's why we offer a no-code editor that empowers your team to create in-app guidance without requiring extensive coding knowledge. This reduces development time and costs, and ensures that our platform is tailored to your specific needs."
+      },
+      {
+        "user": "University of Illinois - IT",
+        "content": "We're concerned about scalability. How does your platform adapt to our growing needs?"
+      },
+      {
+        "user": "Whatfix",
+        "content": "Our platform is designed to be scalable, so it can adapt to your growing needs and ensure a seamless experience for users. We've had success with other clients in the education industry, such as XYZ University, who have seen a significant improvement in their onboarding process and user adoption rates."
+      },
+      {
+        "user": "University of Illinois - Academic Affairs",
+        "content": "That's reassuring. Can you tell us more about your pricing model? We have limited funding for research and programs, and we need to ensure a strong ROI."
+      },
+      {
+        "user": "Whatfix",
+        "content": "We understand that budget constraints are a concern for you. We offer customized pricing that is tailored to your specific needs, ensuring a strong ROI and meeting your budget constraints. We can discuss the details of our pricing model further if you'd like."
+      },
+      {
+        "user": "Whatfix",
+        "content": "Before I conclude the demo, I'd like to summarize the key benefits of Whatfix's digital adoption platform. Our platform provides a seamless onboarding experience, enhances user experience, and offers timely and effective support to users. We also provide a scalable solution that can adapt to your growing needs, and a customized pricing model that meets your budget constraints."
+      },
+      {
+        "user": "University of Illinois - Student Affairs",
+        "content": "That's a great summary. We're interested in moving forward with the next steps. What's the typical implementation timeline for your platform?"
+      },
+      {
+        "user": "Whatfix",
+        "content": "Our implementation timeline typically ranges from 6-12 weeks, depending on the scope of the project and the level of customization required. We'll work closely with your team to ensure a smooth implementation process and provide training and support to ensure your success."
+      },
+      {
+        "user": "Whatfix",
+        "content": "As a next step, I'd like to schedule a follow-up call to discuss the details of our proposal and answer any further questions you may have. We'll also provide you with a customized presentation and case study that outlines the benefits of our platform specifically for the University of Illinois. Does that sound okay to everyone?"
+      },
+      {
+        "user": "University of Illinois - IT",
+        "content": "Yes, that sounds great. Thank you for the demo today, and we look forward to reviewing the proposal and discussing further."
+      }
+    ]
+  },
+  "demo_analysis_buyer_data": {
+    "interested_features": [
+      {
+        "name": "In-app guidance feature",
+        "description": "Provides step-by-step guidance to users within the application, helping them navigate and complete tasks efficiently.",
+        "pain_point": "Onboarding challenges and difficulties faced by students and faculty members."
+      },
+      {
+        "name": "No-code editor",
+        "description": "Empowers the team to create in-app guidance without requiring extensive coding knowledge, reducing development time and costs.",
+        "pain_point": "Customization requirements for onboarding process and reducing development time and costs."
+      }
+    ],
+    "skeptical_features": [
+      {
+        "name": "Scalability",
+        "description": "The platform's ability to adapt to the growing needs of the University of Illinois.",
+        "objection": "Concerns about the platform's scalability to meet the growing needs of the university."
+      },
+      {
+        "name": "Pricing model",
+        "description": "Customized pricing model tailored to the university's specific needs, ensuring a strong ROI.",
+        "objection": "Limited funding for research and programs, requiring a strong ROI."
+      }
+    ],
+    "objections_raised": [
+      "Scalability concerns",
+      "Pricing model concerns"
+    ],
+    "stakeholder_engagement": [
+      {
+        "stakeholder": "University of Illinois - IT",
+        "engagement_level": "High"
+      },
+      {
+        "stakeholder": "University of Illinois - Academic Affairs",
+        "engagement_level": "High"
+      },
+      {
+        "stakeholder": "University of Illinois - Student Affairs",
+        "engagement_level": "Medium"
+      }
+    ],
+    "feedback": "Positive feedback, interested in moving forward with the next steps, and looking forward to reviewing the proposal and discussing further."
+  },
+  "demo_analysis_seller_data": {
+    "demo_features": [
+      {
+        "name": "In-app guidance feature",
+        "description": "Provides step-by-step guidance to users within the application, helping them navigate and complete tasks efficiently."
+      },
+      {
+        "name": "No-code editor",
+        "description": "Empowers the team to create in-app guidance without requiring extensive coding knowledge, reducing development time and costs."
+      }
+    ],
+    "objection_handling": [
+      {
+        "objection": "Scalability concerns",
+        "resolution": "Our platform is designed to be scalable, so it can adapt to your growing needs and ensure a seamless experience for users.",
+        "status": true
+      },
+      {
+        "objection": "Pricing model concerns",
+        "resolution": "We offer customized pricing that is tailored to your specific needs, ensuring a strong ROI and meeting your budget constraints.",
+        "status": true
+      }
+    ],
+    "success_stories": [
+      "XYZ University, who have seen a significant improvement in their onboarding process and user adoption rates."
+    ],
+    "assets_used": [],
+    "customizations": [
+      "No-code editor for customization"
+    ],
+    "engagement_questions": [
+      "Have you all had a chance to review the agenda we sent over prior to this call?",
+      "Is that correct?"
+    ]
+  }
 }

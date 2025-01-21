@@ -1,14 +1,482 @@
 {
-  "seller_research": "{\n  \"name\": \"Whatfix\",\n  \"website\": \"https://whatfix.com/\",\n  \"description\": \"Whatfix is a digital adoption platform that provides organizations with a no-code editor to create in-app guidance on any application that looks 100% native.\",\n  \"industry\": \"Software as a Service (SaaS)\",\n  \"products\": [\n    \"Digital Adoption Platform\",\n    \"Whatfix Digital Adoption Platform\",\n    \"In-app Guidance\",\n    \"Mirror (Interactive replicas of web applications for immersive training and product demonstrations)\"\n  ],\n  \"solutions\": [\n    \"Employee Training and Onboarding\",\n    \"Customer Onboarding and Support\",\n    \"Application Analytics\",\n    \"Digital Adoption Solutions\"\n  ],\n  \"use_cases\": [\n    \"Maximizing ROI of digital investments\",\n    \"Enhancing software experiences across web, desktop, and mobile platforms\",\n    \"Providing in-app guidance, training, and performance support for web applications and software\",\n    \"Creating interactive guides or flows that sit as an overlay inside any web application\"\n  ]\n}",
-  "seller_pricing": "{\n  \"pricing_models\": [\n    {\n      \"type\": \"Flat per-application fee + user license fees\",\n      \"description\": \"Whatfix pricing is based on two components: a flat per-application fee, plus user license fees.\",\n      \"price\": \"Customized and tailor-made according to the customer's needs\",\n      \"duration\": \"No specific duration mentioned\"\n    },\n    {\n      \"type\": \"Free\",\n      \"description\": \"Whatfix offers a free plan with 30 credits\",\n      \"price\": \"Free\",\n      \"duration\": \"No specific duration mentioned\"\n    },\n    {\n      \"type\": \"Basic\",\n      \"description\": \"Whatfix offers a basic plan at $39 per month\",\n      \"price\": \"$39 per month\",\n      \"duration\": \"No specific duration mentioned\"\n    },\n    {\n      \"type\": \"Traction\",\n      \"description\": \"For up to 2500 users, this plan is $249/ mo.\",\n      \"price\": \"$249 per month\",\n      \"duration\": \"No specific duration mentioned\"\n    },\n    {\n      \"type\": \"Growth\",\n      \"description\": \"For up to 10,000 users, this plan is $499/ mo.\",\n      \"price\": \"$499 per month\",\n      \"duration\": \"No specific duration mentioned\"\n    },\n    {\n      \"type\": \"Enterprise\",\n      \"description\": \"For large-scale businesses, custom pricing is available\",\n      \"price\": \"Custom pricing\",\n      \"duration\": \"No specific duration mentioned\"\n    }\n  ]\n}",
-  "buyer_research": "{\n  \"name\": \"Marks and Spencer\",\n  \"website\": \"https://www.marksandspencer.com/\",\n  \"description\": \"Major British multinational retailer based in London, England, that specialises in selling clothing, beauty products, home and food.\",\n  \"industry\": \"Retail\",\n  \"company_size\": 64000,\n  \"goals\": [\n    \"Become a net zero business across entire value chain by 2040\",\n    \"Reduce absolute scope 1 and scope 2 GHG emissions 55% by 2030 from a 2017 base year\",\n    \"Support local communities around M&S operated and key franchise stores worldwide\",\n    \"Make inspirational quality accessible to others\"\n  ],\n  \"use_cases\": [\n    \"Selling clothing, beauty products, home and food\",\n    \"Providing digital solutions for customers\",\n    \"Operating and supporting stores globally\",\n    \"Supporting local communities\"\n  ],\n  \"challenges\": [\n    \"Achieving net zero status by 2040\",\n    \"Reducing emissions throughout the value chain\",\n    \"Improving sustainability across a range of areas\",\n    \"Supporting local communities\"\n  ],\n  \"stakeholders\": [\n    \"Customers\",\n    \"Employees\",\n    \"Shareholders\",\n    \"Local communities\"\n  ]\n}",
-  "competitive_info": "{\n  \"competitors\": [\n    {\n      \"name\": \"WalkMe\",\n      \"pros\": [\n        \"Delivers great user experiences\",\n        \"Improves training, productivity, and retention\"\n      ],\n      \"cons\": [\n        \"Pricing model can be complex\",\n        \"Steeper learning curve\"\n      ],\n      \"differentiators\": [\n        \"Compliance automation for standards like SOC 2, HIPAA, and GDPR\",\n        \"Continuous controls monitoring, vendor risk management\"\n      ]\n    },\n    {\n      \"name\": \"Pendo\",\n      \"pros\": [\n        \"Offers a free plan with limited functionality\",\n        \"Custom pricing based on monthly active users (MAU)\"\n      ],\n      \"cons\": [\n        \"Pricing can range from $25,800 to $132,400 annually\",\n        \"Limited functionality in the free plan\"\n      ],\n      \"differentiators\": [\n        \"Cross-app executive dashboards\",\n        \"Retroactive data analytics, behavioral analytics, guided scheduling and ordering\"\n      ]\n    },\n    {\n      \"name\": \"UserGuiding\",\n      \"pros\": [\n        \"Offers a free plan with limited functionality\",\n        \"Easy to use and set up\"\n      ],\n      \"cons\": [\n        \"Limited functionality in the free plan\",\n        \"Pricing model can be complex\"\n      ],\n      \"differentiators\": [\n        \"Interactive guides and walkthroughs\",\n        \"Segmentation and targeting\"\n      ]\n    }\n  ]\n}",
-  "anticipated_qopcs": "{\n  \"pains\": [\n    \"How can Whatfix help Marks and Spencer achieve its sustainability goals and reduce emissions throughout its value chain?\",\n    \"Will Whatfix be able to integrate with our existing systems and applications?\",\n    \"How can we ensure that Whatfix will provide a good return on investment for our business?\",\n    \"Will Whatfix be able to support our global operations and provide language support for our international customers?\",\n    \"Can Whatfix help us improve our customer experience and provide personalized guidance to our customers?\",\n    \"How can we measure the effectiveness of Whatfix in achieving our business objectives?\",\n    \"Will Whatfix require significant IT resources and support from our side?\",\n    \"Can Whatfix help us reduce training time and costs for our employees?\",\n    \"How can Whatfix help us support our local communities and social responsibility initiatives?\",\n    \"Will Whatfix be able to scale with our growing business needs?\"\n  ],\n  \"objections\": [\n    \"Whatfix is too expensive for our budget\",\n    \"We don't see the value of using a digital adoption platform like Whatfix\",\n    \"We already have an in-house solution for employee training and onboarding\",\n    \"We're not sure if Whatfix can integrate with our existing systems and applications\",\n    \"We're concerned about the complexity of implementing and using Whatfix\",\n    \"We don't have the resources to dedicate to implementing and maintaining Whatfix\",\n    \"We're not sure if Whatfix can provide the level of customization we need\",\n    \"We're worried about the security and data privacy of using Whatfix\",\n    \"We're not sure if Whatfix can help us achieve our specific business objectives\"\n  ]\n}",
-  "discovery_transcript": "{\n  \"messages\": [\n    {\n      \"user\": \"Whatfix Sales Person\",\n      \"content\": \"Hi, I'm [Sales Person's Name] from Whatfix. Thank you for taking the time to speak with me today, [Marks and Spencer's Representative's Name]. Can you start by telling me a bit about your role at Marks and Spencer and what brings you to explore digital adoption platforms like ours?\"\n    },\n    {\n      \"user\": \"Marks and Spencer's Representative\",\n      \"content\": \"Hi, I'm [Marks and Spencer's Representative's Name], Head of Digital Transformation at Marks and Spencer. Our organization is committed to becoming a net zero business across our entire value chain by 2040, and we're looking for innovative solutions to help us achieve this goal. We're interested in exploring digital adoption platforms like Whatfix to see if they can help us improve our employee training and onboarding processes, and ultimately reduce emissions throughout our value chain.\"\n    },\n    {\n      \"user\": \"Whatfix Sales Person\",\n      \"content\": \"That's a very ambitious goal, and I'm excited to explore how Whatfix can support you in achieving it. Can you tell me more about your current employee training and onboarding processes, and what challenges you're facing in terms of efficiency, effectiveness, and sustainability?\"\n    },\n    {\n      \"user\": \"Marks and Spencer's Representative\",\n      \"content\": \"Currently, we're using a combination of in-person training and online modules to onboard new employees. However, we're finding that this process is time-consuming, costly, and doesn't always result in the desired outcomes. We're struggling to measure the effectiveness of our training programs, and we're not sure if they're aligned with our sustainability goals.\"\n    },\n    {\n      \"user\": \"Whatfix Sales Person\",\n      \"content\": \"I understand. It sounds like you're facing some common challenges in employee training and onboarding. Whatfix can help you create personalized, interactive guides that sit on top of your existing applications, providing employees with step-by-step instructions and real-time support. We've seen significant reductions in training time and costs for our customers, as well as improved employee productivity and engagement. Would you like me to walk you through a demo of our platform and show you how it can support your goals?\"\n    },\n    {\n      \"user\": \"Marks and Spencer's Representative\",\n      \"content\": \"Yes, that would be great. I'd love to see a demo and understand how Whatfix can be integrated with our existing systems and applications. We're particularly interested in exploring how Whatfix can support our global operations and provide language support for our international customers.\"\n    },\n    {\n      \"user\": \"Whatfix Sales Person\",\n      \"content\": \"Absolutely. Our platform is highly customizable and can be integrated with a wide range of applications and systems. We also offer multi-language support, so you can provide personalized guidance to your international customers in their native languages. Let me just share my screen and walk you through a demo of our platform... (demo)\"\n    },\n    {\n      \"user\": \"Marks and Spencer's Representative\",\n      \"content\": \"That's really impressive. I can see how Whatfix can help us improve our employee training and onboarding processes, and support our sustainability goals. Can you tell me more about your pricing model and how it would work for an organization of our size?\"\n    },\n    {\n      \"user\": \"Whatfix Sales Person\",\n      \"content\": \"Our pricing model is based on a flat per-application fee, plus user license fees. We offer customized and tailor-made pricing plans for our customers, so we can work together to create a plan that meets your specific needs and budget. We also offer a free plan with 30 credits, so you can try out our platform and see the value it can bring to your organization before committing to a paid plan.\"\n    },\n    {\n      \"user\": \"Marks and Spencer's Representative\",\n      \"content\": \"That sounds reasonable. I'd like to discuss this further with our team and explore how Whatfix can support our specific business objectives. What's the next step in the process, and what kind of support can we expect from Whatfix in terms of implementation and ongoing maintenance?\"\n    },\n    {\n      \"user\": \"Whatfix Sales Person\",\n      \"content\": \"We'd be happy to provide a customized proposal outlining how Whatfix can support your organization's specific goals and objectives. We also offer a dedicated customer success team to support you throughout the implementation and ongoing maintenance process. We're committed to ensuring that our customers get the most value out of our platform, and we're always here to help. Shall I send over a proposal and we can discuss further?\"\n    }\n  ]\n}",
-  "discovery_analysis_buyer_data": "{\n  \"pain_points\": [\n    \"Time-consuming and costly employee training and onboarding processes\",\n    \"Difficulty in measuring the effectiveness of training programs\",\n    \"Uncertainty about alignment of training programs with sustainability goals\"\n  ],\n  \"objections\": [],\n  \"time_lines\": [\n    \"Become a net zero business across entire value chain by 2040\"\n  ],\n  \"success_indicators\": [\n    \"Improved employee training and onboarding processes\",\n    \"Reduced emissions throughout the value chain\"\n  ],\n  \"budget_constraints\": [],\n  \"competition\": [],\n  \"decision_committee\": [\n    \"The Marks and Spencer's Representative's team\"\n  ]\n}",
-  "discovery_analysis_seller_data": "{\n  \"discovery_questions\": [\n    \"Can you start by telling me a bit about your role at Marks and Spencer and what brings you to explore digital adoption platforms like ours?\",\n    \"Can you tell me more about your current employee training and onboarding processes, and what challenges you're facing in terms of efficiency, effectiveness, and sustainability?\"\n  ],\n  \"decision_making_process_questions\": [],\n  \"objection_resolution_pairs\": [\n    {\n      \"objection\": \"What's the pricing model and how it would work for an organization of our size?\",\n      \"resolution\": \"Our pricing model is based on a flat per-application fee, plus user license fees. We offer customized and tailor-made pricing plans for our customers, so we can work together to create a plan that meets your specific needs and budget.\"\n    },\n    {\n      \"objection\": \"How can Whatfix support our global operations and provide language support for our international customers?\",\n      \"resolution\": \"Our platform is highly customizable and can be integrated with a wide range of applications and systems. We also offer multi-language support, so you can provide personalized guidance to your international customers in their native languages.\"\n    }\n  ],\n  \"insights\": [\n    \"Marks and Spencer is committed to becoming a net zero business across their entire value chain by 2040.\",\n    \"They're looking for innovative solutions to help them achieve this goal.\",\n    \"They're facing challenges in terms of efficiency, effectiveness, and sustainability in their current employee training and onboarding processes.\",\n    \"They're interested in exploring digital adoption platforms like Whatfix to improve their employee training and onboarding processes, and ultimately reduce emissions throughout their value chain.\"\n  ],\n  \"improvements\": [\n    \"The seller could have asked more questions to understand the buyer's decision-making process and timeline.\",\n    \"The seller could have provided more details about Whatfix's integration with existing systems and applications.\",\n    \"The seller could have highlighted more of Whatfix's unique features and differentiators compared to competitors.\"\n  ]\n}",
-  "demo_features": "{\n  \"features\": [\n    {\n      \"name\": \"Digital Adoption Platform\",\n      \"description\": \"A no-code editor to create in-app guidance on any application that looks 100% native.\"\n    },\n    {\n      \"name\": \"In-app Guidance\",\n      \"description\": \"Provides personalized guidance to employees and customers within any web application.\"\n    },\n    {\n      \"name\": \"Mirror (Interactive replicas of web applications for immersive training and product demonstrations)\",\n      \"description\": \"Creates interactive replicas of web applications for immersive training and product demonstrations.\"\n    },\n    {\n      \"name\": \"Employee Training and Onboarding\",\n      \"description\": \"Improves employee training and onboarding processes by providing personalized guidance and support.\"\n    },\n    {\n      \"name\": \"Customer Onboarding and Support\",\n      \"description\": \"Enhances customer onboarding and support by providing personalized guidance and support within any web application.\"\n    },\n    {\n      \"name\": \"Application Analytics\",\n      \"description\": \"Provides insights into application usage and user behavior to optimize training and support.\"\n    },\n    {\n      \"name\": \"Digital Adoption Solutions\",\n      \"description\": \"Offers customized and tailor-made digital adoption solutions to meet specific business needs and goals.\"\n    },\n    {\n      \"name\": \"Multi-Language Support\",\n      \"description\": \"Supports multiple languages to provide personalized guidance to international customers in their native languages.\"\n    },\n    {\n      \"name\": \"Integration with Existing Systems and Applications\",\n      \"description\": \"Integrates with a wide range of applications and systems to provide seamless guidance and support.\"\n    }\n  ]\n}",
-  "demo_transcript": "{\n  \"messages\": [\n    {\n      \"user\": \"Whatfix Sales Person\",\n      \"content\": \"Hello everyone, thank you for taking the time to join this demo call today. I'm excited to show you how Whatfix can help Marks and Spencer improve their employee training and onboarding processes, and ultimately reduce emissions throughout their value chain. Before we dive in, I just want to confirm that everyone is comfortable with the agenda we sent over prior to this call.\"\n    },\n    {\n      \"user\": \"Marks and Spencer's Representative\",\n      \"content\": \"Yes, we're all set. We're looking forward to seeing how Whatfix can help us achieve our sustainability goals.\"\n    },\n    {\n      \"user\": \"Whatfix Sales Person\",\n      \"content\": \"Great. So, let's start with our Digital Adoption Platform. This is where you can create in-app guidance on any application that looks 100% native. Our no-code editor makes it easy to create customized guidance that fits your specific needs. Would you like me to show you how it works?\"\n    },\n    {\n      \"user\": \"Marks and Spencer's Representative\",\n      \"content\": \"Yes, please do.\"\n    },\n    {\n      \"user\": \"Whatfix Sales Person\",\n      \"content\": \"Okay. So, here's an example of how our Digital Adoption Platform can be used to provide personalized guidance to employees within a web application. As you can see, the guidance is contextual and interactive, making it easy for employees to learn and adopt new applications.\"\n    },\n    {\n      \"user\": \"Marks and Spencer's Representative\",\n      \"content\": \"That's really impressive. How does it handle different languages? We have international customers and employees who need support in their native languages.\"\n    },\n    {\n      \"user\": \"Whatfix Sales Person\",\n      \"content\": \"Ah, great question. Our platform supports multiple languages, so you can provide personalized guidance to your international customers and employees in their native languages. We've had success with similar implementations with other clients who have global operations.\"\n    },\n    {\n      \"user\": \"Marks and Spencer's Representative\",\n      \"content\": \"That's good to know. What about integration with our existing systems and applications? We have a lot of custom-built tools that we use.\"\n    },\n    {\n      \"user\": \"Whatfix Sales Person\",\n      \"content\": \"Our platform is highly customizable and can be integrated with a wide range of applications and systems. We've worked with clients who have complex systems and have been able to integrate our platform seamlessly. We can also provide customized integration support to ensure a smooth implementation.\"\n    },\n    {\n      \"user\": \"Marks and Spencer's Representative\",\n      \"content\": \"Okay, that sounds promising. Can you show us some examples of how your platform can be used for employee training and onboarding?\"\n    },\n    {\n      \"user\": \"Whatfix Sales Person\",\n      \"content\": \"Absolutely. Our Employee Training and Onboarding feature provides personalized guidance and support to employees, making it easy for them to learn and adopt new applications. We've seen significant reductions in training time and costs with our clients who have implemented this feature. Let me show you an example...\"\n    },\n    {\n      \"user\": \"Whatfix Sales Person\",\n      \"content\": \"As you can see, our platform provides a immersive and interactive experience for employees, making it easy for them to learn and adopt new applications. We've also seen significant increases in employee engagement and productivity with our clients who have implemented this feature.\"\n    },\n    {\n      \"user\": \"Marks and Spencer's Representative\",\n      \"content\": \"That's really impressive. How do you measure the effectiveness of your platform? Can you provide some data or case studies on the impact it's had on other clients?\"\n    },\n    {\n      \"user\": \"Whatfix Sales Person\",\n      \"content\": \"Yes, of course. We have a number of case studies and success stories that demonstrate the impact our platform has had on our clients. For example, one of our clients in the retail industry saw a 30% reduction in training time and a 25% increase in employee productivity after implementing our platform. We also provide analytics and insights on application usage and user behavior, so you can optimize your training and support programs.\"\n    },\n    {\n      \"user\": \"Whatfix Sales Person\",\n      \"content\": \"Before we wrap up, I just want to confirm that you're comfortable with the features and functionality we've demonstrated today. Are there any other questions or concerns you have about our platform?\"\n    },\n    {\n      \"user\": \"Marks and Spencer's Representative\",\n      \"content\": \"No, I think that covers everything. We're interested in moving forward with the implementation. What are the next steps?\"\n    },\n    {\n      \"user\": \"Whatfix Sales Person\",\n      \"content\": \"Great. We'll send over a customized proposal outlining the implementation plan, timeline, and pricing. We'll also set up a follow-up call to answer any additional questions you may have. Sound good?\"\n    },\n    {\n      \"user\": \"Marks and Spencer's Representative\",\n      \"content\": \"Yes, sounds good. Thank you for the demo today.\"\n    },\n    {\n      \"user\": \"Whatfix Sales Person\",\n      \"content\": \"You're welcome. Thank you for considering Whatfix. We're looking forward to the opportunity to work with you.\"\n    }\n  ]\n}",
-  "demo_analysis_buyer_data": "{\n  \"interested_features\": [\n    {\"pain_point\": \"improve employee training and onboarding processes\"},\n    {\"pain_point\": \"reduce emissions throughout their value chain\"},\n    {\"pain_point\": \"provide personalized guidance to employees within a web application\"},\n    {\"pain_point\": \"employee engagement and productivity\"},\n    {\"pain_point\": \"measure the effectiveness of the platform\"}\n  ],\n  \"skeptical_features\": [\n    {\"objection\": \"handling different languages\"},\n    {\"objection\": \"integration with existing systems and applications\"}\n  ],\n  \"objections_raised\": [\n    \"How does it handle different languages?\",\n    \"What about integration with our existing systems and applications?\"\n  ],\n  \"stakeholder_engagement\": [\n    {\"stakeholder\": \"Marks and Spencer's Representative\", \"engagement_level\": \"high\"}\n  ],\n  \"feedback\": \"We're interested in moving forward with the implementation.\"\n}",
-  "demo_analysis_seller_data": "{\n  \"demo_features\": [\n    {\n      \"name\": \"Digital Adoption Platform\",\n      \"description\": \"Create in-app guidance on any application that looks 100% native.\"\n    },\n    {\n      \"name\": \"Personalized Guidance\",\n      \"description\": \"Provide contextual and interactive guidance to employees within a web application.\"\n    },\n    {\n      \"name\": \"Employee Training and Onboarding\",\n      \"description\": \"Provide personalized guidance and support to employees, making it easy for them to learn and adopt new applications.\"\n    },\n    {\n      \"name\": \"Analytics and Insights\",\n      \"description\": \"Optimize training and support programs with analytics and insights on application usage and user behavior.\"\n    }\n  ],\n  \"objection_handling\": [\n    {\n      \"objection\": \"handling different languages\",\n      \"resolution\": \"Our platform supports multiple languages, so you can provide personalized guidance to your international customers and employees in their native languages.\",\n      \"status\": true\n    },\n    {\n      \"objection\": \"integration with existing systems and applications\",\n      \"resolution\": \"Our platform is highly customizable and can be integrated with a wide range of applications and systems. We can also provide customized integration support to ensure a smooth implementation.\",\n      \"status\": true\n    }\n  ],\n  \"success_stories\": [\n    \"One of our clients in the retail industry saw a 30% reduction in training time and a 25% increase in employee productivity after implementing our platform.\"\n  ],\n  \"assets_used\": [\n    \"Presentation of the Digital Adoption Platform\",\n    \"Demo of Personalized Guidance\",\n    \"Example of Employee Training and Onboarding\"\n  ],\n  \"customizations\": [\n    \"Customized integration support\",\n    \"Personalized guidance in native languages\"\n  ],\n  \"engagement_questions\": [\n    \"Would you like me to show you how it works?\",\n    \"Are there any other questions or concerns you have about our platform?\"\n  ]\n}"
+  "seller_research": {
+    "name": "Whatfix",
+    "website": "https://whatfix.com/",
+    "description": "Whatfix is a digital adoption platform that provides organizations with a no-code editor to create in-app guidance on any application that looks 100% native.",
+    "industry": "Software as a Service (SaaS)",
+    "products": [
+      "Digital Adoption Platform",
+      "In-app Guidance",
+      "Analytics",
+      "Mobile Experiences",
+      "Interactive Guides",
+      "On-demand User Support",
+      "Customer Contextual Messages"
+    ],
+    "solutions": [
+      "Digital Transformation",
+      "User Adoption",
+      "Technology Investments",
+      "Business Outcomes",
+      "Software Experiences",
+      "Product-led Growth",
+      "Field Service Employee Support"
+    ],
+    "use_cases": [
+      "Accelerate digital transformation",
+      "Drive user adoption",
+      "Maximize technology investments",
+      "Achieve business outcomes",
+      "Enhance software experiences",
+      "Support field service employees"
+    ]
+  },
+  "seller_pricing": {
+    "pricing_models": [
+      {
+        "type": "Customized",
+        "description": "Whatfix pricing is based on two components: a flat per-application fee, plus user license fees.",
+        "price": "Upon Request",
+        "duration": "Customized"
+      },
+      {
+        "type": "Premium",
+        "description": "Whatfix offers premium-only subscription plans.",
+        "price": "Starting at $15,500.00",
+        "duration": "One-time payment for 1 month"
+      },
+      {
+        "type": "Yearly",
+        "description": "Whatfix pricing model : Yearly",
+        "price": "Not disclosed",
+        "duration": "Yearly"
+      },
+      {
+        "type": "Monthly",
+        "description": "Whatfix pricing model : Monthly",
+        "price": "Not disclosed",
+        "duration": "Monthly"
+      },
+      {
+        "type": "Onetime (Perpetual License)",
+        "description": "Whatfix pricing model : Onetime (Perpetual License)",
+        "price": "Not disclosed",
+        "duration": "Onetime"
+      }
+    ]
+  },
+  "buyer_research": {
+    "name": "Marks and Spencer",
+    "website": "https://www.marksandspencer.com/",
+    "description": "M&S is a leading British retailer bringing quality, great value food, clothing and homeware to millions of customers around the world.",
+    "industry": "Retail",
+    "company_size": "Enterprise",
+    "goals": [
+      "Deliver exceptional quality and value to customers",
+      "Build a strong, trusted brand",
+      "Be a leader in sustainability and ethics"
+    ],
+    "use_cases": [
+      "Food retail",
+      "Clothing and homeware retail",
+      "Bank and services"
+    ],
+    "challenges": [
+      "Competing with other retailers",
+      "Maintaining customer loyalty",
+      "Adapting to changing consumer behavior"
+    ],
+    "stakeholders": [
+      "Customers",
+      "Employees",
+      "Investors",
+      "Partners and suppliers"
+    ]
+  },
+  "competitive_info": {
+    "competitors": [
+      {
+        "name": "WalkMe",
+        "pros": [
+          "Streamline IT processes",
+          "Analyze software usage",
+          "Optimize licenses",
+          "Facilitate rapid feature adoption"
+        ],
+        "cons": [
+          "Higher cost compared to Whatfix",
+          "Steep learning curve for administrators"
+        ],
+        "differentiators": [
+          "WalkMe's platform overlays on any application",
+          "Provides personalized guidance and automation",
+          "Offers a Solutions Gallery"
+        ]
+      },
+      {
+        "name": "Pendo",
+        "pros": [
+          "Improves employee productivity",
+          "Optimizes processes across software applications",
+          "Maximizes ROI on workplace technology"
+        ],
+        "cons": [
+          "May require significant upfront investment",
+          "Can be complex to implement and manage"
+        ],
+        "differentiators": [
+          "Pendo's product cloud provides a unified platform",
+          "Offers digital adoption solutions for employee software",
+          "Guide showcase feature"
+        ]
+      },
+      {
+        "name": "Userpilot",
+        "pros": [
+          "Helps product teams deliver personalized in-app experiences",
+          "Increases growth metrics at every stage of the user journey",
+          "Provides product analytics software"
+        ],
+        "cons": [
+          "May require significant resources to set up and maintain",
+          "Can be overwhelming for users with too many features"
+        ],
+        "differentiators": [
+          "Userpilot's platform drives user activation, feature adoption, and expansion revenue",
+          "Offers a resource center for in-app help",
+          "Product-led growth software"
+        ]
+      }
+    ]
+  },
+  "anticipated_qopcs": {
+    "pains": [
+      "How can Whatfix help us deliver exceptional quality and value to our customers?",
+      "Can Whatfix's digital adoption platform help us maintain customer loyalty and stay ahead of the competition?",
+      "How does Whatfix's solution align with our goals of building a strong, trusted brand and leading in sustainability and ethics?",
+      "What kind of support does Whatfix offer to ensure successful implementation and adoption of its platform?",
+      "How does Whatfix's pricing model work, and what kind of ROI can we expect?",
+      "Can Whatfix's platform integrate with our existing software applications and workflows?",
+      "How does Whatfix address issues of user adoption and change management in our organization?",
+      "What kind of analytics and insights does Whatfix provide to help us optimize our business outcomes?",
+      "How does Whatfix ensure data security and compliance with regulatory requirements?"
+    ],
+    "objections": [
+      "We are already invested in another digital adoption platform, why should we switch to Whatfix?",
+      "Whatfix seems expensive, can you justify the cost?",
+      "We have a robust in-house IT team, can't we build our own digital adoption solution?",
+      "How does Whatfix's platform differ from WalkMe, Pendo, or Userpilot, and why should we choose Whatfix?",
+      "We don't have the resources to dedicate to implementing and managing a new platform like Whatfix.",
+      "Whatfix's pricing model seems complex, can you provide a clearer breakdown of the costs?"
+    ]
+  },
+  "discovery_transcript": {
+    "messages": [
+      {
+        "user": "Whatfix Sales Person",
+        "content": "Hi there, I'm [Name], the sales person from Whatfix. It's great to connect with you, [Marks and Spencer's Team Person]. I understand that Marks and Spencer is a leading British retailer focused on delivering exceptional quality and value to customers. Can you tell me a bit more about your current challenges and goals?"
+      },
+      {
+        "user": "Marks and Spencer's Team Person",
+        "content": "Hi [Name], thanks for reaching out. We're indeed committed to delivering the best possible experience for our customers. One of our major challenges is to maintain customer loyalty and stay ahead of the competition. With changing consumer behavior, it's becoming increasingly difficult to ensure our customers have the best possible experience across our various channels."
+      },
+      {
+        "user": "Whatfix Sales Person",
+        "content": "I completely understand. Digital transformation can be a significant challenge, especially in the retail industry. Have you considered how digital adoption platforms like Whatfix can help you achieve your goals? We've had success with similar organizations in the past, such as [similar organization]."
+      },
+      {
+        "user": "Marks and Spencer's Team Person",
+        "content": "Actually, we've been exploring digital adoption platforms, but we're not sure which one would be the best fit for us. We've looked at WalkMe, Pendo, and Userpilot, but we're still evaluating our options. Can you tell me more about Whatfix's solution and how it differs from these other platforms?"
+      },
+      {
+        "user": "Whatfix Sales Person",
+        "content": "Whatfix is a no-code digital adoption platform that provides in-app guidance to ensure seamless user adoption. Our solution is designed to help organizations like yours accelerate digital transformation, drive user adoption, and maximize technology investments. We've found that our platform is particularly effective in industries with complex software applications, like retail. I'd be happy to walk you through a demo and show you how Whatfix can help address your specific pain points."
+      },
+      {
+        "user": "Marks and Spencer's Team Person",
+        "content": "That sounds interesting. We'd love to see a demo. But can you also tell me more about the ROI we can expect from implementing Whatfix? We need to ensure that any investment we make will provide tangible business outcomes."
+      },
+      {
+        "user": "Whatfix Sales Person",
+        "content": "We've seen our customers achieve significant ROI from using Whatfix. For example, [similar organization] saw a 30% increase in user adoption and a 25% reduction in support requests after implementing our platform. We'd be happy to work with you to develop a customized ROI model based on your specific needs and goals."
+      },
+      {
+        "user": "Marks and Spencer's Team Person",
+        "content": "That's impressive. What kind of support does Whatfix offer to ensure successful implementation and adoption of its platform? We've had issues with training and change management in the past, and we need to ensure that our team is properly equipped to get the most out of the platform."
+      },
+      {
+        "user": "Whatfix Sales Person",
+        "content": "We understand the importance of proper implementation and adoption. That's why we offer a comprehensive onboarding process, including dedicated customer success managers, training, and support resources. We'll work closely with your team to ensure a smooth transition and provide ongoing support to guarantee your success."
+      },
+      {
+        "user": "Marks and Spencer's Team Person",
+        "content": "That sounds great. What are the next steps? We're interested in moving forward with Whatfix, but we need to discuss this further with our team and stakeholders."
+      },
+      {
+        "user": "Whatfix Sales Person",
+        "content": "I'm glad to hear that. I'd be happy to set up a follow-up call to discuss the proposal in more detail and answer any further questions you may have. In the meantime, I'll send over some additional information on Whatfix, including case studies and testimonials from similar organizations. Is there a specific timeline you're working with for implementing a digital adoption platform?"
+      }
+    ]
+  },
+  "discovery_analysis_buyer_data": {
+    "pain_points": [
+      "maintaining customer loyalty",
+      "staying ahead of the competition",
+      "ensuring customers have the best possible experience across various channels",
+      "change management",
+      "training"
+    ],
+    "objections": [
+      "unsure about which digital adoption platform to choose",
+      "need to ensure tangible business outcomes",
+      "concerns about implementation and adoption"
+    ],
+    "time_lines": [],
+    "success_indicators": [
+      "tangible business outcomes"
+    ],
+    "budget_constraints": [],
+    "competition": [
+      "WalkMe",
+      "Pendo",
+      "Userpilot"
+    ],
+    "decision_committee": []
+  },
+  "discovery_analysis_seller_data": {
+    "discovery_questions": [
+      "Can you tell me a bit more about your current challenges and goals?",
+      "Have you considered how digital adoption platforms like Whatfix can help you achieve your goals?"
+    ],
+    "decision_making_process_questions": [
+      "What are the next steps?",
+      "Is there a specific timeline you're working with for implementing a digital adoption platform?"
+    ],
+    "objection_resolution_pairs": [
+      {
+        "objection": "unsure about which digital adoption platform to choose",
+        "resolution": "I'd be happy to walk you through a demo and show you how Whatfix can help address your specific pain points."
+      },
+      {
+        "objection": "need to ensure tangible business outcomes",
+        "resolution": "We've seen our customers achieve significant ROI from using Whatfix. For example, [similar organization] saw a 30% increase in user adoption and a 25% reduction in support requests after implementing our platform. We'd be happy to work with you to develop a customized ROI model based on your specific needs and goals."
+      },
+      {
+        "objection": "concerns about implementation and adoption",
+        "resolution": "We understand the importance of proper implementation and adoption. That's why we offer a comprehensive onboarding process, including dedicated customer success managers, training, and support resources. We'll work closely with your team to ensure a smooth transition and provide ongoing support to guarantee your success."
+      }
+    ],
+    "insights": [
+      "Marks and Spencer is struggling to maintain customer loyalty and stay ahead of the competition",
+      "They are looking for a digital adoption platform to help them achieve their goals",
+      "They are interested in seeing a demo and understanding the ROI of implementing Whatfix",
+      "They have concerns about implementation and adoption"
+    ],
+    "improvements": [
+      "Whatfix should emphasize the benefits of their solution in terms of tangible business outcomes",
+      "Whatfix should provide more information on their implementation and adoption process to alleviate concerns",
+      "Whatfix should be prepared to address questions about how they differ from competitors"
+    ]
+  },
+  "demo_features": {
+    "features": [
+      {
+        "name": "Digital Adoption Platform",
+        "description": "A no-code editor to create in-app guidance on any application that looks 100% native."
+      },
+      {
+        "name": "In-app Guidance",
+        "description": "Guides users through the application to achieve business outcomes."
+      },
+      {
+        "name": "Analytics",
+        "description": "Provides insights on user behavior to optimize the application experience."
+      },
+      {
+        "name": "Mobile Experiences",
+        "description": "Delivers personalized in-app experiences on mobile devices."
+      },
+      {
+        "name": "Interactive Guides",
+        "description": "Provides step-by-step instructions to help users complete tasks efficiently."
+      },
+      {
+        "name": "On-demand User Support",
+        "description": "Offers users real-time support to resolve issues quickly."
+      },
+      {
+        "name": "Customer Contextual Messages",
+        "description": "Displays relevant messages to users based on their actions and behavior."
+      }
+    ]
+  },
+  "demo_transcript": {
+    "messages": [
+      {
+        "user": "Whatfix Salesperson",
+        "content": "Hello, everyone. Thank you for taking the time to join this demo call today. I'm excited to show you how Whatfix can help address your digital adoption challenges and achieve your business goals. Before we dive in, I just want to confirm that we have all the stakeholders present from the Marks and Spencer's side. Can you please introduce yourselves?"
+      },
+      {
+        "user": "Marks and Spencer's IT Director",
+        "content": "Yes, we're all here. I'm John, the IT Director, and I have my team members, Rachel from Customer Experience and Michael from Training and Development."
+      },
+      {
+        "user": "Whatfix Salesperson",
+        "content": "Great, thank you, John. So, as we discussed during our discovery call, you're facing some challenges in maintaining customer loyalty, staying ahead of the competition, and ensuring a seamless customer experience across various channels. Whatfix can help you overcome these challenges with our digital adoption platform. Let me show you how."
+      },
+      {
+        "user": "Whatfix Salesperson",
+        "content": "Our platform offers a no-code editor to create in-app guidance on any application, which looks 100% native. This feature can help you simplify complex user interfaces and reduce the time it takes for your customers to achieve their desired outcomes. Let me show you a demo."
+      },
+      {
+        "user": "Whatfix Salesperson",
+        "content": "As you can see, our in-app guidance feature is highly customizable and can be tailored to fit your brand's look and feel. We've seen our customers achieve significant ROI from using this feature, with a 30% increase in user adoption and a 25% reduction in support requests."
+      },
+      {
+        "user": "Marks and Spencer's Customer Experience Manager",
+        "content": "That's impressive. But how do you address the concern of change management? We've had issues with adoption rates in the past."
+      },
+      {
+        "user": "Whatfix Salesperson",
+        "content": "I completely understand your concern, Rachel. That's why we offer a comprehensive onboarding process, including dedicated customer success managers, training, and support resources. We'll work closely with your team to ensure a smooth transition and provide ongoing support to guarantee your success."
+      },
+      {
+        "user": "Whatfix Salesperson",
+        "content": "In addition to our in-app guidance feature, our analytics module provides insights on user behavior to optimize the application experience. This feature can help you identify areas of friction and opportunity to improve the overall user experience."
+      },
+      {
+        "user": "Marks and Spencer's Training and Development Manager",
+        "content": "I'm interested in learning more about your interactive guides feature. Can you show us how that works?"
+      },
+      {
+        "user": "Whatfix Salesperson",
+        "content": "Absolutely, Michael. Our interactive guides feature provides step-by-step instructions to help users complete tasks efficiently. This feature can be particularly useful for complex workflows or onboarding processes. Let me show you a demo."
+      },
+      {
+        "user": "Whatfix Salesperson",
+        "content": "As you can see, our interactive guides feature is highly engaging and can be customized to fit your specific business needs. We've seen our customers achieve significant reductions in training time and costs by using this feature."
+      },
+      {
+        "user": "Marks and Spencer's IT Director",
+        "content": "I have to say, I'm impressed with what I've seen so far. But how do you differentiate yourselves from competitors like WalkMe and Pendo?"
+      },
+      {
+        "user": "Whatfix Salesperson",
+        "content": "That's a great question, John. While our competitors may offer similar features, our unique differentiator is our ability to provide a seamless, 100% native in-app experience. Our platform is designed to be highly customizable and adaptable to your specific business needs. Additionally, our customer success team is dedicated to ensuring your success and providing ongoing support to guarantee ROI."
+      },
+      {
+        "user": "Whatfix Salesperson",
+        "content": "Before we conclude, I just want to confirm that we've addressed all your pain points and concerns. Are there any other questions or areas you'd like to discuss further?"
+      },
+      {
+        "user": "Marks and Spencer's Customer Experience Manager",
+        "content": "Actually, I do have one more question. Can you provide some case studies or success stories from similar organizations in the retail industry?"
+      },
+      {
+        "user": "Whatfix Salesperson",
+        "content": "Absolutely, Rachel. We've worked with several organizations in the retail industry, including [similar organization], which saw a 30% increase in user adoption and a 25% reduction in support requests after implementing our platform. I can provide you with a case study and some references if you'd like."
+      },
+      {
+        "user": "Whatfix Salesperson",
+        "content": "In terms of next steps, I'd like to propose a customized ROI model based on your specific needs and goals. We can work together to develop a plan that addresses your pain points and ensures tangible business outcomes. What are your thoughts?"
+      },
+      {
+        "user": "Marks and Spencer's IT Director",
+        "content": "That sounds like a great plan. We'll need to discuss this further internally, but we're interested in moving forward with the next steps. Thank you for the demo today."
+      },
+      {
+        "user": "Whatfix Salesperson",
+        "content": "You're welcome, John. I'll send over the presentation and any supporting materials we discussed today. I look forward to hearing back from you soon and working together to achieve your business goals."
+      }
+    ]
+  },
+  "demo_analysis_buyer_data": {
+    "interested_features": [
+      {
+        "name": "In-app Guidance",
+        "description": "Simplifies complex user interfaces and reduces the time it takes for customers to achieve their desired outcomes",
+        "pain_point": "Maintaining customer loyalty and staying ahead of the competition"
+      },
+      {
+        "name": "Interactive Guides",
+        "description": "Provides step-by-step instructions to help users complete tasks efficiently",
+        "pain_point": "Complex workflows or onboarding processes"
+      },
+      {
+        "name": "Analytics Module",
+        "description": "Provides insights on user behavior to optimize the application experience",
+        "pain_point": "Identifying areas of friction and opportunity to improve the overall user experience"
+      }
+    ],
+    "skeptical_features": [
+      {
+        "name": "Change Management",
+        "description": "Comprehensive onboarding process, including dedicated customer success managers, training, and support resources",
+        "objection": "Concerns about adoption rates in the past"
+      },
+      {
+        "name": "Competitive Advantage",
+        "description": "Ability to provide a seamless, 100% native in-app experience",
+        "objection": "Differentiation from competitors like WalkMe and Pendo"
+      }
+    ],
+    "objections_raised": [
+      "How do you address the concern of change management?",
+      "How do you differentiate yourselves from competitors like WalkMe and Pendo?"
+    ],
+    "stakeholder_engagement": [
+      {
+        "stakeholder": "John, IT Director",
+        "engagement_level": "High"
+      },
+      {
+        "stakeholder": "Rachel, Customer Experience Manager",
+        "engagement_level": "Medium"
+      },
+      {
+        "stakeholder": "Michael, Training and Development Manager",
+        "engagement_level": "Medium"
+      }
+    ],
+    "feedback": "Impressed with the features and capabilities demonstrated during the sales demo"
+  },
+  "demo_analysis_seller_data": {
+    "demo_features": [
+      {
+        "name": "In-app Guidance",
+        "description": "Simplifies complex user interfaces and reduces the time it takes for customers to achieve their desired outcomes"
+      },
+      {
+        "name": "Interactive Guides",
+        "description": "Provides step-by-step instructions to help users complete tasks efficiently"
+      },
+      {
+        "name": "Analytics Module",
+        "description": "Provides insights on user behavior to optimize the application experience"
+      }
+    ],
+    "objection_handling": [
+      {
+        "objection": "How do you address the concern of change management?",
+        "resolution": "Comprehensive onboarding process, including dedicated customer success managers, training, and support resources",
+        "status": true
+      },
+      {
+        "objection": "How do you differentiate yourselves from competitors like WalkMe and Pendo?",
+        "resolution": "Ability to provide a seamless, 100% native in-app experience",
+        "status": true
+      }
+    ],
+    "success_stories": [
+      "similar organization which saw a 30% increase in user adoption and a 25% reduction in support requests"
+    ],
+    "assets_used": [],
+    "customizations": [
+      "highly customizable and can be tailored to fit your brand's look and feel"
+    ],
+    "engagement_questions": [
+      "Can you please introduce yourselves?",
+      "Are there any other questions or areas you'd like to discuss further?"
+    ]
+  }
 }

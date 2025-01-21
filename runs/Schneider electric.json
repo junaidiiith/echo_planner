@@ -1,14 +1,431 @@
 {
-  "seller_research": "{\n  \"name\": \"Whatfix\",\n  \"website\": \"https://whatfix.com/\",\n  \"description\": \"Whatfix is a digital adoption platform that provides organizations with a no-code editor to create in-app guidance on any application that looks 100% native.\",\n  \"industry\": \"Software as a Service (SaaS)\",\n  \"products\": [\n    \"Digital Adoption Platform\",\n    \"GenAI-powered in-app guidance\",\n    \"Simulated training\",\n    \"Application analytics\"\n  ],\n  \"solutions\": [\n    \"Accelerate end-user adoption of Salesforce Sales Cloud, Marketing Cloud, & Service Cloud\",\n    \"Accelerate end-user adoption of Microsoft applications software\"\n  ],\n  \"use_cases\": [\n    \"Enable employees with contextual user experiences\",\n    \"Unlock user potential and drive business outcomes across all technology and software experiences\",\n    \"Maximize ROI of digital investments\"\n  ]\n}",
-  "seller_pricing": "{\n  \"pricing_models\": [\n    {\n      \"type\": \"Free\",\n      \"description\": \"Free trial available\",\n      \"price\": \"Free\",\n      \"duration\": \"Unlimited\"\n    },\n    {\n      \"type\": \"Yearly\",\n      \"description\": \"Customized pricing based on application and user license fees\",\n      \"price\": \"Varies\",\n      \"duration\": \"1 year\"\n    },\n    {\n      \"type\": \"Monthly\",\n      \"description\": \"Customized pricing based on application and user license fees\",\n      \"price\": \"Varies\",\n      \"duration\": \"1 month\"\n    },\n    {\n      \"type\": \"Onetime (Perpetual License)\",\n      \"description\": \"Customized pricing based on application and user license fees\",\n      \"price\": \"Varies\",\n      \"duration\": \"One-time payment\"\n    }\n  ]\n}",
-  "buyer_research": "{\n  \"name\": \"Schneider Electric\",\n  \"website\": \"https://www.se.com/\",\n  \"description\": \"A French multinational corporation that specializes in digital automation and energy management.\",\n  \"industry\": \"Industrial Technology\",\n  \"company_size\": 135000,\n  \"goals\": [\n    \"Create Impact by empowering all to make the most of our energy and resources\",\n    \"Bridge progress and sustainability for all\",\n    \"Reduce CO2 emissions by half by 2025\",\n    \"Provide reliable, green energy to 50 million people\"\n  ],\n  \"use_cases\": [\n    \"Digitize and automate industrial operations\",\n    \"Increase efficiency and reduce environmental impact\",\n    \"Improve reliability and sustainability of industrial businesses\"\n  ],\n  \"challenges\": [\n    \"Achieving sustainability and efficiency across industries\",\n    \"Reducing CO2 emissions and environmental impact\",\n    \"Keeping up with the pace of technological change\"\n  ],\n  \"stakeholders\": [\n    \"Customers\",\n    \"Employees\",\n    \"Investors\",\n    \"Partners\",\n    \"Suppliers\"\n  ]\n}",
-  "competitive_info": "{\n  \"competitors\": [\n    {\n      \"name\": \"WalkMe\",\n      \"pros\": [\n        \"easy to implement\",\n        \"improved user experience\",\n        \"robust analytics\",\n        \"transparent pricing\"\n      ],\n      \"cons\": [\n        \"expensive for large enterprises\"\n      ],\n      \"differentiators\": [\n        \"focus on employee onboarding and training\"\n      ]\n    },\n    {\n      \"name\": \"Userpilot\",\n      \"pros\": [\n        \"cost-effective alternative\",\n        \"easier implementation\",\n        \"improved user experience\"\n      ],\n      \"cons\": [\n        \"limited features compared to Whatfix\"\n      ],\n      \"differentiators\": [\n        \"focus on user onboarding and adoption\"\n      ]\n    },\n    {\n      \"name\": \"Pendo\",\n      \"pros\": [\n        \"robust analytics\",\n        \"improved user experience\",\n        \"easy to implement\"\n      ],\n      \"cons\": [\n        \"expensive for large enterprises\",\n        \"steep learning curve\"\n      ],\n      \"differentiators\": [\n        \"focus on product adoption and customer success\"\n      ]\n    }\n  ]\n}",
-  "anticipated_qopcs": "{\n  \"pains\": [\n    \"Achieving sustainability and efficiency across industries\",\n    \"Reducing CO2 emissions and environmental impact\",\n    \"Keeping up with the pace of technological change\",\n    \"Difficulty in digitizing and automating industrial operations\",\n    \"Inefficient use of energy and resources\",\n    \"Struggling to provide reliable, green energy to 50 million people\",\n    \"Lack of reliable analytics to measure business outcomes\",\n    \"Difficulty in empowering employees to make the most of energy and resources\",\n    \"Inability to bridge progress and sustainability for all\",\n    \"Difficulty in reducing CO2 emissions by half by 2025\"\n  ],\n  \"objections\": [\n    \"Whatfix is too expensive for our large enterprise\",\n    \"We are not sure if Whatfix can integrate with our existing systems\",\n    \"How does Whatfix's digital adoption platform address our specific pain points in industrial automation?\",\n    \"Will Whatfix's GenAI-powered in-app guidance replace our existing training programs?\",\n    \"How can Whatfix demonstrate ROI on our digital investments?\",\n    \"Is Whatfix's platform customizable to fit our unique business needs?\",\n    \"Can Whatfix provide reliable analytics to measure business outcomes?\",\n    \"How does Whatfix's pricing model align with our budget and user license fees?\"\n  ]\n}",
-  "discovery_transcript": "{\n  \"messages\": [\n    {\n      \"user\": \"Whatfix Sales Person\",\n      \"content\": \"Hi, thank you for taking the time to speak with me today! I'm excited to learn more about Schneider Electric's goals and challenges. Can you tell me a bit about your current priorities and what's driving your business decisions right now?\"\n    },\n    {\n      \"user\": \"Schneider Electric's Team\",\n      \"content\": \"Thank you for having me. We're focused on creating impact by empowering all to make the most of our energy and resources. We're committed to reducing CO2 emissions by half by 2025 and providing reliable, green energy to 50 million people. But we're struggling to digitize and automate our industrial operations, and it's becoming a major pain point for us.\"\n    },\n    {\n      \"user\": \"Whatfix Sales Person\",\n      \"content\": \"I understand. It sounds like you're facing some significant challenges in terms of sustainability and efficiency. Can you tell me more about what you mean by 'digitize and automate industrial operations'? What specific areas of your business are you looking to improve?\"\n    },\n    {\n      \"user\": \"Schneider Electric's Team\",\n      \"content\": \"We're looking at ways to increase efficiency and reduce environmental impact across our operations. We have a lot of manual processes that are slowing us down and causing errors. We're also struggling to keep up with the pace of technological change and make the most of our energy and resources.\"\n    },\n    {\n      \"user\": \"Whatfix Sales Person\",\n      \"content\": \"I see. It sounds like you're looking for ways to streamline your operations and make them more sustainable. Have you considered using a digital adoption platform to help you achieve those goals? Our platform is designed to help organizations like yours bridge the gap between progress and sustainability.\"\n    },\n    {\n      \"user\": \"Schneider Electric's Team\",\n      \"content\": \"We've looked at a few different options, but we're not sure if they can really address our specific pain points. How does Whatfix's digital adoption platform work, and what kind of ROI can we expect to see?\"\n    },\n    {\n      \"user\": \"Whatfix Sales Person\",\n      \"content\": \"Our platform uses GenAI-powered in-app guidance to help users navigate complex software applications. We've seen significant improvements in user adoption and efficiency in organizations that have implemented our solution. In terms of ROI, we've seen customers achieve a significant return on their investment, often within the first year of implementation.\"\n    },\n    {\n      \"user\": \"Schneider Electric's Team\",\n      \"content\": \"That sounds interesting. But how does Whatfix's platform integrate with our existing systems, and can it be customized to fit our unique business needs?\"\n    },\n    {\n      \"user\": \"Whatfix Sales Person\",\n      \"content\": \"Our platform is designed to be highly flexible and adaptable, so we can integrate with a wide range of systems and applications. We also offer customization options to ensure that our solution fits your specific business needs. I'd be happy to discuss this further with our technical team to ensure that we can meet your requirements.\"\n    },\n    {\n      \"user\": \"Schneider Electric's Team\",\n      \"content\": \"Okay, that sounds good. What's the typical timeline for implementation, and what kind of support can we expect from Whatfix?\"\n    },\n    {\n      \"user\": \"Whatfix Sales Person\",\n      \"content\": \"Our implementation timeline varies depending on the complexity of the project, but typically ranges from 6-12 weeks. We offer comprehensive support throughout the implementation process, including training and ongoing customer success management to ensure that you're getting the most out of our platform.\"\n    },\n    {\n      \"user\": \"Schneider Electric's Team\",\n      \"content\": \"That sounds reasonable. What's the pricing model for Whatfix, and how does it align with our budget and user license fees?\"\n    },\n    {\n      \"user\": \"Whatfix Sales Person\",\n      \"content\": \"We offer a customized pricing model based on application and user license fees. I'd be happy to discuss this further with you to ensure that our pricing aligns with your budget and requirements.\"\n    },\n    {\n      \"user\": \"Schneider Electric's Team\",\n      \"content\": \"Okay, thank you for explaining that. We're definitely interested in learning more about Whatfix and how it can help us achieve our goals. What's the next step in the process?\"\n    },\n    {\n      \"user\": \"Whatfix Sales Person\",\n      \"content\": \"I'm glad you're interested! The next step would be to schedule a demo of our platform, which will give you a more detailed look at how it can address your specific pain points. We can also discuss the implementation process and answer any further questions you may have. Would that work for you?\"\n    }\n  ]\n}",
-  "discovery_analysis_buyer_data": "{\n  \"pain_points\": [\n    \"digitize and automate industrial operations\",\n    \"manual processes that are slowing down and causing errors\",\n    \"struggling to keep up with the pace of technological change and make the most of energy and resources\"\n  ],\n  \"objections\": [\n    \"not sure if Whatfix's digital adoption platform can really address Schneider Electric's specific pain points\",\n    \"integration with existing systems and customization to fit unique business needs\",\n    \"pricing model and ROI\"\n  ],\n  \"time_lines\": [\n    \"implementation timeline of 6-12 weeks\",\n    \"goal to reduce CO2 emissions by half by 2025\",\n    \"provide reliable, green energy to 50 million people\"\n  ],\n  \"success_indicators\": [\n    \"increased efficiency\",\n    \"reduced environmental impact\",\n    \"improved reliability and sustainability of industrial businesses\"\n  ],\n  \"budget_constraints\": [\n    \"customized pricing model based on application and user license fees\"\n  ],\n  \"competition\": [],\n  \"decision_committee\": []\n}",
-  "discovery_analysis_seller_data": "{\n  \"discovery_questions\": [\n    \"Can you tell me a bit about your current priorities and what's driving your business decisions right now?\",\n    \"Can you tell me more about what you mean by 'digitize and automate industrial operations'? What specific areas of your business are you looking to improve?\",\n    \"How does Whatfix's digital adoption platform work, and what kind of ROI can we expect to see?\",\n    \"How does Whatfix's platform integrate with our existing systems, and can it be customized to fit our unique business needs?\",\n    \"What's the typical timeline for implementation, and what kind of support can we expect from Whatfix?\",\n    \"What's the pricing model for Whatfix, and how does it align with our budget and user license fees?\"\n  ],\n  \"decision_making_process_questions\": [],\n  \"objection_resolution_pairs\": [\n    {\n      \"objection\": \"not sure if Whatfix's digital adoption platform can really address Schneider Electric's specific pain points\",\n      \"resolution\": \"Our platform uses GenAI-powered in-app guidance to help users navigate complex software applications. We've seen significant improvements in user adoption and efficiency in organizations that have implemented our solution.\"\n    },\n    {\n      \"objection\": \"integration with existing systems and customization to fit unique business needs\",\n      \"resolution\": \"Our platform is designed to be highly flexible and adaptable, so we can integrate with a wide range of systems and applications. We also offer customization options to ensure that our solution fits your specific business needs.\"\n    },\n    {\n      \"objection\": \"pricing model and ROI\",\n      \"resolution\": \"We offer a customized pricing model based on application and user license fees. I'd be happy to discuss this further with you to ensure that our pricing aligns with your budget and requirements.\"\n    }\n  ],\n  \"insights\": [\n    \"Schneider Electric is struggling to digitize and automate their industrial operations\",\n    \"They are facing manual processes that are slowing them down and causing errors\",\n    \"They are struggling to keep up with the pace of technological change and make the most of their energy and resources\",\n    \"They are looking for ways to increase efficiency and reduce environmental impact\",\n    \"They are interested in learning more about Whatfix and how it can help them achieve their goals\"\n  ],\n  \"improvements\": [\n    \"The seller could have asked more questions to understand Schneider Electric's current situation and challenges\",\n    \"The seller could have provided more specific examples of how Whatfix's platform has helped similar companies in the past\",\n    \"The seller could have emphasized more on the ROI and cost savings that Whatfix's platform can provide\"\n  ]\n}",
-  "demo_features": "{\n  \"features\": [\n    {\n      \"name\": \"Digital Adoption Platform\",\n      \"description\": \"A no-code editor to create in-app guidance on any application that looks 100% native, accelerating end-user adoption of Salesforce Sales Cloud, Marketing Cloud, & Service Cloud, and Microsoft applications software.\"\n    },\n    {\n      \"name\": \"GenAI-powered in-app guidance\",\n      \"description\": \"A feature that uses artificial intelligence to provide personalized and interactive guidance to users, enabling them to navigate complex software applications seamlessly.\"\n    },\n    {\n      \"name\": \"Simulated training\",\n      \"description\": \"A feature that allows users to train in a simulated environment, reducing errors and increasing efficiency in their daily tasks.\"\n    },\n    {\n      \"name\": \"Application analytics\",\n      \"description\": \"A feature that provides insights and analytics on application usage, enabling organizations to make data-driven decisions and optimize their software investments.\"\n    },\n    {\n      \"name\": \"Customized pricing model\",\n      \"description\": \"A pricing model that is tailored to fit the specific needs of the organization, based on application and user license fees, ensuring a cost-effective solution.\"\n    },\n    {\n      \"name\": \"Integration with existing systems\",\n      \"description\": \"A feature that allows seamless integration with existing systems and applications, ensuring minimal disruption to business operations.\"\n    },\n    {\n      \"name\": \"Customization options\",\n      \"description\": \"A feature that enables organizations to customize the platform to fit their unique business needs, ensuring a tailored solution that meets their specific requirements.\"\n    }\n  ]\n}",
-  "demo_transcript": "{\n  \"messages\": [\n    {\n      \"user\": \"Whatfix Sales Person\",\n      \"content\": \"Hello everyone from Schneider Electric, thank you for taking the time to join today's demo call. My name is [Name], and I'll be walking you through Whatfix's Digital Adoption Platform and how it can help address your specific pain points. Before we dive in, I just want to confirm that we have everyone on the line. Can you all please introduce yourselves and let me know if you have any questions so far?\"\n    },\n    {\n      \"user\": \"Schneider Electric Representative 1\",\n      \"content\": \"Hi, I'm John from the digital transformation team. I have a few questions, but I'll wait until the end. Thanks for having us.\"\n    },\n    {\n      \"user\": \"Whatfix Sales Person\",\n      \"content\": \"Great, thank you John. So, let's get started. As we discussed during our discovery call, Schneider Electric is struggling to digitize and automate industrial operations, and you're facing manual processes that are slowing you down and causing errors. Our Digital Adoption Platform is designed to help you overcome these challenges. With our no-code editor, you can create in-app guidance on any application that looks 100% native, accelerating end-user adoption of Salesforce Sales Cloud, Marketing Cloud, & Service Cloud, and Microsoft applications software.\"\n    },\n    {\n      \"user\": \"Schneider Electric Representative 2\",\n      \"content\": \"That sounds interesting. Can you show us how that works?\"\n    },\n    {\n      \"user\": \"Whatfix Sales Person\",\n      \"content\": \"Absolutely. Let me just share my screen real quick. (screen share) Okay, so here's an example of our platform in action. As you can see, our GenAI-powered in-app guidance provides personalized and interactive guidance to users, enabling them to navigate complex software applications seamlessly. This feature has been a game-changer for many of our clients, and I think it could have a huge impact on your organization as well.\"\n    },\n    {\n      \"user\": \"Schneider Electric Representative 3\",\n      \"content\": \"I'm not sure if this can really address our specific pain points. How do I know this will work for us?\"\n    },\n    {\n      \"user\": \"Whatfix Sales Person\",\n      \"content\": \"That's a great question. Our platform has been used by numerous organizations in various industries, and we've seen significant improvements in user adoption and efficiency. For example, one of our clients in the manufacturing industry saw a 35% reduction in errors and a 25% increase in productivity after implementing our solution. We're confident that our platform can help you achieve similar results. Would you like to see a case study on that?\"\n    },\n    {\n      \"user\": \"Schneider Electric Representative 1\",\n      \"content\": \"Yes, that would be great. Can you share that with us?\"\n    },\n    {\n      \"user\": \"Whatfix Sales Person\",\n      \"content\": \"I'll send it over to you after this call. Moving on, I'd like to show you our simulated training feature. This allows users to train in a simulated environment, reducing errors and increasing efficiency in their daily tasks. (screen share) As you can see, this feature is highly customizable and can be tailored to fit your specific business needs.\"\n    },\n    {\n      \"user\": \"Schneider Electric Representative 2\",\n      \"content\": \"That's really interesting. How does this integrate with our existing systems?\"\n    },\n    {\n      \"user\": \"Whatfix Sales Person\",\n      \"content\": \"Our platform is designed to be highly flexible and adaptable, so we can integrate with a wide range of systems and applications. We also offer customization options to ensure that our solution fits your specific business needs. We've worked with numerous organizations to integrate our platform with their existing systems, and we're confident we can do the same for you.\"\n    },\n    {\n      \"user\": \"Schneider Electric Representative 3\",\n      \"content\": \"What about pricing? How does that work?\"\n    },\n    {\n      \"user\": \"Whatfix Sales Person\",\n      \"content\": \"We offer a customized pricing model based on application and user license fees. I'd be happy to discuss this further with you to ensure that our pricing aligns with your budget and requirements. We've found that our clients typically see a significant ROI on their investment in our platform, and I think we can do the same for you.\"\n    },\n    {\n      \"user\": \"Whatfix Sales Person\",\n      \"content\": \"Before we wrap up, I just want to confirm that we've addressed all of your questions and concerns. Are there any other features or aspects of our platform that you'd like to see?\"\n    },\n    {\n      \"user\": \"Schneider Electric Representative 1\",\n      \"content\": \"I think that's all for now. Thank you for the demo.\"\n    },\n    {\n      \"user\": \"Whatfix Sales Person\",\n      \"content\": \"You're welcome. It was great speaking with all of you today. I'll send over the case study and any other relevant information we discussed today. What are the next steps from your side, and is there a specific timeline you're looking to implement a solution like this?\"\n    }\n  ]\n}",
-  "demo_analysis_buyer_data": "{\n  \"interested_features\": [\n    {\n      \"pain_point\": \"manual processes that are slowing down and causing errors\"\n    },\n    {\n      \"pain_point\": \"digitize and automate industrial operations\"\n    },\n    {\n      \"pain_point\": \"accelerating end-user adoption of Salesforce Sales Cloud, Marketing Cloud, & Service Cloud, and Microsoft applications software\"\n    },\n    {\n      \"pain_point\": \"reducing errors and increasing efficiency in daily tasks\"\n    }\n  ],\n  \"skeptical_features\": [\n    {\n      \"objection\": \"how do I know this will work for us?\"\n    },\n    {\n      \"objection\": \"integration with existing systems\"\n    },\n    {\n      \"objection\": \"pricing\"\n    }\n  ],\n  \"objections_raised\": [\n    \"how do I know this will work for us?\",\n    \"integration with existing systems\",\n    \"pricing\"\n  ],\n  \"stakeholder_engagement\": [\n    {\n      \"stakeholder\": \"John\",\n      \"engagement_level\": \"medium\"\n    },\n    {\n      \"stakeholder\": \"Schneider Electric Representative 2\",\n      \"engagement_level\": \"high\"\n    },\n    {\n      \"stakeholder\": \"Schneider Electric Representative 3\",\n      \"engagement_level\": \"medium\"\n    }\n  ],\n  \"feedback\": \"Thank you for the demo.\"\n}",
-  "demo_analysis_seller_data": "{\n  \"demo_features\": [\n    {\n      \"name\": \"no-code editor\",\n      \"description\": \"create in-app guidance on any application that looks 100% native, accelerating end-user adoption of Salesforce Sales Cloud, Marketing Cloud, & Service Cloud, and Microsoft applications software\"\n    },\n    {\n      \"name\": \"GenAI-powered in-app guidance\",\n      \"description\": \"provides personalized and interactive guidance to users, enabling them to navigate complex software applications seamlessly\"\n    },\n    {\n      \"name\": \"simulated training feature\",\n      \"description\": \"allows users to train in a simulated environment, reducing errors and increasing efficiency in their daily tasks\"\n    }\n  ],\n  \"objection_handling\": [\n    {\n      \"objection\": \"how do I know this will work for us?\",\n      \"resolution\": \"our platform has been used by numerous organizations in various industries, and we've seen significant improvements in user adoption and efficiency\",\n      \"status\": true\n    },\n    {\n      \"objection\": \"integration with existing systems\",\n      \"resolution\": \"our platform is designed to be highly flexible and adaptable, so we can integrate with a wide range of systems and applications\",\n      \"status\": true\n    },\n    {\n      \"objection\": \"pricing\",\n      \"resolution\": \"we offer a customized pricing model based on application and user license fees\",\n      \"status\": true\n    }\n  ],\n  \"success_stories\": [\n    \"one of our clients in the manufacturing industry saw a 35% reduction in errors and a 25% increase in productivity after implementing our solution\"\n  ],\n  \"assets_used\": [\n    \"screen share\",\n    \"case study\"\n  ],\n  \"customizations\": [\n    \"highly customizable and can be tailored to fit your specific business needs\"\n  ],\n  \"engagement_questions\": [\n    \"can you all please introduce yourselves and let me know if you have any questions so far?\",\n    \"are there any other features or aspects of our platform that you'd like to see?\"\n  ]\n}"
+  "seller_research": {
+    "name": "Whatfix",
+    "website": "https://whatfix.com/",
+    "description": "Whatfix is an Indian SaaS-based digital adoption platform that provides in-app guidance, training, and performance support for web applications and software.",
+    "industry": "Software as a Service (SaaS)",
+    "products": [
+      "Digital Adoption Platform",
+      "Analytics",
+      "Interactive Guides",
+      "Flows",
+      "In-app Guidance",
+      "Training",
+      "Performance Support"
+    ],
+    "solutions": [
+      "Digital Adoption",
+      "User Onboarding",
+      "Employee Training",
+      "Customer Onboarding",
+      "Software Adoption",
+      "Change Management"
+    ],
+    "use_cases": [
+      "Enhancing software experiences",
+      "Maximizing ROI of digital investments",
+      "Delivering modern and easy onboarding",
+      "Effective training and better support to users",
+      "Improving user adoption and retention"
+    ]
+  },
+  "seller_pricing": {
+    "pricing_models": [
+      {
+        "type": "Free",
+        "description": "Free plan with 30 credits",
+        "price": "Free",
+        "duration": "Monthly"
+      },
+      {
+        "type": "Basic",
+        "description": "Basic plan for small to medium-sized businesses",
+        "price": "39 USD per month",
+        "duration": "Monthly"
+      },
+      {
+        "type": "Traction",
+        "description": "Plan for up to 2500 users",
+        "price": "249 USD per month",
+        "duration": "Monthly"
+      },
+      {
+        "type": "Growth",
+        "description": "Plan for up to 10,000 users",
+        "price": "499 USD per month",
+        "duration": "Monthly"
+      },
+      {
+        "type": "Enterprise",
+        "description": "Customized plan for large-scale businesses",
+        "price": "Custom",
+        "duration": "Custom"
+      }
+    ]
+  },
+  "buyer_research": {
+    "name": "Schneider Electric",
+    "website": "https://www.se.com/us/en/",
+    "description": "Schneider Electric is a global industrial technology leader bringing world-leading expertise in electrification, automation and digitization to its customers",
+    "industry": "Industrial Technology",
+    "company_size": "Enterprise",
+    "goals": [
+      "Sustainability",
+      "Energy efficiency",
+      "Customer experience"
+    ],
+    "use_cases": [
+      "Industrial automation",
+      "Energy management",
+      "Digital transformation"
+    ],
+    "challenges": [
+      "Decarbonization",
+      "Stakeholder engagement",
+      "Data management"
+    ],
+    "stakeholders": [
+      "Customers",
+      "Investors",
+      "Employees",
+      "Suppliers"
+    ]
+  },
+  "competitive_info": {
+    "competitors": [
+      {
+        "name": "WalkMe",
+        "pros": [
+          "Offers a range of features designed to enhance user engagement and streamline the user experience",
+          "Has more to offer in training and guidance capabilities",
+          "Setup can feel pretty complex"
+        ],
+        "cons": [
+          "Requires a lot of setup and customization",
+          "Can be expensive"
+        ],
+        "differentiators": [
+          "More focused on employee-facing use cases",
+          "Has a greater range of analytics and feedback options"
+        ]
+      },
+      {
+        "name": "Pendo",
+        "pros": [
+          "Offers superior product analytics",
+          "Has comprehensive voice of the customer features",
+          "Has robust enterprise readiness"
+        ],
+        "cons": [
+          "Has a steeper learning curve",
+          "Can be more expensive than Whatfix"
+        ],
+        "differentiators": [
+          "More focused on customer-facing use cases",
+          "Has a greater range of analytics and feedback options"
+        ]
+      }
+    ]
+  },
+  "anticipated_qopcs": {
+    "pains": [
+      "How can Whatfix help Schneider Electric to achieve their sustainability and energy efficiency goals?",
+      "What kind of ROI can we expect from investing in Whatfix's digital adoption platform?",
+      "How does Whatfix address the challenges of decarbonization and stakeholder engagement?",
+      "Can Whatfix help us improve customer experience and reduce churn?",
+      "How does Whatfix integrate with our existing systems and tools?",
+      "What kind of customization and support does Whatfix offer for large-scale enterprises like Schneider Electric?"
+    ],
+    "objections": [
+      "Whatfix seems expensive, how does the pricing model justify the cost?",
+      "We're already using another digital adoption platform, how does Whatfix differentiate itself?",
+      "We're not sure if our employees will adopt the new platform, how does Whatfix ensure user adoption?",
+      "Whatfix seems to have a steep learning curve, how does the platform provide support for users?",
+      "How does Whatfix address our data management challenges and ensure data security?"
+    ]
+  },
+  "discovery_transcript": {
+    "messages": [
+      {
+        "user": "Whatfix Sales Person",
+        "content": "Hi, thank you for taking the time to speak with me today. I'm excited to learn more about Schneider Electric's goals and challenges. Can you start by telling me a little bit about your role and what brings you to this call?"
+      },
+      {
+        "user": "Schneider Electric Team",
+        "content": "Hi, I'm John, the Head of Digital Transformation at Schneider Electric. We're always looking for ways to improve our customer experience and increase energy efficiency. We've been exploring digital adoption platforms to help us achieve these goals. I'm interested in learning more about Whatfix and how it can help us."
+      },
+      {
+        "user": "Whatfix Sales Person",
+        "content": "That's great to hear, John. We've had success with similar companies in the industrial technology space. Can you tell me more about what you mean by improving customer experience and increasing energy efficiency? What specific pain points are you trying to address?"
+      },
+      {
+        "user": "Schneider Electric Team",
+        "content": "Well, we've noticed that our customers are having trouble navigating our software, which is leading to a high churn rate. We're also struggling to reduce our carbon footprint and meet our sustainability goals. We're looking for a solution that can help us address these challenges."
+      },
+      {
+        "user": "Whatfix Sales Person",
+        "content": "I understand. It sounds like you're facing some common challenges in the industry. Whatfix's digital adoption platform can help you improve customer experience and increase energy efficiency. We've seen ROI of up to 300% with our customers. Would you like me to walk you through a demo of our platform and show you how it can help address your pain points?"
+      },
+      {
+        "user": "Schneider Electric Team",
+        "content": "Yes, that would be great. I'd love to see how Whatfix can help us achieve our goals. But before we move forward, can you tell me more about your pricing model and how it would work for a large-scale enterprise like ours?"
+      },
+      {
+        "user": "Whatfix Sales Person",
+        "content": "Absolutely. Our pricing model is based on the number of users and the level of customization you need. We have a tiered pricing structure, with discounts for larger enterprises. We also offer a free trial and a pilot program to help you test our platform and see the ROI for yourself. We're confident that our platform can help you achieve your goals and we're willing to work with you to customize a plan that fits your needs."
+      },
+      {
+        "user": "Schneider Electric Team",
+        "content": "That sounds reasonable. I'd like to discuss this further with our team and explore how Whatfix can help us achieve our goals. What's the next step in the process and what kind of support can we expect from Whatfix?"
+      },
+      {
+        "user": "Whatfix Sales Person",
+        "content": "I'm glad you're interested in moving forward. The next step would be to schedule a follow-up call to discuss the pilot program and answer any further questions you may have. We'll also provide you with a customized proposal outlining the scope of work, timeline, and pricing. You'll have a dedicated customer success manager to ensure a smooth implementation and to provide ongoing support. We're committed to helping you achieve your goals and we're confident that our platform can make a significant impact."
+      }
+    ]
+  },
+  "discovery_analysis_buyer_data": {
+    "pain_points": [
+      "customers having trouble navigating software",
+      "high churn rate",
+      "struggling to reduce carbon footprint",
+      "meeting sustainability goals"
+    ],
+    "objections": [
+      "pricing model concerns",
+      "customization and implementation process"
+    ],
+    "time_lines": [],
+    "success_indicators": [],
+    "budget_constraints": [
+      "large-scale enterprise budget"
+    ],
+    "competition": [],
+    "decision_committee": [
+      "John, the Head of Digital Transformation at Schneider Electric"
+    ]
+  },
+  "discovery_analysis_seller_data": {
+    "discovery_questions": [
+      "Can you start by telling me a little bit about your role and what brings you to this call?",
+      "Can you tell me more about what you mean by improving customer experience and increasing energy efficiency? What specific pain points are you trying to address?"
+    ],
+    "decision_making_process_questions": [],
+    "objection_resolution_pairs": [
+      {
+        "objection": "pricing model concerns",
+        "resolution": "Our pricing model is based on the number of users and the level of customization you need. We have a tiered pricing structure, with discounts for larger enterprises. We also offer a free trial and a pilot program to help you test our platform and see the ROI for yourself."
+      },
+      {
+        "objection": "customization and implementation process",
+        "resolution": "We'll provide you with a customized proposal outlining the scope of work, timeline, and pricing. You'll have a dedicated customer success manager to ensure a smooth implementation and to provide ongoing support."
+      }
+    ],
+    "insights": [
+      "Improving customer experience and increasing energy efficiency are key goals for Schneider Electric",
+      "Schneider Electric is struggling with high churn rates and reducing carbon footprint",
+      "Schneider Electric is interested in exploring digital adoption platforms to achieve their goals"
+    ],
+    "improvements": [
+      "Provide more clarity on pricing and customization options",
+      "Offer a more personalized demo to address specific pain points",
+      "Emphasize the ROI and benefits of implementing Whatfix's digital adoption platform"
+    ]
+  },
+  "demo_features": {
+    "features": [
+      {
+        "name": "Digital Adoption Platform",
+        "description": "A platform that provides in-app guidance, training, and performance support for web applications and software to enhance user experience and software adoption."
+      },
+      {
+        "name": "Interactive Guides",
+        "description": "Guides that enable users to learn and adapt to new software applications and features through interactive and immersive experiences."
+      },
+      {
+        "name": "Flows",
+        "description": "A feature that helps users navigate complex software applications and complete tasks efficiently by providing step-by-step guidance."
+      },
+      {
+        "name": "In-app Guidance",
+        "description": "Contextual and real-time guidance provided within the software application to help users overcome learning curves and adopt new features."
+      },
+      {
+        "name": "Training",
+        "description": "Personalized and interactive training experiences that help users develop skills and proficiency in using software applications."
+      },
+      {
+        "name": "Performance Support",
+        "description": "Real-time support and feedback provided to users within the software application to help them complete tasks efficiently and effectively."
+      },
+      {
+        "name": "Analytics",
+        "description": "Insights and analytics provided to help organizations measure the effectiveness of their digital adoption strategy and identify areas for improvement."
+      }
+    ]
+  },
+  "demo_transcript": {
+    "messages": [
+      {
+        "user": "Whatfix",
+        "content": "Hello, John. It's great to have you and the Schneider Electric team on the call today. I'm excited to showcase how Whatfix's digital adoption platform can address your pain points and help you achieve your goals."
+      },
+      {
+        "user": "John, Head of Digital Transformation at Schneider Electric",
+        "content": "Thanks for having us. We're looking forward to seeing how Whatfix can help us improve customer experience and increase energy efficiency."
+      },
+      {
+        "user": "Whatfix",
+        "content": "Absolutely. Before we dive into the demo, I just want to confirm that we're on the same page regarding your goals and pain points. You mentioned during our previous discovery call that you're struggling with high churn rates, reducing carbon footprint, and meeting sustainability goals. Can you tell me a little bit more about what you mean by these challenges and how they're impacting your business?"
+      },
+      {
+        "user": "John, Head of Digital Transformation at Schneider Electric",
+        "content": "Yes, certainly. Our customers are having trouble navigating our software, which is leading to high churn rates. We're also struggling to reduce our carbon footprint and meet our sustainability goals. We believe that improving customer experience and increasing energy efficiency are key to addressing these challenges."
+      },
+      {
+        "user": "Whatfix",
+        "content": "I understand. Our digital adoption platform is designed to help organizations like yours overcome these challenges. Let me show you how our features can address your pain points. First, I'd like to demonstrate our Interactive Guides, which enable users to learn and adapt to new software applications and features through interactive and immersive experiences. This feature can help reduce churn rates by providing users with a personalized onboarding experience."
+      },
+      {
+        "user": "John, Head of Digital Transformation at Schneider Electric",
+        "content": "That sounds interesting. Can you show me how it works?"
+      },
+      {
+        "user": "Whatfix",
+        "content": "Of course. (demonstrates Interactive Guides feature) As you can see, our Interactive Guides provide step-by-step guidance and real-time feedback to users, helping them complete tasks efficiently and effectively. We've seen significant reductions in churn rates and increases in customer satisfaction with our clients who have implemented this feature."
+      },
+      {
+        "user": "John, Head of Digital Transformation at Schneider Electric",
+        "content": "That's impressive. How does your platform handle customization and implementation? We have a complex software application, and we're concerned about the time and resources required to implement your platform."
+      },
+      {
+        "user": "Whatfix",
+        "content": "I completely understand your concerns. We'll provide you with a customized proposal outlining the scope of work, timeline, and pricing. You'll have a dedicated customer success manager to ensure a smooth implementation and to provide ongoing support. We've worked with numerous large-scale enterprises like yours, and we're confident that we can meet your customization and implementation needs."
+      },
+      {
+        "user": "John, Head of Digital Transformation at Schneider Electric",
+        "content": "Okay, that sounds reassuring. What kind of ROI can we expect from implementing your platform?"
+      },
+      {
+        "user": "Whatfix",
+        "content": "Our clients have seen significant ROI from implementing our digital adoption platform. For example, one of our clients in the energy sector saw a 30% reduction in churn rates and a 25% increase in customer satisfaction. We can provide you with a customized ROI calculation based on your specific needs and goals."
+      },
+      {
+        "user": "Whatfix",
+        "content": "Before we wrap up the demo, I'd like to highlight a few more features that I think would be particularly beneficial for Schneider Electric. Our Analytics feature provides insights and analytics to help organizations measure the effectiveness of their digital adoption strategy and identify areas for improvement. Our Training feature offers personalized and interactive training experiences to help users develop skills and proficiency in using software applications. And our Performance Support feature provides real-time support and feedback to users within the software application to help them complete tasks efficiently and effectively."
+      },
+      {
+        "user": "John, Head of Digital Transformation at Schneider Electric",
+        "content": "Those features sound useful. How do we get started with implementing your platform?"
+      },
+      {
+        "user": "Whatfix",
+        "content": "We can provide you with a customized proposal outlining the scope of work, timeline, and pricing. We also offer a free trial and a pilot program to help you test our platform and see the ROI for yourself. Let's discuss the next steps and answer any remaining questions you may have."
+      },
+      {
+        "user": "Whatfix",
+        "content": "During the demo, I used the following assets: a presentation outlining the features and benefits of our digital adoption platform, a video showcasing our Interactive Guides feature, and a document highlighting our success stories and case studies. I'll send these assets to you via email for your reference."
+      },
+      {
+        "user": "Whatfix",
+        "content": "Before we close, I just want to confirm that we've addressed your pain points and concerns. Are there any remaining objections or questions you have regarding our digital adoption platform?"
+      },
+      {
+        "user": "John, Head of Digital Transformation at Schneider Electric",
+        "content": "No, I think we've covered everything. Thank you for the demo and for addressing our concerns."
+      },
+      {
+        "user": "Whatfix",
+        "content": "You're welcome. It was great demoing our digital adoption platform for you today. I'll send over the next steps and a customized proposal. Let's schedule a follow-up call to discuss further. Thank you again for your time today."
+      }
+    ]
+  },
+  "demo_analysis_buyer_data": {
+    "interested_features": [
+      {
+        "name": "Interactive Guides",
+        "description": "enable users to learn and adapt to new software applications and features through interactive and immersive experiences",
+        "pain_point": "high churn rates"
+      },
+      {
+        "name": "Analytics",
+        "description": "provide insights and analytics to help organizations measure the effectiveness of their digital adoption strategy and identify areas for improvement",
+        "pain_point": "improving customer experience and increasing energy efficiency"
+      },
+      {
+        "name": "Training",
+        "description": "offers personalized and interactive training experiences to help users develop skills and proficiency in using software applications",
+        "pain_point": "improving customer experience and increasing energy efficiency"
+      },
+      {
+        "name": "Performance Support",
+        "description": "provides real-time support and feedback to users within the software application to help them complete tasks efficiently and effectively",
+        "pain_point": "improving customer experience and increasing energy efficiency"
+      }
+    ],
+    "skeptical_features": [
+      {
+        "name": "Customization and Implementation",
+        "description": "customized proposal outlining the scope of work, timeline, and pricing",
+        "objection": "concerns about the time and resources required to implement the platform"
+      }
+    ],
+    "objections_raised": [
+      "concerns about the time and resources required to implement the platform",
+      "ROI expectations"
+    ],
+    "stakeholder_engagement": [
+      {
+        "stakeholder": "John, Head of Digital Transformation at Schneider Electric",
+        "engagement_level": "high"
+      }
+    ],
+    "feedback": "Thank you for the demo and for addressing our concerns."
+  },
+  "demo_analysis_seller_data": {
+    "demo_features": [
+      {
+        "name": "Interactive Guides",
+        "description": "enable users to learn and adapt to new software applications and features through interactive and immersive experiences"
+      },
+      {
+        "name": "Analytics",
+        "description": "provide insights and analytics to help organizations measure the effectiveness of their digital adoption strategy and identify areas for improvement"
+      },
+      {
+        "name": "Training",
+        "description": "offers personalized and interactive training experiences to help users develop skills and proficiency in using software applications"
+      },
+      {
+        "name": "Performance Support",
+        "description": "provides real-time support and feedback to users within the software application to help them complete tasks efficiently and effectively"
+      }
+    ],
+    "objection_handling": [
+      {
+        "objection": "concerns about the time and resources required to implement the platform",
+        "resolution": "customized proposal outlining the scope of work, timeline, and pricing",
+        "status": true
+      },
+      {
+        "objection": "ROI expectations",
+        "resolution": "customized ROI calculation based on the buyer's specific needs and goals",
+        "status": true
+      }
+    ],
+    "success_stories": [
+      "one of our clients in the energy sector saw a 30% reduction in churn rates and a 25% increase in customer satisfaction"
+    ],
+    "assets_used": [
+      "presentation outlining the features and benefits of our digital adoption platform",
+      "video showcasing our Interactive Guides feature",
+      "document highlighting our success stories and case studies"
+    ],
+    "customizations": [
+      "customized proposal outlining the scope of work, timeline, and pricing"
+    ],
+    "engagement_questions": [
+      "Can you tell me a little bit more about what you mean by these challenges and how they're impacting your business?"
+    ]
+  }
 }

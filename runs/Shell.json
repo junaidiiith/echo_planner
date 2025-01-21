@@ -1,14 +1,510 @@
 {
-  "seller_research": "{\n  \"name\": \"Whatfix\",\n  \"website\": \"https://whatfix.com/\",\n  \"description\": \"Whatfix is an Indian SaaS-based digital adoption platform that provides in-app guidance, training, and performance support for web applications and software.\",\n  \"industry\": \"Software as a Service (SaaS)\",\n  \"products\": [\n    \"Digital Adoption Platform\",\n    \"Interactive Guides\",\n    \"In-app Guidance\",\n    \"Contextual User Experiences\",\n    \"Step-by-Step Guidance\",\n    \"Self-help User Experiences\"\n  ],\n  \"solutions\": [\n    \"Digital Adoption\",\n    \"Employee Onboarding\",\n    \"Software Training\",\n    \"Performance Support\",\n    \"User Engagement\",\n    \"Customer Experience\"\n  ],\n  \"use_cases\": [\n    \"Employee Onboarding\",\n    \"Software Adoption\",\n    \"Customer Onboarding\",\n    \"Performance Support\",\n    \"User Engagement\",\n    \"Customer Experience\"\n  ]\n}",
-  "seller_pricing": "{\n  \"pricing_models\": [\n    {\n      \"type\": \"Flat Fee + User License Fees\",\n      \"description\": \"Pricing for each product and plan is composed of a flat fee, plus user license fees. The flat fee depends on the product and plan you need.\",\n      \"price\": \"Starting at $15,500.00/one-time payment for 1 month\",\n      \"duration\": \"Monthly and Annually\"\n    }\n  ]\n}",
-  "buyer_research": "{\n  \"name\": \"Shell\",\n  \"website\": \"https://www.shell.com/\",\n  \"description\": \"Shell is a global group of energy and petrochemical companies, employing 103,000 people and with operations in more than 70 countries.\",\n  \"industry\": \"Energy and Petrochemical\",\n  \"company_size\": 103000,\n  \"goals\": [\n    \"Become a net-zero emissions energy business by 2050 or sooner\",\n    \"Cut carbon footprint by 50% by 2025\",\n    \"Reduce the net carbon footprint of its energy products by around 20 percent by 2035\"\n  ],\n  \"use_cases\": [\n    \"Exploration, production, refining and marketing of oil and natural gas\",\n    \"Production and import of fuels, chemicals, and lubricants\",\n    \"Operation of service stations\"\n  ],\n  \"challenges\": [\n    \"Fluctuating prices of crude oil, natural gas, oil products and chemicals\",\n    \"Disconnect between climate change goals and traditional business of producing and selling fossil fuels\",\n    \"Risk of being seen as greenwashing\"\n  ],\n  \"stakeholders\": [\n    \"Shareholders\",\n    \"Customers\",\n    \"Employees\",\n    \"Environment\"\n  ]\n}",
-  "competitive_info": "{\n  \"competitors\": [\n    {\n      \"name\": \"WalkMe\",\n      \"pros\": [\n        \"Easy to set up and use\",\n        \"Intuitive interface\",\n        \"Robust analytics and reporting\"\n      ],\n      \"cons\": [\n        \"Limited customization options\",\n        \"Can be expensive for large enterprises\",\n        \"Support can be slow to respond\"\n      ],\n      \"differentiators\": [\n        \"Strong focus on employee training and onboarding\",\n        \"Advanced analytics and reporting capabilities\",\n        \"Easy integration with popular software applications\"\n      ]\n    },\n    {\n      \"name\": \"Pendo\",\n      \"pros\": [\n        \"Strong focus on customer-facing product adoption\",\n        \"Robust analytics and reporting\",\n        \"Easy integration with popular software applications\"\n      ],\n      \"cons\": [\n        \"Not suitable for employee training and onboarding\",\n        \"Limited customization options\",\n        \"Can be expensive for large enterprises\"\n      ],\n      \"differentiators\": [\n        \"Strong focus on customer-facing product adoption\",\n        \"Advanced analytics and reporting capabilities\",\n        \"Easy integration with popular software applications\"\n      ]\n    },\n    {\n      \"name\": \"Userpilot\",\n      \"pros\": [\n        \"Easy to set up and use\",\n        \"Intuitive interface\",\n        \"Robust analytics and reporting\"\n      ],\n      \"cons\": [\n        \"Limited customization options\",\n        \"Can be expensive for large enterprises\",\n        \"Support can be slow to respond\"\n      ],\n      \"differentiators\": [\n        \"Strong focus on user onboarding and adoption\",\n        \"Advanced analytics and reporting capabilities\",\n        \"Easy integration with popular software applications\"\n      ]\n    }\n  ]\n}",
-  "anticipated_qopcs": "{\n  \"pains\": [\n    \"How does Whatfix's digital adoption platform support our goal of reducing carbon footprint and becoming a net-zero emissions energy business by 2050?\",\n    \"Will Whatfix's solution be able to handle the complexity of our energy and petrochemical operations?\",\n    \"How can Whatfix help us improve our employee onboarding process, given the size of our company?\",\n    \"What kind of ROI can we expect from implementing Whatfix's solution, and how will it impact our bottom line?\",\n    \"How does Whatfix's pricing model accommodate our company's size and global operations?\",\n    \"How can Whatfix help us reduce the risk of being seen as greenwashing, and improve our environmental reputation?\",\n    \"How does Whatfix integrate with our existing software applications, and what kind of support does it offer for implementation?\",\n    \"What kind of analytics and reporting does Whatfix provide, and how can we use it to measure the success of our digital adoption efforts?\"\n  ],\n  \"objections\": [\n    \"We're not sure if Whatfix's solution is scalable enough for our company's size and global operations.\",\n    \"We've had bad experiences with digital adoption platforms in the past, how is Whatfix different?\",\n    \"We're not convinced that Whatfix's solution will provide a significant ROI for our company.\",\n    \"We're concerned about the security and data privacy of Whatfix's solution, given the sensitive nature of our operations.\",\n    \"We're not sure if Whatfix's solution is flexible enough to accommodate our unique business needs and requirements.\",\n    \"We're comparing Whatfix with other digital adoption platforms like WalkMe, Pendo, and Userpilot, and we're not sure if Whatfix is the best fit for us.\"\n  ]\n}",
-  "discovery_transcript": "{\n  \"messages\": [\n    {\n      \"user\": \"Shell's Team\",\n      \"content\": \"Hi, thank you for taking the time to speak with us today. I'm Emily from Shell's digital transformation team, and I'm joined by my colleague, John from our IT department. We're interested in learning more about Whatfix's digital adoption platform and how it can support our company's goals.\"\n    },\n    {\n      \"user\": \"Whatfix's Sales Person\",\n      \"content\": \"Thank you, Emily and John, for having me on the call. I'm excited to learn more about Shell's goals and challenges and explore how Whatfix can help. Can you tell me more about your company's goals, especially in relation to digital adoption and employee onboarding?\"\n    },\n    {\n      \"user\": \"Shell's Team\",\n      \"content\": \"Absolutely. As you know, we're a global energy and petrochemical company, and we're committed to reducing our carbon footprint and becoming a net-zero emissions energy business by 2050. We're also looking to improve our employee onboarding process, given the size of our company. We believe digital adoption can play a key role in achieving these goals.\"\n    },\n    {\n      \"user\": \"Whatfix's Sales Person\",\n      \"content\": \"I understand. Those are ambitious goals, and digital adoption can certainly support you in achieving them. Can you walk me through your current employee onboarding process, and what challenges you're facing in terms of adoption and engagement?\"\n    },\n    {\n      \"user\": \"Shell's Team\",\n      \"content\": \"Currently, our onboarding process is quite manual and time-consuming. We rely on in-person training and documentation, which can be overwhelming for new employees. We're also struggling to ensure that our employees are adopting our software applications effectively, which is impacting our productivity and efficiency.\"\n    },\n    {\n      \"user\": \"Whatfix's Sales Person\",\n      \"content\": \"I see. That's a common challenge many organizations face. Whatfix's digital adoption platform can help you streamline your onboarding process, reduce the time-to-competency for new employees, and improve overall user adoption. We've had success with similar organizations in the energy and petrochemical industry. Would you like me to elaborate on how our solution can address your specific pain points?\"\n    },\n    {\n      \"user\": \"Shell's Team\",\n      \"content\": \"Yes, please do. We're interested in learning more about how Whatfix's solution can support our goals and address our challenges.\"\n    },\n    {\n      \"user\": \"Whatfix's Sales Person\",\n      \"content\": \"Whatfix's platform provides interactive guides, in-app guidance, and performance support to help users adopt your software applications more effectively. We also offer robust analytics and reporting to help you measure the success of your digital adoption efforts. Our solution is scalable, secure, and customizable to meet your unique business needs.\"\n    },\n    {\n      \"user\": \"Shell's Team\",\n      \"content\": \"That sounds promising. How does Whatfix's pricing model accommodate our company's size and global operations? We're concerned about the scalability and ROI of any solution we implement.\"\n    },\n    {\n      \"user\": \"Whatfix's Sales Person\",\n      \"content\": \"I understand your concerns. Whatfix's pricing model is based on a flat fee plus user license fees. We offer flexible pricing plans that can accommodate your company's size and global operations. We've worked with large enterprises like yours, and we're confident that our solution can provide a significant ROI for your company. I'd be happy to provide a customized pricing proposal for your review.\"\n    },\n    {\n      \"user\": \"Shell's Team\",\n      \"content\": \"That would be great, thank you. We're also considering other digital adoption platforms like WalkMe, Pendo, and Userpilot. How does Whatfix differentiate itself from these competitors?\"\n    },\n    {\n      \"user\": \"Whatfix's Sales Person\",\n      \"content\": \"Our solution is differentiated by its focus on both employee training and customer-facing product adoption. We also offer advanced analytics and reporting capabilities, as well as easy integration with popular software applications. Our solution is highly customizable, and we provide a dedicated customer success team to support our clients throughout the implementation process.\"\n    },\n    {\n      \"user\": \"Shell's Team\",\n      \"content\": \"Thank you for addressing our concerns and questions. We'd like to discuss this further with our team and review the customized pricing proposal. What are the next steps, and what kind of timeline are we looking at for implementation?\"\n    },\n    {\n      \"user\": \"Whatfix's Sales Person\",\n      \"content\": \"I'm glad we could have this conversation. The next steps would be to review the customized pricing proposal, and then we can schedule a follow-up call to discuss any further questions or concerns you may have. In terms of timeline, our implementation process typically takes around 6-8 weeks, depending on the scope and complexity of the project. We'll work closely with your team to ensure a smooth implementation and minimal disruption to your business operations.\"\n    },\n    {\n      \"user\": \"Shell's Team\",\n      \"content\": \"Thank you, we appreciate your time and expertise. We'll be in touch soon to discuss further.\"\n    },\n    {\n      \"user\": \"Whatfix's Sales Person\",\n      \"content\": \"You're welcome. It was a pleasure speaking with you both. I look forward to hearing from you soon.\"\n    }\n  ]\n}",
-  "discovery_analysis_buyer_data": "{\n  \"pain_points\": [\n    \"Manual and time-consuming employee onboarding process\",\n    \"Struggling to ensure employees are adopting software applications effectively, impacting productivity and efficiency\"\n  ],\n  \"objections\": [\n    \"Concerns about scalability and ROI of the solution\",\n    \"Considering other digital adoption platforms like WalkMe, Pendo, and Userpilot\"\n  ],\n  \"time_lines\": [\n    \"Implementation timeline of 6-8 weeks\"\n  ],\n  \"success_indicators\": [\n    \"Improving employee onboarding process\",\n    \"Increasing productivity and efficiency\",\n    \"Reducing carbon footprint and becoming a net-zero emissions energy business by 2050\"\n  ],\n  \"budget_constraints\": [\n    \"Concerns about the pricing model accommodating the company's size and global operations\"\n  ],\n  \"competition\": [\n    \"WalkMe\",\n    \"Pendo\",\n    \"Userpilot\"\n  ],\n  \"decision_committee\": [\n    \"Emily from Shell's digital transformation team\",\n    \"John from Shell's IT department\"\n  ]\n}",
-  "discovery_analysis_seller_data": "{\n  \"discovery_questions\": [\n    \"Can you tell me more about your company's goals, especially in relation to digital adoption and employee onboarding?\",\n    \"Can you walk me through your current employee onboarding process, and what challenges you're facing in terms of adoption and engagement?\"\n  ],\n  \"decision_making_process_questions\": [],\n  \"objection_resolution_pairs\": [\n    {\n      \"objection\": \"Concerns about scalability and ROI of the solution\",\n      \"resolution\": \"Whatfix's pricing model is based on a flat fee plus user license fees. We offer flexible pricing plans that can accommodate your company's size and global operations. We've worked with large enterprises like yours, and we're confident that our solution can provide a significant ROI for your company.\"\n    },\n    {\n      \"objection\": \"Considering other digital adoption platforms like WalkMe, Pendo, and Userpilot\",\n      \"resolution\": \"Our solution is differentiated by its focus on both employee training and customer-facing product adoption. We also offer advanced analytics and reporting capabilities, as well as easy integration with popular software applications. Our solution is highly customizable, and we provide a dedicated customer success team to support our clients throughout the implementation process.\"\n    }\n  ],\n  \"insights\": [\n    \"Shell's digital transformation team is looking to improve their employee onboarding process and reduce their carbon footprint.\",\n    \"Shell's current employee onboarding process is manual and time-consuming, impacting productivity and efficiency.\",\n    \"Shell is considering other digital adoption platforms and is concerned about scalability and ROI.\"\n  ],\n  \"improvements\": [\n    \"Whatfix could provide more detailed information about their pricing model and ROI to address Shell's concerns.\",\n    \"Whatfix could emphasize their solution's ability to support Shell's goal of becoming a net-zero emissions energy business by 2050.\"\n  ]\n}",
-  "demo_features": "{\n  \"features\": [\n    {\n      \"name\": \"Digital Adoption Platform\",\n      \"description\": \"A platform that provides in-app guidance, training, and performance support for web applications and software, enabling Shell to improve their employee onboarding process and reduce their carbon footprint.\"\n    },\n    {\n      \"name\": \"Interactive Guides\",\n      \"description\": \"Guides that provide step-by-step instructions to help employees navigate software applications, increasing productivity and efficiency.\"\n    },\n    {\n      \"name\": \"In-app Guidance\",\n      \"description\": \"Real-time guidance that helps employees complete tasks efficiently, reducing manual and time-consuming processes.\"\n    },\n    {\n      \"name\": \"Contextual User Experiences\",\n      \"description\": \"Personalized experiences that provide relevant information to employees at the right time, improving user engagement and adoption.\"\n    },\n    {\n      \"name\": \"Step-by-Step Guidance\",\n      \"description\": \"Guidance that breaks down complex tasks into simple, easy-to-follow steps, enabling employees to complete tasks quickly and efficiently.\"\n    },\n    {\n      \"name\": \"Self-help User Experiences\",\n      \"description\": \"Experiences that empower employees to find answers and solutions on their own, reducing support queries and increasing productivity.\"\n    },\n    {\n      \"name\": \"Advanced Analytics and Reporting\",\n      \"description\": \"Capabilities that provide detailed insights into employee behavior, adoption rates, and ROI, helping Shell to measure the effectiveness of their digital adoption strategy.\"\n    },\n    {\n      \"name\": \"Easy Integration with Popular Software Applications\",\n      \"description\": \"Integration capabilities that allow Shell to seamlessly connect Whatfix with their existing software applications, streamlining their digital adoption process.\"\n    },\n    {\n      \"name\": \"Dedicated Customer Success Team\",\n      \"description\": \"A team that provides personalized support and guidance throughout the implementation process, ensuring a smooth and successful rollout.\"\n    }\n  ]\n}",
-  "demo_transcript": "{\n  \"messages\": [\n    {\n      \"user\": \"Whatfix\",\n      \"content\": \"Hi Emily and John from Shell, thank you for taking the time to join this demo call today. I'm excited to showcase how Whatfix can help improve your employee onboarding process and increase productivity and efficiency. Before we dive in, I'd like to quickly review the objectives of this call. We'll be covering the key features of our digital adoption platform, addressing any concerns or objections you may have, and discussing how our solution can support your goal of becoming a net-zero emissions energy business by 2050. Are there any specific areas you'd like me to focus on during this demo?\"\n    },\n    {\n      \"user\": \"Emily from Shell\",\n      \"content\": \"Thank you for clarifying the objectives. I'm particularly interested in seeing how your platform can help us streamline our employee onboarding process and reduce our carbon footprint.\"\n    },\n    {\n      \"user\": \"Whatfix\",\n      \"content\": \"Excellent! Let me start by showing you our Digital Adoption Platform. This platform provides in-app guidance, training, and performance support for web applications and software. With our platform, you can create interactive guides that provide step-by-step instructions to help employees navigate software applications, increasing productivity and efficiency. I'll demonstrate how our platform can be customized to fit your specific needs.\"\n    },\n    {\n      \"user\": \"Whatfix\",\n      \"content\": \"As you can see, our platform offers real-time guidance that helps employees complete tasks efficiently, reducing manual and time-consuming processes. We also provide contextual user experiences that provide relevant information to employees at the right time, improving user engagement and adoption. I'd like to highlight our step-by-step guidance feature, which breaks down complex tasks into simple, easy-to-follow steps, enabling employees to complete tasks quickly and efficiently.\"\n    },\n    {\n      \"user\": \"John from Shell\",\n      \"content\": \"That's impressive. But how do you ensure that your platform is scalable and can accommodate our company's size and global operations?\"\n    },\n    {\n      \"user\": \"Whatfix\",\n      \"content\": \"I completely understand your concern, John. Our pricing model is based on a flat fee plus user license fees. We offer flexible pricing plans that can accommodate your company's size and global operations. We've worked with large enterprises like yours, and we're confident that our solution can provide a significant ROI for your company. I'd be happy to provide more detailed information about our pricing model and ROI during the implementation process.\"\n    },\n    {\n      \"user\": \"Emily from Shell\",\n      \"content\": \"We're also considering other digital adoption platforms like WalkMe, Pendo, and Userpilot. How does Whatfix differentiate itself from these competitors?\"\n    },\n    {\n      \"user\": \"Whatfix\",\n      \"content\": \"Our solution is differentiated by its focus on both employee training and customer-facing product adoption. We also offer advanced analytics and reporting capabilities, as well as easy integration with popular software applications. Our solution is highly customizable, and we provide a dedicated customer success team to support our clients throughout the implementation process. I'd like to share a success story from one of our clients, a large financial institution, that saw a significant increase in employee productivity and adoption rates after implementing our solution.\"\n    },\n    {\n      \"user\": \"Whatfix\",\n      \"content\": \"To summarize, our digital adoption platform is designed to help you improve your employee onboarding process, increase productivity and efficiency, and reduce your carbon footprint. We've addressed your concerns about scalability and ROI, and I believe our solution is well-positioned to support your company's goals. Do you have any further questions or would you like to discuss next steps?\"\n    },\n    {\n      \"user\": \"Emily from Shell\",\n      \"content\": \"That was very informative, thank you. We do have some more questions and would like to discuss next steps. Can you provide more information about the implementation process and what kind of support we can expect from your customer success team?\"\n    },\n    {\n      \"user\": \"Whatfix\",\n      \"content\": \"I'll be happy to provide more information about our implementation process and customer success team. I'll also provide a presentation that outlines our implementation timeline, which is typically 6-8 weeks, and our customer success team's support model. We'll also discuss how we can customize our solution to fit your specific needs and pain points. Let me just share this presentation with you...\"\n    }\n  ]\n}",
-  "demo_analysis_buyer_data": "{\n  \"interested_features\": [\n    {\n      \"pain_point\": \"streamline employee onboarding process and reduce carbon footprint\"\n    }\n  ],\n  \"skeptical_features\": [\n    {\n      \"objection\": \"scalability and accommodating company size and global operations\"\n    },\n    {\n      \"objection\": \"differentiation from competitors like WalkMe, Pendo, and Userpilot\"\n    }\n  ],\n  \"objections_raised\": [\n    \"How do you ensure that your platform is scalable and can accommodate our company's size and global operations?\",\n    \"How does Whatfix differentiate itself from these competitors?\"\n  ],\n  \"stakeholder_engagement\": [\n    {\n      \"stakeholder\": \"Emily from Shell\",\n      \"engagement_level\": \"high\"\n    },\n    {\n      \"stakeholder\": \"John from Shell\",\n      \"engagement_level\": \"medium\"\n    }\n  ],\n  \"feedback\": \"That was very informative, thank you.\"\n}",
-  "demo_analysis_seller_data": "{\n  \"demo_features\": [\n    {\n      \"name\": \"Digital Adoption Platform\",\n      \"description\": \"Provides in-app guidance, training, and performance support for web applications and software.\"\n    },\n    {\n      \"name\": \"Real-time Guidance\",\n      \"description\": \"Helps employees complete tasks efficiently, reducing manual and time-consuming processes.\"\n    },\n    {\n      \"name\": \"Contextual User Experiences\",\n      \"description\": \"Provides relevant information to employees at the right time, improving user engagement and adoption.\"\n    },\n    {\n      \"name\": \"Step-by-Step Guidance\",\n      \"description\": \"Breaks down complex tasks into simple, easy-to-follow steps, enabling employees to complete tasks quickly and efficiently.\"\n    }\n  ],\n  \"objection_handling\": [\n    {\n      \"objection\": \"Scalability and accommodating company size and global operations\",\n      \"resolution\": \"Flexible pricing plans that can accommodate company size and global operations\",\n      \"status\": true\n    },\n    {\n      \"objection\": \"Differentiation from competitors\",\n      \"resolution\": \"Focus on both employee training and customer-facing product adoption, advanced analytics and reporting capabilities, easy integration with popular software applications, and dedicated customer success team\",\n      \"status\": true\n    }\n  ],\n  \"success_stories\": [\n    \"A large financial institution saw a significant increase in employee productivity and adoption rates after implementing Whatfix\"\n  ],\n  \"assets_used\": [\n    \"Presentation outlining implementation timeline and customer success team's support model\"\n  ],\n  \"customizations\": [\n    \"Customizable to fit specific needs and pain points\"\n  ],\n  \"engagement_questions\": [\n    \"Are there any specific areas you'd like me to focus on during this demo?\"\n  ]\n}"
+  "seller_research": {
+    "name": "Whatfix",
+    "website": "https://whatfix.com/",
+    "description": "Whatfix is an Indian SaaS-based digital adoption platform that provides in-app guidance, training, and performance support for web applications and software.",
+    "industry": "Software as a Service (SaaS)",
+    "products": [
+      "Digital Adoption Platform",
+      "In-app Guidance",
+      "Contextual User Experiences",
+      "Step-by-Step Guidance",
+      "Self-Help User Support",
+      "Analytics"
+    ],
+    "solutions": [
+      "Accelerate Digital Transformation",
+      "Drive User Adoption",
+      "Maximize Technology Investments",
+      "Achieve Business Outcomes",
+      "Enhance Software Experiences",
+      "Streamline Product User Adoption Processes"
+    ],
+    "use_cases": [
+      "Onboarding",
+      "New Feature Rollouts",
+      "Continuous Training",
+      "Application Analytics",
+      "User Adoption",
+      "Digital Transformation"
+    ]
+  },
+  "seller_pricing": {
+    "pricing_models": [
+      {
+        "type": "Custom Pricing",
+        "description": "Pricing for each product and plan is composed of a flat fee, plus user license fees.",
+        "price": "Varies based on product and plan",
+        "duration": "Monthly or yearly"
+      },
+      {
+        "type": "Standard",
+        "description": "Ideal for small to medium-sized businesses",
+        "price": "Custom quote",
+        "duration": "Monthly or yearly"
+      },
+      {
+        "type": "Premium",
+        "description": "Ideal for large enterprises",
+        "price": "Custom quote",
+        "duration": "Monthly or yearly"
+      },
+      {
+        "type": "Flat Fee + User License Fees",
+        "description": "Pricing is composed of a flat fee, plus user license fees.",
+        "price": "Varies based on product and plan",
+        "duration": "Monthly or yearly"
+      }
+    ]
+  },
+  "buyer_research": {
+    "name": "Shell",
+    "website": "https://www.shell.com/",
+    "description": "Royal Dutch Shell is an energy and petrochemical company that explores for, produces, and refines oil around the world.",
+    "industry": "Oil and Gas",
+    "company_size": "Enterprise",
+    "goals": [
+      "Powering Progress",
+      "Become a net-zero emissions business by 2050",
+      "Reduce carbon intensity of products by 20% and 45% within 2030 and 2035"
+    ],
+    "use_cases": [
+      "Energy transition",
+      "Sustainable farming practices"
+    ],
+    "challenges": [
+      "Climate change",
+      "Disconnect between company's strategy and goals",
+      "Balancing oil demand with climate goals"
+    ],
+    "stakeholders": [
+      "Wael Sawan (CEO)",
+      "Mark (Shell icon)",
+      "Shareholders"
+    ]
+  },
+  "competitive_info": {
+    "competitors": [
+      {
+        "name": "WalkMe",
+        "pros": [
+          "No-code growth",
+          "Advanced demo analytics capabilities",
+          "Robust customer onboarding",
+          "Strong analytics and reporting capabilities"
+        ],
+        "cons": [
+          "Expensive",
+          "Steep learning curve",
+          "Limited customization options"
+        ],
+        "differentiators": [
+          "Strong customer support",
+          "User-friendly interface",
+          "Advanced analytics capabilities"
+        ]
+      },
+      {
+        "name": "Pendo",
+        "pros": [
+          "Advanced analytics and reporting capabilities",
+          "Robust customer onboarding",
+          "Strong product adoption features"
+        ],
+        "cons": [
+          "Expensive",
+          "Complex setup and integration",
+          "Limited customization options"
+        ],
+        "differentiators": [
+          "Strong product adoption features",
+          "Advanced analytics capabilities",
+          "Robust customer support"
+        ]
+      },
+      {
+        "name": "Userlane",
+        "pros": [
+          "Easy to use and implement",
+          "Robust user onboarding features",
+          "Strong analytics and reporting capabilities"
+        ],
+        "cons": [
+          "Limited advanced analytics capabilities",
+          "Limited customization options",
+          "Not suitable for large enterprises"
+        ],
+        "differentiators": [
+          "Easy to use and implement",
+          "Robust user onboarding features",
+          "Strong customer support"
+        ]
+      }
+    ]
+  },
+  "anticipated_qopcs": {
+    "pains": [
+      "Difficulty in maximizing technology investments",
+      "Inefficient user adoption processes",
+      "Challenges in driving user adoption",
+      "Lack of personalized user experiences",
+      "Insufficient application analytics",
+      "Disconnection between company's strategy and goals",
+      "Balancing oil demand with climate goals",
+      "High carbon intensity of products"
+    ],
+    "objections": [
+      "Whatfix may not be able to integrate with our existing systems",
+      "We are not sure if Whatfix can handle our scale and complexity",
+      "The cost of implementation and maintenance may be too high",
+      "We are already invested in another digital adoption platform",
+      "We do not see the value in investing in a digital adoption platform",
+      "Whatfix may not be able to provide the level of customization we need"
+    ]
+  },
+  "discovery_transcript": {
+    "messages": [
+      {
+        "user": "Whatfix Sales Person",
+        "content": "Hello, thank you for taking the time to speak with me today. I'm excited to learn more about Shell's goals and challenges. Can you please introduce yourself and tell me a little bit about your role?"
+      },
+      {
+        "user": "Shell's Team Representative",
+        "content": "Hi, my name is John and I'm the Digital Transformation Lead at Shell. I'm responsible for driving our organization's digital adoption efforts. We're facing some challenges in terms of maximizing our technology investments and driving user adoption. I'm interested in learning more about how Whatfix can help us address these challenges."
+      },
+      {
+        "user": "Whatfix Sales Person",
+        "content": "Thank you for sharing that, John. It sounds like you're facing some significant pain points. Can you tell me more about what you mean by 'maximizing technology investments'? What specific challenges are you facing in this area?"
+      },
+      {
+        "user": "Shell's Team Representative",
+        "content": "Well, we've invested heavily in new software and systems, but we're not seeing the ROI we expected. Our users aren't adopting these new tools as quickly as we'd like, and it's impacting our productivity and efficiency. We're also struggling to balance our oil demand with our climate goals, and we're not sure how to use technology to help us achieve these goals."
+      },
+      {
+        "user": "Whatfix Sales Person",
+        "content": "I understand. It sounds like you're facing a classic problem of technology investment not translating to business outcomes. Whatfix has helped many organizations like yours address these challenges through our digital adoption platform. We provide in-app guidance, training, and performance support to help users get the most out of your technology investments. Can I show you a demo of our platform and how it can help you achieve your goals?"
+      },
+      {
+        "user": "Shell's Team Representative",
+        "content": "Yes, that would be great. I'd love to see how Whatfix can help us drive user adoption and maximize our technology investments. But before we do that, can you tell me more about how Whatfix integrates with existing systems? We have a lot of custom-built applications, and I'm worried that Whatfix might not be able to integrate with them seamlessly."
+      },
+      {
+        "user": "Whatfix Sales Person",
+        "content": "Absolutely, John. Integration is a critical aspect of our platform. We've worked with many organizations with custom-built applications, and we've developed a robust integration framework that allows us to integrate with a wide range of systems. We can also provide custom API integrations if needed. I'd be happy to walk you through our integration process in more detail during the demo."
+      },
+      {
+        "user": "Shell's Team Representative",
+        "content": "Okay, that sounds reassuring. What kind of customization options do you offer? We have very specific requirements for our user experience, and I need to make sure that Whatfix can meet those requirements."
+      },
+      {
+        "user": "Whatfix Sales Person",
+        "content": "We offer a high degree of customization to meet the unique needs of our customers. Our platform allows you to tailor the user experience to your specific brand and requirements. We also have a robust analytics and reporting framework that allows you to track user behavior and optimize your digital adoption strategy. I'll show you some examples of our customization options during the demo."
+      },
+      {
+        "user": "Shell's Team Representative",
+        "content": "That sounds great. I'm looking forward to seeing the demo. What's the typical implementation timeline and cost for a organization of our size?"
+      },
+      {
+        "user": "Whatfix Sales Person",
+        "content": "Our implementation timeline typically ranges from 6-12 weeks, depending on the complexity of the implementation. As for cost, we offer a custom pricing model that takes into account the specific needs and requirements of our customers. I'd be happy to provide a detailed quote for your organization after the demo."
+      },
+      {
+        "user": "Shell's Team Representative",
+        "content": "Okay, that sounds reasonable. What's the decision-making process like for implementing a digital adoption platform like Whatfix? Who else would need to be involved in this decision?"
+      },
+      {
+        "user": "Whatfix Sales Person",
+        "content": "Typically, the decision-making process involves a committee of stakeholders, including IT, operations, and business leaders. We've worked with many organizations like yours, and we're happy to provide guidance on the decision-making process and what stakeholders to involve. We can also provide case studies and references from similar organizations that have implemented our platform."
+      },
+      {
+        "user": "Shell's Team Representative",
+        "content": "That would be helpful. What kind of success indicators do you typically track for a digital adoption platform like Whatfix?"
+      },
+      {
+        "user": "Whatfix Sales Person",
+        "content": "We typically track metrics such as user adoption rates, time to proficiency, and overall ROI of the digital adoption platform. We also provide regular analytics and reporting to help our customers optimize their digital adoption strategy and achieve their business outcomes."
+      },
+      {
+        "user": "Shell's Team Representative",
+        "content": "That sounds great. What's the timeline for making a decision on a digital adoption platform like Whatfix?"
+      },
+      {
+        "user": "Whatfix Sales Person",
+        "content": "We're flexible and can work with your timeline. However, we typically see our customers making a decision within 2-3 months of our initial conversation. We can also provide a trial or pilot program to help you test our platform and see the value it can bring to your organization."
+      },
+      {
+        "user": "Shell's Team Representative",
+        "content": "Okay, that sounds reasonable. I think that's all the questions I have for now. Thank you for taking the time to speak with me today and show me the demo. I'll need to discuss this further with our team and we'll be in touch soon."
+      },
+      {
+        "user": "Whatfix Sales Person",
+        "content": "Thank you, John. It was great speaking with you today. I'm looking forward to the opportunity to work with Shell and help you achieve your digital adoption goals. I'll follow up with you in a week to answer any additional questions you may have and provide any further information you need."
+      }
+    ]
+  },
+  "discovery_analysis_buyer_data": {
+    "pain_points": [
+      "maximizing technology investments",
+      "driving user adoption",
+      "balancing oil demand with climate goals",
+      "not seeing ROI on technology investments",
+      "users not adopting new tools quickly enough",
+      "impacting productivity and efficiency"
+    ],
+    "objections": [
+      "integration with existing systems",
+      "customization options",
+      "cost and implementation timeline"
+    ],
+    "time_lines": [
+      "2-3 months for making a decision on a digital adoption platform",
+      "6-12 weeks for implementation"
+    ],
+    "success_indicators": [
+      "user adoption rates",
+      "time to proficiency",
+      "ROI of the digital adoption platform"
+    ],
+    "budget_constraints": [],
+    "competition": [],
+    "decision_committee": [
+      "IT",
+      "operations",
+      "business leaders",
+      "Wael Sawan (CEO)",
+      "Mark (Shell icon)",
+      "Shareholders"
+    ]
+  },
+  "discovery_analysis_seller_data": {
+    "discovery_questions": [
+      "Can you tell me more about what you mean by 'maximizing technology investments'?",
+      "What specific challenges are you facing in this area?",
+      "What kind of customization options do you offer?",
+      "What's the typical implementation timeline and cost for a organization of our size?",
+      "Who else would need to be involved in this decision?",
+      "What kind of success indicators do you typically track for a digital adoption platform like Whatfix?",
+      "What's the timeline for making a decision on a digital adoption platform like Whatfix?"
+    ],
+    "decision_making_process_questions": [
+      "Who else would need to be involved in this decision?",
+      "What's the decision-making process like for implementing a digital adoption platform like Whatfix?"
+    ],
+    "objection_resolution_pairs": [
+      {
+        "objection": "integration with existing systems",
+        "resolution": "We've worked with many organizations with custom-built applications, and we've developed a robust integration framework that allows us to integrate with a wide range of systems. We can also provide custom API integrations if needed."
+      },
+      {
+        "objection": "customization options",
+        "resolution": "We offer a high degree of customization to meet the unique needs of our customers. Our platform allows you to tailor the user experience to your specific brand and requirements."
+      },
+      {
+        "objection": "cost and implementation timeline",
+        "resolution": "Our implementation timeline typically ranges from 6-12 weeks, depending on the complexity of the implementation. As for cost, we offer a custom pricing model that takes into account the specific needs and requirements of our customers."
+      }
+    ],
+    "insights": [
+      "Shell is facing challenges in maximizing technology investments and driving user adoption",
+      "Shell is struggling to balance oil demand with climate goals",
+      "Shell's users are not adopting new tools quickly enough, impacting productivity and efficiency",
+      "Shell is concerned about integration with existing systems",
+      "Shell needs a high degree of customization to meet their unique requirements",
+      "Shell is concerned about the cost and implementation timeline of a digital adoption platform"
+    ],
+    "improvements": [
+      "The seller could have probed deeper into Shell's pain points and challenges",
+      "The seller could have provided more specific examples of how Whatfix has helped similar organizations",
+      "The seller could have emphasized Whatfix's differentiators from competitors",
+      "The seller could have provided a clearer explanation of the implementation timeline and cost"
+    ]
+  },
+  "demo_features": {
+    "features": [
+      {
+        "name": "Digital Adoption Platform",
+        "description": "A platform that provides in-app guidance, training, and performance support for web applications and software."
+      },
+      {
+        "name": "In-app Guidance",
+        "description": "A feature that offers real-time, contextual guidance to users as they navigate through an application."
+      },
+      {
+        "name": "Contextual User Experiences",
+        "description": "A feature that provides personalized and relevant experiences to users based on their behavior, role, and preferences."
+      },
+      {
+        "name": "Step-by-Step Guidance",
+        "description": "A feature that breaks down complex tasks into simple, easy-to-follow steps, ensuring users complete tasks efficiently."
+      },
+      {
+        "name": "Self-Help User Support",
+        "description": "A feature that enables users to find answers to their questions and resolve issues on their own, reducing the need for support tickets."
+      },
+      {
+        "name": "Analytics",
+        "description": "A feature that provides insights into user behavior, helping organizations identify areas of improvement and track the effectiveness of their training programs."
+      }
+    ]
+  },
+  "demo_transcript": {
+    "messages": [
+      {
+        "user": "Whatfix",
+        "content": "Hello everyone, thank you for taking the time to join this demo call today. I'm excited to show you how Whatfix can help Shell maximize technology investments and drive user adoption. Before we begin, I just want to make sure we're all on the same page. Can you tell me a little bit about what you're hoping to get out of this demo today?"
+      },
+      {
+        "user": "Wael Sawan (CEO)",
+        "content": "Thank you for having us. We're looking for a solution that can help us improve user adoption rates and reduce the time it takes for our employees to become proficient in our new tools. We're also interested in seeing how Whatfix can help us balance our oil demand with our climate goals."
+      },
+      {
+        "user": "Whatfix",
+        "content": "Absolutely. I completely understand the challenges you're facing. Whatfix is a digital adoption platform that provides in-app guidance, training, and performance support for web applications and software. Our platform is designed to help users quickly adopt new tools and become proficient in them, which should help you achieve your goals. Can I show you a demo of our platform?"
+      },
+      {
+        "user": "Mark (Shell icon)",
+        "content": "Yes, please. I'd love to see how it works."
+      },
+      {
+        "user": "Whatfix",
+        "content": "Great. So, let me show you our in-app guidance feature. This feature offers real-time, contextual guidance to users as they navigate through an application. For example, let's say you've just rolled out a new software application to your employees. Our platform can provide step-by-step guidance to help them complete tasks efficiently. We can also provide contextual user experiences based on their behavior, role, and preferences."
+      },
+      {
+        "user": "IT",
+        "content": "That sounds interesting. How does it integrate with our existing systems?"
+      },
+      {
+        "user": "Whatfix",
+        "content": "We've worked with many organizations with custom-built applications, and we've developed a robust integration framework that allows us to integrate with a wide range of systems. We can also provide custom API integrations if needed. We've had success with similar organizations in the past, such as British Petroleum, who saw a significant increase in user adoption rates after implementing our platform."
+      },
+      {
+        "user": "Operations",
+        "content": "I'm concerned about the cost and implementation timeline. Can you provide some more information on that?"
+      },
+      {
+        "user": "Whatfix",
+        "content": "Our implementation timeline typically ranges from 6-12 weeks, depending on the complexity of the implementation. As for cost, we offer a custom pricing model that takes into account the specific needs and requirements of our customers. We've found that our platform typically pays for itself within the first year of implementation through increased productivity and efficiency."
+      },
+      {
+        "user": "Whatfix",
+        "content": "Let me also show you our analytics feature. This feature provides insights into user behavior, helping organizations identify areas of improvement and track the effectiveness of their training programs. We can also provide you with some case studies of similar organizations that have seen significant ROI from implementing our platform."
+      },
+      {
+        "user": "Wael Sawan (CEO)",
+        "content": "That sounds very promising. Can you provide some more information on the customization options you offer?"
+      },
+      {
+        "user": "Whatfix",
+        "content": "We offer a high degree of customization to meet the unique needs of our customers. Our platform allows you to tailor the user experience to your specific brand and requirements. We can also provide customized support to ensure that our platform meets your specific needs."
+      },
+      {
+        "user": "Whatfix",
+        "content": "I'd like to summarize what we've covered today. We've demonstrated how Whatfix can help Shell maximize technology investments and drive user adoption through our digital adoption platform. We've also addressed some of the concerns you had around integration, cost, and implementation timeline. Are there any other questions or concerns you'd like to discuss?"
+      },
+      {
+        "user": "Mark (Shell icon)",
+        "content": "No, I think that covers everything. Thank you for the demo. We'll be in touch soon to discuss next steps."
+      },
+      {
+        "user": "Whatfix",
+        "content": "You're welcome. It was a pleasure demonstrating our platform to you today. I'll send over some additional information, including the case studies and ROI analysis we discussed, as well as a customized proposal outlining how Whatfix can help Shell achieve its goals. We look forward to hearing from you soon."
+      }
+    ]
+  },
+  "demo_analysis_buyer_data": {
+    "interested_features": [
+      {
+        "name": "in-app guidance feature",
+        "description": "real-time, contextual guidance to users as they navigate through an application",
+        "pain_point": "improve user adoption rates and reduce the time it takes for employees to become proficient in new tools"
+      },
+      {
+        "name": "analytics feature",
+        "description": "provides insights into user behavior, helping organizations identify areas of improvement and track the effectiveness of their training programs",
+        "pain_point": "improve user adoption rates and reduce the time it takes for employees to become proficient in new tools"
+      },
+      {
+        "name": "customization options",
+        "description": "tailor the user experience to the specific brand and requirements",
+        "pain_point": "balance oil demand with climate goals"
+      }
+    ],
+    "skeptical_features": [
+      {
+        "name": "integration",
+        "description": "integration with existing systems",
+        "objection": "concern about integrating with existing systems"
+      },
+      {
+        "name": "cost and implementation timeline",
+        "description": "custom pricing model and implementation timeline",
+        "objection": "concern about cost and implementation timeline"
+      }
+    ],
+    "objections_raised": [
+      "concern about integrating with existing systems",
+      "concern about cost and implementation timeline"
+    ],
+    "stakeholder_engagement": [
+      {
+        "stakeholder": "Wael Sawan (CEO)",
+        "engagement_level": "high"
+      },
+      {
+        "stakeholder": "Mark (Shell icon)",
+        "engagement_level": "high"
+      },
+      {
+        "stakeholder": "IT",
+        "engagement_level": "medium"
+      },
+      {
+        "stakeholder": "Operations",
+        "engagement_level": "medium"
+      }
+    ],
+    "feedback": "Thank you for the demo. We'll be in touch soon to discuss next steps."
+  },
+  "demo_analysis_seller_data": {
+    "demo_features": [
+      {
+        "name": "in-app guidance feature",
+        "description": "real-time, contextual guidance to users as they navigate through an application"
+      },
+      {
+        "name": "analytics feature",
+        "description": "provides insights into user behavior, helping organizations identify areas of improvement and track the effectiveness of their training programs"
+      },
+      {
+        "name": "customization options",
+        "description": "tailor the user experience to the specific brand and requirements"
+      }
+    ],
+    "objection_handling": [
+      {
+        "objection": "concern about integrating with existing systems",
+        "resolution": "We've developed a robust integration framework that allows us to integrate with a wide range of systems. We can also provide custom API integrations if needed.",
+        "status": true
+      },
+      {
+        "objection": "concern about cost and implementation timeline",
+        "resolution": "Our implementation timeline typically ranges from 6-12 weeks, depending on the complexity of the implementation. As for cost, we offer a custom pricing model that takes into account the specific needs and requirements of our customers.",
+        "status": true
+      }
+    ],
+    "success_stories": [
+      "British Petroleum, who saw a significant increase in user adoption rates after implementing our platform"
+    ],
+    "assets_used": [
+      "case studies",
+      "ROI analysis"
+    ],
+    "customizations": [
+      "custom API integrations",
+      "tailor the user experience to the specific brand and requirements"
+    ],
+    "engagement_questions": [
+      "Can you tell me a little bit about what you're hoping to get out of this demo today?"
+    ]
+  }
 }

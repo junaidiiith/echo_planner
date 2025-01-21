@@ -11,7 +11,6 @@ from echo.utils import (
     get_db_type, 
     get_sql_client, 
     get_rag_client, 
-    get_current_time
 )
 
 

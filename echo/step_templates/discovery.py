@@ -39,7 +39,7 @@ class ClientResearchResponse(BaseModel):
 	website: str = Field(..., title="Buyer's Website", description="The website of the buyer.")
 	description: str = Field(..., title="Buyer's Description", description="A description of the buyer.")
 	industry: str = Field(..., title="Buyer's Industry", description="The industry that the buyer belongs to.")
-	company_size: int = Field(..., title="Buyer's Company Size", description="The size of the buyer's company.")
+	company_size: str = Field(..., title="Buyer's Company Size", description="The size of the buyer's company as one of the types - smb, mid-market, enterprise.")
 	goals: List[str] = Field(..., title="Buyer's Goals", description="The goals of the buyer.")
 	use_cases: List[str] = Field(..., title="Buyer's Use Cases", description="The use cases of the buyer.")
 	challenges: List[str] = Field(..., title="Buyer's Challenges", description="The challenges faced by the buyer.")
@@ -214,7 +214,11 @@ task_templates = {
                 "Make sure there are no comments in the response JSON and it should be a valid JSON."
             ),
             agent="PreCallResearchAgent",
-            context=["SellerIndustryResearchTask", "SellerPricingModelTask", "BuyerResearcher"],
+            context=[
+                "SellerIndustryResearchTask", 
+                "SellerPricingModelTask", 
+                "BuyerResearcher"
+            ],
             output_pydantic=SellerCompetitorAnalysisResponse,
         ),
         "BuyerPainsAndObjectionsDiscoveryTask": dict(

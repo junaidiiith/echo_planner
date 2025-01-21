@@ -1,14 +1,505 @@
 {
-  "seller_research": "{\n  \"name\": \"Whatfix\",\n  \"website\": \"https://whatfix.com/\",\n  \"description\": \"Whatfix is an Indian SaaS-based digital adoption platform that provides in-app guidance, training, and performance support for web applications and software.\",\n  \"industry\": \"Digital Adoption Platform\",\n  \"products\": [\n    \"Digital Adoption Platform\",\n    \"In-app Guidance\",\n    \"Interactive Guides\",\n    \"Simulated Training\",\n    \"Application Analytics\"\n  ],\n  \"solutions\": [\n    \"Digital Transformation\",\n    \"User Adoption\",\n    \"Maximizing Technology Investments\",\n    \"Business Outcomes\",\n    \"Enhancing Software Experiences\"\n  ],\n  \"use_cases\": [\n    \"Onboarding\",\n    \"Training\",\n    \"Support\",\n    \"Digital Transformation\",\n    \"Application Adoption\"\n  ]\n}",
-  "seller_pricing": "{\n  \"pricing_models\": [\n    {\n      \"type\": \"Customized\",\n      \"description\": \"Whatfix pricing is based on two components: a flat per-application fee, plus user license fees.\",\n      \"price\": \"Upon Request\",\n      \"duration\": \"Monthly/Yearly\"\n    },\n    {\n      \"type\": \"Basic\",\n      \"description\": \"Whatfix offers premium only subscription plans.\",\n      \"price\": \"$199 per month\",\n      \"duration\": \"Monthly\"\n    }\n  ]\n}",
-  "buyer_research": "{\n  \"name\": \"Infosys\",\n  \"website\": \"https://www.infosys.com/\",\n  \"description\": \"Infosys is a global leader in next-generation digital services and consulting.\",\n  \"industry\": \"IT Services and IT Consulting\",\n  \"company_size\": 317240,\n  \"goals\": [\n    \"Digital Transformation\",\n    \"Business Outcomes\",\n    \"Enhancing Software Experiences\"\n  ],\n  \"use_cases\": [\n    \"Digital Adoption\",\n    \"Application Analytics\",\n    \"User Adoption\"\n  ],\n  \"challenges\": [\n    \"Managing a large workforce\",\n    \"Staying ahead in the competitive IT services market\"\n  ],\n  \"stakeholders\": [\n    \"Salil Parekh (CEO)\",\n    \"U B Pravin Rao (COO)\",\n    \"Nilanjan Roy (CFO)\"\n  ]\n}",
-  "competitive_info": "{\n  \"competitors\": [\n    {\n      \"name\": \"WalkMe\",\n      \"pros\": [\n        \"enterprise-grade security\",\n        \"boost digital adoption at scale\",\n        \"personalized guidance and automation\"\n      ],\n      \"cons\": [\n        \"can be complex to set up\",\n        \"limited customization options\"\n      ],\n      \"differentiators\": [\n        \"robust governance, privacy, and security standards\",\n        \"overlay on any application\"\n      ]\n    },\n    {\n      \"name\": \"Pendo\",\n      \"pros\": [\n        \"improve employee productivity\",\n        \"provide training inside software applications\",\n        \"digital adoption certification course\"\n      ],\n      \"cons\": [\n        \"can be expensive\",\n        \"limited integration with certain software\"\n      ],\n      \"differentiators\": [\n        \"layered on top of another software product\",\n        \"facilitate proficiency by guiding users through key tasks\"\n      ]\n    },\n    {\n      \"name\": \"Appcues\",\n      \"pros\": [\n        \"no-code platform\",\n        \"user-friendly design\",\n        \"powerful targeting capabilities\"\n      ],\n      \"cons\": [\n        \"limited analytics capabilities\",\n        \"can be difficult to onboard\"\n      ],\n      \"differentiators\": [\n        \"no-code editor\",\n        \"create in-app experiences for user onboarding and adoption\"\n      ]\n    }\n  ]\n}",
-  "anticipated_qopcs": "{\n  \"pains\": [\n    \"How can Whatfix help Infosys achieve digital transformation and business outcomes?\",\n    \"What are the implementation and integration costs of Whatfix with our existing software applications?\",\n    \"How can Whatfix enhance employee productivity and user adoption of our software applications?\",\n    \"What is the ROI of investing in a digital adoption platform like Whatfix?\",\n    \"How does Whatfix address the challenges of managing a large workforce and staying ahead in the competitive IT services market?\",\n    \"Can Whatfix provide customized solutions for our specific industry and business needs?\",\n    \"How does Whatfix compare to competitors like WalkMe, Pendo, and Appcues in terms of features, pricing, and implementation?\",\n    \"What kind of support and training does Whatfix offer to ensure successful adoption and utilization of the platform?\",\n    \"How can Whatfix help us measure and track the success of our digital transformation initiatives?\",\n    \"What are the security and data privacy measures in place to protect our sensitive business data?\"\n  ],\n  \"objections\": [\n    \"We have already invested heavily in training and support programs, how can Whatfix provide additional value?\",\n    \"We are not sure if Whatfix is scalable for our large and complex organization\",\n    \"Whatfix may require significant changes to our existing workflows and processes, can we justify the investment?\",\n    \"We are concerned about the cost and ROI of Whatfix, can you provide case studies or references?\",\n    \"We have had negative experiences with similar digital adoption platforms in the past, how is Whatfix different?\",\n    \"We are not convinced that Whatfix can address our specific pain points and challenges\",\n    \"Whatfix may not be compatible with our existing technology stack, can you provide integration support?\",\n    \"We are unsure about the level of customization and flexibility Whatfix offers for our specific business needs\",\n    \"We need to prioritize other business initiatives and do not have the bandwidth to implement Whatfix right now\"\n  ]\n}",
-  "discovery_transcript": "{\n  \"messages\": [\n    {\n      \"user\": \"Whatfix Sales Person\",\n      \"content\": \"Hi, this is [Name] from Whatfix. Thank you for taking the time to speak with me today. Can you please introduce yourself and tell me a little bit about your role at Infosys?\"\n    },\n    {\n      \"user\": \"Infosys Representative\",\n      \"content\": \"Hi, I'm Rohan, a Senior Manager of Digital Transformation at Infosys. I'm responsible for driving digital initiatives across the organization.\"\n    },\n    {\n      \"user\": \"Whatfix Sales Person\",\n      \"content\": \"Great to meet you, Rohan. Can you tell me more about your current digital transformation initiatives and what you're trying to achieve?\"\n    },\n    {\n      \"user\": \"Infosys Representative\",\n      \"content\": \"We're focused on enhancing our software experiences and driving business outcomes. We're looking for ways to improve user adoption and employee productivity.\"\n    },\n    {\n      \"user\": \"Whatfix Sales Person\",\n      \"content\": \"I understand. We've worked with similar organizations in the IT services industry. Can you tell me more about the challenges you're facing in achieving your digital transformation goals?\"\n    },\n    {\n      \"user\": \"Infosys Representative\",\n      \"content\": \"One of the biggest challenges is managing our large workforce and staying ahead in the competitive IT services market. We're also struggling to get our employees to adopt new software applications.\"\n    },\n    {\n      \"user\": \"Whatfix Sales Person\",\n      \"content\": \"I see. That's where Whatfix can help. Our digital adoption platform provides in-app guidance, training, and performance support for web applications and software. We've had success with similar organizations in the past.\"\n    },\n    {\n      \"user\": \"Infosys Representative\",\n      \"content\": \"That sounds interesting. How does Whatfix compare to other digital adoption platforms like WalkMe, Pendo, and Appcues?\"\n    },\n    {\n      \"user\": \"Whatfix Sales Person\",\n      \"content\": \"While those platforms are competitors, Whatfix offers a more robust and scalable solution. We've got a strong track record of implementation and integration with existing software applications. I'd be happy to provide case studies and references.\"\n    },\n    {\n      \"user\": \"Infosys Representative\",\n      \"content\": \"I'd like to see those. Can you also tell me more about the ROI of investing in Whatfix and how you address the challenges of managing a large workforce?\"\n    },\n    {\n      \"user\": \"Whatfix Sales Person\",\n      \"content\": \"Absolutely. We've seen an average ROI of 3x with our customers. In terms of managing a large workforce, Whatfix provides a centralized platform for digital adoption and training, making it easier to scale and manage your workforce.\"\n    },\n    {\n      \"user\": \"Infosys Representative\",\n      \"content\": \"That sounds promising. What kind of support and training does Whatfix offer to ensure successful adoption and utilization of the platform?\"\n    },\n    {\n      \"user\": \"Whatfix Sales Person\",\n      \"content\": \"We offer comprehensive onboarding, training, and support to ensure our customers get the most out of Whatfix. We also provide regular check-ins and success planning to ensure you're achieving your goals.\"\n    },\n    {\n      \"user\": \"Infosys Representative\",\n      \"content\": \"Okay, I think that's all the questions I have for now. What are the next steps in terms of implementing Whatfix at Infosys?\"\n    },\n    {\n      \"user\": \"Whatfix Sales Person\",\n      \"content\": \"I'm glad you're interested in moving forward. Next, I'd like to schedule a demo of Whatfix to show you how it can address your specific pain points and challenges. After that, we can discuss pricing and implementation details.\"\n    }\n  ]\n}",
-  "discovery_analysis_buyer_data": "{\n  \"pain_points\": [\n    \"managing a large workforce\",\n    \"staying ahead in the competitive IT services market\",\n    \"difficulty in getting employees to adopt new software applications\"\n  ],\n  \"objections\": [\n    \"ROI and cost of investing in Whatfix\",\n    \"managing a large workforce\",\n    \"need for comprehensive support and training for successful adoption and utilization of the platform\"\n  ],\n  \"time_lines\": [],\n  \"success_indicators\": [\n    \"improving user adoption and employee productivity\",\n    \"enhancing software experiences\",\n    \"driving business outcomes\"\n  ],\n  \"budget_constraints\": [],\n  \"competition\": [\n    \"WalkMe\",\n    \"Pendo\",\n    \"Appcues\"\n  ],\n  \"decision_committee\": []\n}",
-  "discovery_analysis_seller_data": "{\n  \"discovery_questions\": [\n    \"Can you please introduce yourself and tell me a little bit about your role at Infosys?\",\n    \"Can you tell me more about your current digital transformation initiatives and what you're trying to achieve?\",\n    \"Can you tell me more about the challenges you're facing in achieving your digital transformation goals?\"\n  ],\n  \"decision_making_process_questions\": [],\n  \"objection_resolution_pairs\": [\n    {\n      \"objection\": \"ROI and cost of investing in Whatfix\",\n      \"resolution\": \"We've seen an average ROI of 3x with our customers.\"\n    },\n    {\n      \"objection\": \"managing a large workforce\",\n      \"resolution\": \"Whatfix provides a centralized platform for digital adoption and training, making it easier to scale and manage your workforce.\"\n    },\n    {\n      \"objection\": \"need for comprehensive support and training for successful adoption and utilization of the platform\",\n      \"resolution\": \"We offer comprehensive onboarding, training, and support to ensure our customers get the most out of Whatfix. We also provide regular check-ins and success planning to ensure you're achieving your goals.\"\n    },\n    {\n      \"objection\": \"How does Whatfix compare to other digital adoption platforms like WalkMe, Pendo, and Appcues?\",\n      \"resolution\": \"While those platforms are competitors, Whatfix offers a more robust and scalable solution. We've got a strong track record of implementation and integration with existing software applications.\"\n    }\n  ],\n  \"insights\": [\n    \"Infosys is focused on enhancing their software experiences and driving business outcomes.\",\n    \"Infosys is struggling to get their employees to adopt new software applications.\",\n    \"Infosys is looking for ways to improve user adoption and employee productivity.\"\n  ],\n  \"improvements\": [\n    \"The seller could have asked more questions to understand Infosys' current pain points and challenges.\",\n    \"The seller could have provided more specific examples of how Whatfix has helped similar organizations in the IT services industry.\",\n    \"The seller could have emphasized Whatfix's unique differentiators compared to competitors like WalkMe, Pendo, and Appcues.\"\n  ]\n}",
-  "demo_features": "{\n  \"features\": [\n    {\n      \"name\": \"Digital Adoption Platform\",\n      \"description\": \"A platform that provides in-app guidance, training, and performance support for web applications and software to enhance user adoption and employee productivity.\"\n    },\n    {\n      \"name\": \"In-app Guidance\",\n      \"description\": \"Contextual and interactive guides that help users navigate and learn new software applications.\"\n    },\n    {\n      \"name\": \"Interactive Guides\",\n      \"description\": \"Guides that provide step-by-step instructions and interactive simulations to help users learn and adopt new software applications.\"\n    },\n    {\n      \"name\": \"Simulated Training\",\n      \"description\": \"Virtual training simulations that help users learn and practice new software applications in a risk-free environment.\"\n    },\n    {\n      \"name\": \"Application Analytics\",\n      \"description\": \"Analytics and insights that help organizations measure and improve user adoption and software application usage.\"\n    },\n    {\n      \"name\": \"Customized Pricing Model\",\n      \"description\": \"A pricing model that is based on two components: a flat per-application fee, plus user license fees, providing a flexible and scalable solution for organizations.\"\n    }\n  ]\n}",
-  "demo_transcript": "{\n  \"messages\": [\n    {\n      \"user\": \"Whatfix\",\n      \"content\": \"Hello everyone, and thank you for taking the time to join our demo call today. My name is [Name], and I'm excited to showcase how Whatfix can help the University of Illinois improve user adoption and employee productivity. Before we dive in, I just want to confirm that we have all the stakeholders on the call. Can each of you please introduce yourselves and let me know your role at the University of Illinois?\"\n    },\n    {\n      \"user\": \"University of Illinois - IT Director\",\n      \"content\": \"Hi, I'm John, the IT Director. I'm responsible for overseeing our IT infrastructure and ensuring that our employees have the right tools to do their jobs effectively.\"\n    },\n    {\n      \"user\": \"University of Illinois - Training Manager\",\n      \"content\": \"Hi, I'm Emily, the Training Manager. I'm responsible for developing and implementing training programs for our employees to ensure they're proficient in using our software applications.\"\n    },\n    {\n      \"user\": \"University of Illinois - Business Analyst\",\n      \"content\": \"Hi, I'm Michael, the Business Analyst. I'm responsible for analyzing our business processes and identifying areas for improvement.\"\n    },\n    {\n      \"user\": \"Whatfix\",\n      \"content\": \"Great, thank you all for introducing yourselves. Today, I'll be demonstrating how Whatfix can help the University of Illinois overcome the challenges you're facing with managing a large workforce, staying ahead in the competitive IT services market, and difficulty in getting employees to adopt new software applications. Our Digital Adoption Platform provides in-app guidance, training, and performance support for web applications and software to enhance user adoption and employee productivity. Let me show you how it works.\"\n    },\n    {\n      \"user\": \"Whatfix\",\n      \"content\": \"As you can see, our platform provides contextual and interactive guides that help users navigate and learn new software applications. We also offer interactive guides that provide step-by-step instructions and interactive simulations to help users learn and adopt new software applications. Additionally, our simulated training feature allows users to learn and practice new software applications in a risk-free environment.\"\n    },\n    {\n      \"user\": \"University of Illinois - IT Director\",\n      \"content\": \"That's impressive. How does Whatfix handle ROI and cost of investing in your platform?\"\n    },\n    {\n      \"user\": \"Whatfix\",\n      \"content\": \"We've seen an average ROI of 3x with our customers. Our platform is designed to provide a strong return on investment by reducing the time and cost associated with traditional training methods.\"\n    },\n    {\n      \"user\": \"University of Illinois - Training Manager\",\n      \"content\": \"I'm concerned about the level of support and training you offer. How do you ensure that our employees get the most out of your platform?\"\n    },\n    {\n      \"user\": \"Whatfix\",\n      \"content\": \"We offer comprehensive onboarding, training, and support to ensure our customers get the most out of Whatfix. We also provide regular check-ins and success planning to ensure you're achieving your goals. Our dedicated customer success team is available to support you every step of the way.\"\n    },\n    {\n      \"user\": \"Whatfix\",\n      \"content\": \"I'd like to share a success story from one of our customers in the IT services industry. They saw a 40% increase in employee productivity and a 30% reduction in training costs after implementing Whatfix. We've also got a case study that I can share with you after the call if you're interested.\"\n    },\n    {\n      \"user\": \"Whatfix\",\n      \"content\": \"I'd like to clarify that the assets we're using during the demo today, including this presentation and the videos, will be made available to you after the call for your reference.\"\n    },\n    {\n      \"user\": \"University of Illinois - Business Analyst\",\n      \"content\": \"Can you customize your platform to meet our specific needs?\"\n    },\n    {\n      \"user\": \"Whatfix\",\n      \"content\": \"Absolutely. We understand that every organization is unique, and we're happy to work with you to customize our platform to meet your specific needs. We can also offer personalized features and support to ensure that our platform aligns with your goals and objectives.\"\n    },\n    {\n      \"user\": \"Whatfix\",\n      \"content\": \"Before we wrap up, I just want to ask, are there any other pain points or challenges that you're facing that we haven't discussed yet? We're committed to understanding your needs and providing a solution that addresses them.\"\n    },\n    {\n      \"user\": \"University of Illinois - IT Director\",\n      \"content\": \"I think we've covered everything. Thank you for the demo, it's been very informative.\"\n    },\n    {\n      \"user\": \"Whatfix\",\n      \"content\": \"You're welcome. I'm glad we could showcase the value of Whatfix. Next steps, I'll be sending over a follow-up email with the case study and the assets we used during the demo. We can also schedule a follow-up call to discuss any further questions or concerns you may have. Sound good?\"\n    }\n  ]\n}",
-  "demo_analysis_buyer_data": "{\n  \"interested_features\": [\n    {\"pain_point\": \"managing a large workforce\"},\n    {\"pain_point\": \"staying ahead in the competitive IT services market\"},\n    {\"pain_point\": \"difficulty in getting employees to adopt new software applications\"}\n  ],\n  \"skeptical_features\": [\n    {\"objection\": \"ROI and cost of investing in your platform\"},\n    {\"objection\": \"level of support and training\"},\n    {\"objection\": \"customization to meet our specific needs\"}\n  ],\n  \"objections_raised\": [\n    \"How does Whatfix handle ROI and cost of investing in your platform?\",\n    \"I'm concerned about the level of support and training you offer.\",\n    \"Can you customize your platform to meet our specific needs?\"\n  ],\n  \"stakeholder_engagement\": [\n    {\"stakeholder\": \"University of Illinois - IT Director\", \"engagement_level\": \"high\"},\n    {\"stakeholder\": \"University of Illinois - Training Manager\", \"engagement_level\": \"medium\"},\n    {\"stakeholder\": \"University of Illinois - Business Analyst\", \"engagement_level\": \"medium\"}\n  ],\n  \"feedback\": \"Thank you for the demo, it's been very informative.\"\n}",
-  "demo_analysis_seller_data": "{\n  \"demo_features\": [\n    {\n      \"name\": \"in-app guidance\",\n      \"description\": \"provides contextual and interactive guides that help users navigate and learn new software applications\"\n    },\n    {\n      \"name\": \"training\",\n      \"description\": \"offers interactive guides that provide step-by-step instructions and interactive simulations to help users learn and adopt new software applications\"\n    },\n    {\n      \"name\": \"performance support\",\n      \"description\": \"enhances user adoption and employee productivity\"\n    },\n    {\n      \"name\": \"simulated training\",\n      \"description\": \"allows users to learn and practice new software applications in a risk-free environment\"\n    }\n  ],\n  \"objection_handling\": [\n    {\n      \"objection\": \"How does Whatfix handle ROI and cost of investing in your platform?\",\n      \"resolution\": \"We've seen an average ROI of 3x with our customers. Our platform is designed to provide a strong return on investment by reducing the time and cost associated with traditional training methods.\",\n      \"status\": true\n    },\n    {\n      \"objection\": \"I'm concerned about the level of support and training you offer.\",\n      \"resolution\": \"We offer comprehensive onboarding, training, and support to ensure our customers get the most out of Whatfix. We also provide regular check-ins and success planning to ensure you're achieving your goals. Our dedicated customer success team is available to support you every step of the way.\",\n      \"status\": true\n    },\n    {\n      \"objection\": \"Can you customize your platform to meet our specific needs?\",\n      \"resolution\": \"Absolutely. We understand that every organization is unique, and we're happy to work with you to customize our platform to meet your specific needs. We can also offer personalized features and support to ensure that our platform aligns with your goals and objectives.\",\n      \"status\": true\n    }\n  ],\n  \"success_stories\": [\n    \"one of our customers in the IT services industry saw a 40% increase in employee productivity and a 30% reduction in training costs after implementing Whatfix\"\n  ],\n  \"assets_used\": [\n    \"presentation\",\n    \"videos\"\n  ],\n  \"customizations\": [\n    \"personalized features and support to ensure that our platform aligns with your goals and objectives\"\n  ],\n  \"engagement_questions\": [\n    \"Before we wrap up, I just want to ask, are there any other pain points or challenges that you're facing that we haven't discussed yet?\"\n  ]\n}"
+  "seller_research": {
+    "name": "Whatfix",
+    "website": "https://whatfix.com/",
+    "description": "Whatfix is a digital adoption platform that provides in-app guidance, training, and performance support for web applications and software.",
+    "industry": "Software as a Service (SaaS)",
+    "products": [
+      "Digital Adoption Platform",
+      "In-App Guidance",
+      "User Support",
+      "Contextual Messages",
+      "Simulated Training",
+      "Application Analytics"
+    ],
+    "solutions": [
+      "Employee and Customer Onboarding",
+      "Digital Transformation",
+      "User Adoption",
+      "Software Training",
+      "Application Support",
+      "Product Manager Solution"
+    ],
+    "use_cases": [
+      "Enhancing Software Experiences",
+      "Maximizing Technology Investments",
+      "Achieving Business Outcomes",
+      "Streamlining Product User Adoption Processes"
+    ]
+  },
+  "seller_pricing": {
+    "pricing_models": [
+      {
+        "type": "Free",
+        "description": "Free plan with 30 credits",
+        "price": "Free",
+        "duration": " Monthly"
+      },
+      {
+        "type": "Basic",
+        "description": "Basic plan for up to 2500 users",
+        "price": "$39/month",
+        "duration": "Monthly"
+      },
+      {
+        "type": "Growth",
+        "description": "Growth plan for up to 10,000 users",
+        "price": "$499/month",
+        "duration": "Monthly"
+      },
+      {
+        "type": "Enterprise",
+        "description": "Enterprise plan for large-scale businesses",
+        "price": "Custom quote",
+        "duration": "Custom"
+      },
+      {
+        "type": "Per-Application Fee",
+        "description": "Flat per-application fee plus user license fees",
+        "price": "Custom quote",
+        "duration": "Custom"
+      }
+    ]
+  },
+  "buyer_research": {
+    "name": "Infosys",
+    "website": "https://www.infosys.com/",
+    "description": "Infosys is a global leader in next-generation digital services and consulting. We enable clients in more than 50 countries to navigate their digital transformation.",
+    "industry": "Technology",
+    "company_size": "Enterprise",
+    "goals": [
+      "Amplify human potential and create the next opportunity for people, businesses, and society",
+      "Enable clients to create and execute digital transformation",
+      "Improve the efficiency and effectiveness of clients' procurement and supply chain activities"
+    ],
+    "use_cases": [
+      "Business consulting",
+      "Information technology",
+      "Outsourcing services",
+      "Digital transformation",
+      "Procurement and supply chain consulting"
+    ],
+    "challenges": [
+      "Digital transformation",
+      "IT consulting",
+      "Outsourcing services"
+    ],
+    "stakeholders": [
+      "Clients",
+      "Employees",
+      "Vendors",
+      "Society"
+    ]
+  },
+  "competitive_info": {
+    "competitors": [
+      {
+        "name": "WalkMe",
+        "pros": [
+          "Easy to use",
+          "Personalized onboarding",
+          "Contextual help"
+        ],
+        "cons": [
+          "Limited customization",
+          "Steep learning curve",
+          "Support issues"
+        ],
+        "differentiators": [
+          "Advanced analytics",
+          "AI-powered guidance",
+          "Enterprise-level security"
+        ]
+      },
+      {
+        "name": "Pendo",
+        "pros": [
+          "Robust analytics",
+          "Personalized in-app guidance",
+          "Scalable"
+        ],
+        "cons": [
+          "Expensive",
+          "Steep learning curve",
+          "Limited integrations"
+        ],
+        "differentiators": [
+          "Native integrations",
+          "Real-time data analytics",
+          "Advanced segmentation"
+        ]
+      },
+      {
+        "name": "Userpilot",
+        "pros": [
+          "Easy to implement",
+          "Highly customizable",
+          "Affordable"
+        ],
+        "cons": [
+          "Limited analytics",
+          "Basic user management",
+          "Support issues"
+        ],
+        "differentiators": [
+          "Flexible pricing",
+          "Highly customizable",
+          "Focused on user onboarding"
+        ]
+      }
+    ]
+  },
+  "anticipated_qopcs": {
+    "pains": [
+      "How can Whatfix help us enhance our software experience for our clients?",
+      "How does Whatfix address the digital transformation challenges we are facing?",
+      "What kind of support does Whatfix offer for large-scale businesses like ours?",
+      "Can Whatfix integrate with our existing systems and tools?",
+      "How can Whatfix help us improve the efficiency and effectiveness of our clients' procurement and supply chain activities?",
+      "What are the customization options available for our specific use case?",
+      "How does Whatfix ensure data security and compliance?",
+      "What kind of ROI can we expect from implementing Whatfix?",
+      "Can Whatfix help us achieve our goal of amplifying human potential and creating the next opportunity for people, businesses, and society?",
+      "How does Whatfix differentiate itself from its competitors in terms of features and pricing?"
+    ],
+    "objections": [
+      "We are already invested in WalkMe/Pendo/Userpilot, why should we switch to Whatfix?",
+      "We are concerned about the steep learning curve for our employees to adopt Whatfix.",
+      "Whatfix seems expensive, can you provide a custom quote for our specific needs?",
+      "We are not sure if Whatfix can scale with our growing business needs.",
+      "We have concerns about the data security and compliance of Whatfix.",
+      "We are hesitant to invest in a digital adoption platform, can you provide case studies of similar companies that have seen success?",
+      "Whatfix seems to have limited customization options, can you provide more information on this?",
+      "We are worried about the potential disruption to our business operations during the implementation process."
+    ]
+  },
+  "discovery_transcript": {
+    "messages": [
+      {
+        "user": "Whatfix Sales Person",
+        "content": "Hello, thank you for taking the time to speak with me today. I'm excited to learn more about Infosys's goals and challenges. Can you start by sharing a little bit about your role and what brings you to this call?"
+      },
+      {
+        "user": "Infosys Team",
+        "content": "Hi, I'm Ramesh, a Digital Transformation Consultant at Infosys. We're looking for ways to improve our clients' software experiences and enhance our own digital transformation capabilities. I came across Whatfix while researching digital adoption platforms."
+      },
+      {
+        "user": "Whatfix Sales Person",
+        "content": "Thank you for sharing that, Ramesh. Can you elaborate on what you mean by improving software experiences for your clients? What specific pain points are you trying to address?"
+      },
+      {
+        "user": "Infosys Team",
+        "content": "Our clients are often struggling to adopt new software applications, which leads to low user engagement and inefficient use of technology investments. We're looking for a solution that can provide personalized onboarding, contextual help, and analytics to help us better understand user behavior."
+      },
+      {
+        "user": "Whatfix Sales Person",
+        "content": "I understand. It sounds like you're looking for a digital adoption platform that can help you streamline your clients' software adoption processes. Whatfix can definitely help with that. Our platform provides in-app guidance, training, and performance support for web applications and software. Can I ask, have you considered any other digital adoption platforms in the past?"
+      },
+      {
+        "user": "Infosys Team",
+        "content": "Yes, we've evaluated WalkMe, Pendo, and Userpilot in the past. While they have some great features, we're concerned about the steep learning curve and limited customization options. We're looking for a solution that can integrate with our existing systems and provide better support for large-scale businesses like ours."
+      },
+      {
+        "user": "Whatfix Sales Person",
+        "content": "I understand your concerns. Whatfix is designed to be highly customizable and scalable to meet the needs of large enterprises like Infosys. Our platform can integrate with a wide range of systems and tools, and our support team is dedicated to ensuring a smooth implementation process. Can I walk you through a demo of our platform to show you how it can address your specific needs?"
+      },
+      {
+        "user": "Infosys Team",
+        "content": "That would be great, thank you. I'd love to see how Whatfix can help us achieve our goals of amplifying human potential and creating the next opportunity for people, businesses, and society."
+      },
+      {
+        "user": "Whatfix Sales Person",
+        "content": "Absolutely. I'll share my screen and walk you through a demo of our platform. (Demo walk-through) As you can see, our platform provides a range of features that can help you improve user adoption, streamline software adoption processes, and enhance your clients' overall software experiences."
+      },
+      {
+        "user": "Infosys Team",
+        "content": "That's really impressive. I can see how Whatfix can help us address our pain points. Can you provide more information on your pricing model and what kind of ROI we can expect from implementing Whatfix?"
+      },
+      {
+        "user": "Whatfix Sales Person",
+        "content": "Our pricing model is based on the number of users and the level of customization required. We offer a range of plans to fit the needs of different businesses. In terms of ROI, our customers have seen an average increase of 30% in user adoption rates and a 25% reduction in support requests. I can provide you with some case studies of similar companies that have seen success with Whatfix."
+      },
+      {
+        "user": "Infosys Team",
+        "content": "That sounds great. I'd love to see those case studies. Can you also provide more information on your implementation process and what kind of support you offer for large-scale businesses like ours?"
+      },
+      {
+        "user": "Whatfix Sales Person",
+        "content": "Our implementation process typically takes 2-3 weeks, depending on the complexity of the project. We assign a dedicated customer success manager to work closely with your team to ensure a smooth implementation process. We also offer 24/7 support, as well as a range of training resources to help your team get the most out of our platform."
+      },
+      {
+        "user": "Infosys Team",
+        "content": "That sounds very reassuring. I think we're interested in moving forward with Whatfix. Can you provide a custom quote for our specific needs and outline the next steps in the process?"
+      },
+      {
+        "user": "Whatfix Sales Person",
+        "content": "I'd be happy to provide a custom quote for your specific needs. I'll work with our sales engineering team to put together a proposal that outlines the scope of work, timeline, and pricing. I'll send it over to you within the next 24 hours. In terms of next steps, we can schedule a follow-up call to discuss the proposal and answer any further questions you may have."
+      }
+    ]
+  },
+  "discovery_analysis_buyer_data": {
+    "pain_points": [
+      "low user engagement",
+      "inefficient use of technology investments",
+      "steep learning curve",
+      "limited customization options"
+    ],
+    "objections": [
+      "concerns about the steep learning curve",
+      "limited customization options"
+    ],
+    "time_lines": [
+      "within the next 24 hours"
+    ],
+    "success_indicators": [
+      "improve user adoption rates",
+      "reduce support requests",
+      "amplify human potential and create the next opportunity for people, businesses, and society"
+    ],
+    "budget_constraints": [],
+    "competition": [
+      "WalkMe",
+      "Pendo",
+      "Userpilot"
+    ],
+    "decision_committee": [
+      "Ramesh, a Digital Transformation Consultant at Infosys"
+    ]
+  },
+  "discovery_analysis_seller_data": {
+    "discovery_questions": [
+      "Can you start by sharing a little bit about your role and what brings you to this call?",
+      "Can you elaborate on what you mean by improving software experiences for your clients? What specific pain points are you trying to address?",
+      "Have you considered any other digital adoption platforms in the past?",
+      "Can I walk you through a demo of our platform to show you how it can address your specific needs?",
+      "Can you provide more information on your pricing model and what kind of ROI we can expect from implementing Whatfix?"
+    ],
+    "decision_making_process_questions": [
+      "What is the typical process for evaluating and implementing a new digital adoption platform within Infosys?",
+      "Who else will be involved in the decision-making process for this purchase?"
+    ],
+    "objection_resolution_pairs": [
+      {
+        "objection": "concerns about the steep learning curve",
+        "resolution": "Whatfix is designed to be highly customizable and scalable to meet the needs of large enterprises like Infosys. Our platform can integrate with a wide range of systems and tools, and our support team is dedicated to ensuring a smooth implementation process."
+      },
+      {
+        "objection": "limited customization options",
+        "resolution": "Whatfix provides a range of features that can help you improve user adoption, streamline software adoption processes, and enhance your clients' overall software experiences. Our platform is highly customizable to meet the specific needs of your business."
+      }
+    ],
+    "insights": [
+      "Infosys is looking for a digital adoption platform that can help them improve their clients' software experiences and enhance their own digital transformation capabilities.",
+      "Whatfix's platform can provide personalized onboarding, contextual help, and analytics to help Infosys better understand user behavior.",
+      "Infosys has evaluated other digital adoption platforms in the past, including WalkMe, Pendo, and Userpilot, but has concerns about the steep learning curve and limited customization options."
+    ],
+    "improvements": [
+      "The seller could have asked more questions about Infosys's current software adoption processes and pain points to better understand their needs.",
+      "The seller could have provided more specific examples of how Whatfix's platform has helped similar companies in the past.",
+      "The seller could have emphasized Whatfix's differentiators, such as advanced analytics and AI-powered guidance, to further differentiate themselves from competitors."
+    ]
+  },
+  "demo_features": {
+    "features": [
+      {
+        "name": "Digital Adoption Platform",
+        "description": "A platform that provides in-app guidance, training, and performance support for web applications and software."
+      },
+      {
+        "name": "In-App Guidance",
+        "description": "Provides step-by-step guidance to users within the application."
+      },
+      {
+        "name": "User Support",
+        "description": "Offers real-time support to users through contextual help and messages."
+      },
+      {
+        "name": "Contextual Messages",
+        "description": "Delivers personalized messages to users based on their actions and behavior within the application."
+      },
+      {
+        "name": "Simulated Training",
+        "description": "Allows users to practice and complete tasks in a simulated environment."
+      },
+      {
+        "name": "Application Analytics",
+        "description": "Provides insights into user behavior and application usage to improve adoption and ROI."
+      },
+      {
+        "name": "Personalized Onboarding",
+        "description": "Creates customized onboarding experiences for users based on their roles, goals, and behavior."
+      },
+      {
+        "name": "Advanced Analytics",
+        "description": "Offers robust analytics to help businesses understand user behavior and make data-driven decisions."
+      },
+      {
+        "name": "AI-Powered Guidance",
+        "description": "Uses artificial intelligence to provide intelligent and contextual guidance to users."
+      },
+      {
+        "name": "Enterprise-Level Security",
+        "description": "Ensures the security and integrity of user data and application usage."
+      }
+    ]
+  },
+  "demo_transcript": {
+    "messages": [
+      {
+        "user": "Whatfix Salesperson",
+        "content": "Hello, everyone from Infosys! Thank you for taking the time to join today's demo call. I'm excited to showcase how Whatfix can help you improve user adoption, reduce support requests, and amplify human potential. Before we dive in, I just want to confirm that we have Ramesh, our primary decision-maker, on the call."
+      },
+      {
+        "user": "Ramesh",
+        "content": "Yes, I'm here. Thank you for having us. We're looking forward to seeing how Whatfix can help us address our pain points."
+      },
+      {
+        "user": "Whatfix Salesperson",
+        "content": "Excellent! Let's start with a brief overview of our Digital Adoption Platform. This platform provides in-app guidance, training, and performance support for web applications and software. We've seen significant improvements in user adoption rates and reductions in support requests with our current clients."
+      },
+      {
+        "user": "Whatfix Salesperson",
+        "content": "Now, let me demonstrate how our In-App Guidance feature can help users navigate your software applications more efficiently. As you can see, our step-by-step guidance is highly customizable and can be tailored to meet your specific business needs."
+      },
+      {
+        "user": "Ramesh",
+        "content": "That's impressive. But how do you handle complex software applications with multiple workflows?"
+      },
+      {
+        "user": "Whatfix Salesperson",
+        "content": "We've worked with numerous clients who have complex software applications. Our AI-Powered Guidance feature uses artificial intelligence to provide intelligent and contextual guidance to users, even in the most complex workflows. Additionally, our Advanced Analytics feature provides robust insights into user behavior, allowing you to identify areas for improvement and optimize your application's performance."
+      },
+      {
+        "user": "Whatfix Salesperson",
+        "content": "Let me show you an example of how our Contextual Messages feature can deliver personalized messages to users based on their actions and behavior within the application. This feature has been incredibly effective in reducing support requests and improving user engagement."
+      },
+      {
+        "user": "Ramesh",
+        "content": "We've tried similar features with other digital adoption platforms, but they didn't quite meet our needs. How do you ensure that your platform can meet our specific requirements?"
+      },
+      {
+        "user": "Whatfix Salesperson",
+        "content": "I completely understand your concerns. At Whatfix, we pride ourselves on our ability to customize our platform to meet the unique needs of our clients. We've worked with numerous enterprises, including those in the IT consulting space, and have a proven track record of delivering tailored solutions. If there are specific features or customizations you need, we're more than happy to work with you to develop them."
+      },
+      {
+        "user": "Whatfix Salesperson",
+        "content": "Before I move forward, I want to address some of the concerns you mentioned earlier, such as the steep learning curve. I want to assure you that our platform is designed to be highly scalable and easy to implement. We've had clients who have seen significant improvements in user adoption rates within just a few weeks of implementation."
+      },
+      {
+        "user": "Ramesh",
+        "content": "That's reassuring to hear. Can you share some success stories or case studies from similar clients?"
+      },
+      {
+        "user": "Whatfix Salesperson",
+        "content": "Absolutely. We've worked with numerous clients in the IT consulting space, including companies like Accenture and Deloitte. In fact, one of our clients, a large IT consulting firm, saw a 30% reduction in support requests and a 25% increase in user adoption rates within the first six months of implementation. I can share some case studies with you after the call if you're interested."
+      },
+      {
+        "user": "Whatfix Salesperson",
+        "content": "Let me summarize what we've covered so far. We've demonstrated how our Digital Adoption Platform can help you improve user adoption rates, reduce support requests, and amplify human potential. We've also addressed your concerns about the steep learning curve and limited customization options. Are there any other questions or concerns you'd like to discuss?"
+      },
+      {
+        "user": "Ramesh",
+        "content": "No, I think that covers everything. Thank you for the comprehensive demo. We'll review the information and discuss next steps internally."
+      },
+      {
+        "user": "Whatfix Salesperson",
+        "content": "You're welcome, Ramesh. I'll send over the presentation, as well as some additional resources, for your reference. If you have any further questions or need any clarification on anything, please don't hesitate to reach out. We're excited about the possibility of working together and look forward to hearing from you soon."
+      }
+    ]
+  },
+  "demo_analysis_buyer_data": {
+    "interested_features": [
+      {
+        "name": "In-App Guidance",
+        "description": "Provides step-by-step guidance to users within software applications",
+        "pain_point": "Improving user adoption rates"
+      },
+      {
+        "name": "Contextual Messages",
+        "description": "Delivers personalized messages to users based on their actions and behavior within the application",
+        "pain_point": "Reducing support requests and improving user engagement"
+      },
+      {
+        "name": "Advanced Analytics",
+        "description": "Provides robust insights into user behavior, allowing for identification of areas for improvement and optimization of application performance",
+        "pain_point": "Improving user adoption rates and reducing support requests"
+      },
+      {
+        "name": "AI-Powered Guidance",
+        "description": "Uses artificial intelligence to provide intelligent and contextual guidance to users, even in complex workflows",
+        "pain_point": "Addressing complex software applications with multiple workflows"
+      }
+    ],
+    "skeptical_features": [
+      {
+        "name": "Customization Options",
+        "description": "Ability to customize the platform to meet specific business needs",
+        "objection": "Limited customization options"
+      },
+      {
+        "name": "Implementation",
+        "description": "Ease of implementation and scalability of the platform",
+        "objection": "Steep learning curve"
+      }
+    ],
+    "objections_raised": [
+      "Limited customization options",
+      "Steep learning curve"
+    ],
+    "stakeholder_engagement": [
+      {
+        "stakeholder": "Ramesh",
+        "engagement_level": "High"
+      }
+    ],
+    "feedback": "Thank you for the comprehensive demo. We'll review the information and discuss next steps internally."
+  },
+  "demo_analysis_seller_data": {
+    "demo_features": [
+      {
+        "name": "In-App Guidance",
+        "description": "Provides step-by-step guidance to users within software applications"
+      },
+      {
+        "name": "Contextual Messages",
+        "description": "Delivers personalized messages to users based on their actions and behavior within the application"
+      },
+      {
+        "name": "Advanced Analytics",
+        "description": "Provides robust insights into user behavior, allowing for identification of areas for improvement and optimization of application performance"
+      },
+      {
+        "name": "AI-Powered Guidance",
+        "description": "Uses artificial intelligence to provide intelligent and contextual guidance to users, even in complex workflows"
+      },
+      {
+        "name": "Digital Adoption Platform",
+        "description": "Provides in-app guidance, training, and performance support for web applications and software"
+      }
+    ],
+    "objection_handling": [
+      {
+        "objection": "How do you handle complex software applications with multiple workflows?",
+        "resolution": "We've worked with numerous clients who have complex software applications. Our AI-Powered Guidance feature uses artificial intelligence to provide intelligent and contextual guidance to users, even in the most complex workflows.",
+        "status": true
+      },
+      {
+        "objection": "We've tried similar features with other digital adoption platforms, but they didn't quite meet our needs. How do you ensure that your platform can meet our specific requirements?",
+        "resolution": "At Whatfix, we pride ourselves on our ability to customize our platform to meet the unique needs of our clients. We've worked with numerous enterprises, including those in the IT consulting space, and have a proven track record of delivering tailored solutions.",
+        "status": true
+      }
+    ],
+    "success_stories": [
+      "One of our clients, a large IT consulting firm, saw a 30% reduction in support requests and a 25% increase in user adoption rates within the first six months of implementation"
+    ],
+    "assets_used": [
+      "Presentation"
+    ],
+    "customizations": [
+      "Customization options to meet specific business needs"
+    ],
+    "engagement_questions": [
+      "Before we dive in, I just want to confirm that we have Ramesh, our primary decision-maker, on the call."
+    ]
+  }
 }

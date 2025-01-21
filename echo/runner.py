@@ -108,6 +108,5 @@ async def make_call(call_type, clients, inputs, llm: LLM = None, **crew_config):
         llm = get_llm()
     
     print(f"Making {call_type} call for {clients}")
-    await call_fns[call_type][SIMULATION](clients, inputs, llm, **crew_config)
     analysed_call_data = await call_fns[call_type][ANALYSIS](clients, inputs, llm, **crew_config)
     return analysed_call_data

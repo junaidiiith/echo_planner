@@ -18,13 +18,17 @@ class Feature(BaseModel):
 	name: str = Field(..., title="Feature Name", description="The name of the feature of the product or service.")
 	description: str = Field(..., title="Feature Description", description="A description of the feature.")
 
-class FeatureWithPainPoint(Feature):
+class FeatureWithPainPoint(BaseModel):
+    name: str = Field(..., title="Feature Name", description="The name of the feature of the product or service.")
+    description: str = Field(..., title="Feature Description", description="A description of the feature.")
     pain_point: str = Field(..., title="Pain Point", description="The pain point or challenge that the feature addresses.")
 
 class FeaturesAnticipated(BaseModel):
 	features: List[Feature] = Field(..., title="Features", description="A list of features of the product or service that will be demonstrated during the sales demo.")
 
 class SkepticalFeature(Feature):
+    name: str = Field(..., title="Feature Name", description="The name of the feature of the product or service.")
+    description: str = Field(..., title="Feature Description", description="A description of the feature.")
     objection: str = Field(..., title="Objection", description="The objection or concern raised by the buyer.")
  
 class ObjectionResolution(BaseModel):

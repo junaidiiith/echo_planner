@@ -3,10 +3,13 @@ import ast
 import json
 import os
 import time
-from typing import List, Dict, get_origin, get_args
+import appdirs
+from pathlib import Path
+from typing import List, Dict, Union, get_origin, get_args
 from dotenv import load_dotenv
 from pydantic import BaseModel
 from crewai import LLM, Agent, Task, Crew
+from crewai.tasks.task_output import TaskOutput
 from echo.constants import ALLOWED_KEYS, BUYER, SELLER
 from echo.memory import LTMSQLiteStorage, RAGStorage
 from echo.settings import save_dir, buyer_db_name, seller_db_name
@@ -14,9 +17,9 @@ from echo.settings import save_dir, buyer_db_name, seller_db_name
 
 load_dotenv()
 
-def format_response(x):
+def format_response(x: TaskOutput):
     if x.pydantic:
-        return x.pydantic.model_dump_json(indent=2)
+        return x.pydantic.model_dump()
     try: 
         print("Trying to parse with Ast...")
         data = ast.literal_eval(x.raw)
@@ -25,7 +28,7 @@ def format_response(x):
     except Exception as e:
         return x.raw
     
-format_response = lambda x: x.pydantic.model_dump_json(indent=2) if x.pydantic else x.raw
+# format_response = lambda x: x.pydantic.model_dump_json(indent=2) if x.pydantic else x.raw
 
 def get_model_code_with_comments(model: BaseModel) -> str:
     def resolve_type(annotation):
@@ -271,3 +274,43 @@ def get_db_type(user_type):
 def get_current_time():
     timestamp = time.strftime('%Y-%m-%d %H:%M:%S')
     return timestamp
+
+
+def db_storage_path(suffix: str = None):
+    app_name = get_project_directory_name()
+    app_author = os.getenv("ECHO_APP_AUTHOR") or "Echo"
+
+    data_dir = Path(appdirs.user_data_dir(app_name, app_author))
+    if suffix:
+        data_dir = data_dir / suffix
+    
+    data_dir.mkdir(parents=True, exist_ok=True)
+        
+    return data_dir
+
+
+def get_project_directory_name():
+    project_directory_name = os.environ.get("ECHO_STORAGE_DIR")
+
+    if project_directory_name:
+        return project_directory_name
+    else:
+        cwd = Path.cwd()
+        project_directory_name = cwd.name
+        return project_directory_name
+
+
+def json_to_markdown(json_obj: Union[Dict, List], bullet_position: int = 0):
+    markdown = ""
+    if isinstance(json_obj, dict):
+        for key, value in json_obj.items():
+            markdown += f"{'#' * (bullet_position+1)}" + f" {key.title()}\n"
+            markdown += json_to_markdown(value, bullet_position + 1)
+    elif isinstance(json_obj, list):
+        for item in json_obj:
+            markdown += f"{'  ' * bullet_position} - "
+            markdown += json_to_markdown(item, bullet_position + 1)
+    else:
+        markdown += f"{json_obj}\n"
+    
+    return markdown
