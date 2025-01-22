@@ -1,3 +1,4 @@
+import enum
 import os
 from typing import Dict, List
 from pydantic import BaseModel, Field
@@ -6,12 +7,20 @@ from crewai.crews.crew_output import CrewOutput
 from echo.constants import *
 from tqdm.asyncio import tqdm
 from echo.memory import LTMSQLiteStorage, RAGStorage
-from echo.utils import add_pydanctic_structure, get_crew, format_response
+from echo.utils import add_pydantic_structure, get_crew, format_response
 from echo.utils import (
     get_db_type, 
     get_sql_client, 
     get_rag_client, 
 )
+
+
+class CallType(enum.Enum):
+    DISCOVERY = "discovery"
+    DEMO = "demo"
+    PRICING = "pricing"
+    PROCUREMENT = "procurement"
+
 
 
 class Message(BaseModel):
@@ -189,7 +198,7 @@ async def extract_call_structure(transcripts: List[str], llm: LLM, inputs_dict, 
     for i in tqdm(range(0, len(transcripts), group_size), desc="Extracting Call Structure"):
         group = transcripts[i:i+group_size]
         inputs_dict['transcripts'] = "\n".join([f"Transcript: {i + 1}\n{s}" for i, s in enumerate(group)])
-        add_pydanctic_structure(crew, inputs_dict)
+        add_pydantic_structure(crew, inputs_dict)
         response = await crew.kickoff_async(inputs_dict)
         responses.append(response)	
     return responses
@@ -212,7 +221,7 @@ async def merge_call_structures(
         inputs_dict['schemas'] = "\n".join([f"Schema: {i + 1}\n{s.tasks_output[0].raw}" for i, s in enumerate(group)])
         inputs_dict['example'] = example_merge
         crew = get_section_crew(SECTION_MERGER, llm)    
-        add_pydanctic_structure(crew, inputs_dict)
+        add_pydantic_structure(crew, inputs_dict)
         response = await crew.kickoff_async(inputs=inputs_dict)
         responses.append(response)
     

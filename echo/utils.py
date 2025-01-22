@@ -120,7 +120,7 @@ def get_crew(
     return crew
 
 
-def add_pydanctic_structure(t_crew: Crew, inputs: dict):
+def add_pydantic_structure(t_crew: Crew, inputs: dict):
     for i, task in enumerate(t_crew.tasks):
         if '{pydantic_structure}' in task.expected_output:
             pyd = "{pydantic_structure" + f"_{i}" + "}"

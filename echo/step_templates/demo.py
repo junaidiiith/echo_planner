@@ -5,7 +5,7 @@ from crewai.crews.crew_output import CrewOutput
 from echo.constants import *
 from pydantic import BaseModel, Field
 from typing import Dict, List
-from echo.utils import add_pydanctic_structure, format_response
+from echo.utils import add_pydantic_structure, format_response
 from echo.step_templates.generic import Transcript, save_client_call_data, embed_client_call_data
 from echo.utils import get_crew as get_crew_obj
 import echo.utils as utils
@@ -330,7 +330,7 @@ async def aget_research_data_for_client(inputs: dict, llm: LLM, **crew_config):
 		raise ValueError(f"Data for client {inputs['buyer']} does not exist.")
 	
 	crew = get_crew(RESEARCH, llm, **crew_config)
-	add_pydanctic_structure(crew, inputs)
+	add_pydantic_structure(crew, inputs)
 	response = await crew.kickoff_async(inputs=inputs)
 	data.update(process_research_data_output(response))
 	return data
@@ -352,7 +352,7 @@ async def aget_simulation_data_for_client(inputs: dict, llm: LLM, **crew_config)
 			return data
 	
 	crew = get_crew(SIMULATION, llm, **crew_config)
-	add_pydanctic_structure(crew, inputs)
+	add_pydantic_structure(crew, inputs)
 	response = await crew.kickoff_async(inputs=inputs)
 	return {
 		"demo_transcript": format_response(response.tasks_output[0])
@@ -375,7 +375,7 @@ async def aanalyze_data_for_client(inputs: dict, llm: LLM, **crew_config):
 			return data
 	
 	crew = get_crew(ANALYSIS, llm, **crew_config)
-	add_pydanctic_structure(crew, inputs)
+	add_pydantic_structure(crew, inputs)
 	response = await crew.kickoff_async(inputs=inputs)
 	return process_analysis_data_output(response)
 
