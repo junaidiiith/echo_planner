@@ -83,7 +83,7 @@ agent_templates = {
 				"You are an expert in simulating realistic sales calls."
 				"You have been tasked with simulating a detailed call between buyer and {seller}."
 				"Your goal is to provide a realistic and engaging simulation of the call."
-				"The sales call simulation should be tailored to address the buyer's specific goals, requirements, pain points, and challenges."
+				"The sales call simulation should be tailored to address providing demo of {seller}'s features in ordet to take care of the buyer's specific pain points, and challenges."
 			)
 		)
 	},

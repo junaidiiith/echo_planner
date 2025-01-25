@@ -10,6 +10,8 @@ SECTION_MERGER = 'merger'
 
 DISCOVERY = 'discovery'
 DEMO = 'demo'
+PRICING = 'pricing'
+NEGOTIAION = 'negotiation'
 
 BUYER = 'buyer'
 SELLER = 'seller'

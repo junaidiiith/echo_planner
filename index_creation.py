@@ -9,12 +9,15 @@ from llama_index.core.vector_stores import (
 from llama_index.core.schema import TextNode
 from llama_index.vector_stores.chroma import ChromaVectorStore
 import chromadb
-from llama_index.core import StorageContext
 
 import enum
-from typing import List, Dict
+from typing import Dict
 from llama_index.core.node_parser import SentenceSplitter
 from echo.utils import db_storage_path
+import json
+import os
+import echo.utils as echo_utils
+
 
 CHUNK_SIZE=8192
 CHUNK_OVERLAP=128
@@ -115,9 +118,6 @@ def add_data(
     nodes = get_nodes_from_documents(data, metadata=filtered_metadata)
     index.insert_nodes(nodes)
     
-    
-import json
-import os
 
 all_data = {
     client.split('.')[0]: json.load(open('runs/' + client))
@@ -127,7 +127,7 @@ all_data = {
 print("\n".join(all_data['ICICI bank'].keys()))
 
 
-import echo.utils as echo_utils
+
 
 seller = "Whatfix"
 
