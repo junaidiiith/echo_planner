@@ -427,5 +427,201 @@
     "engagement_questions": [
       "Before I summarize the demo, I'd like to ask if you have any other questions or concerns about our digital adoption platform?"
     ]
+  },
+  "pricing_transcript": {
+    "messages": [
+      {
+        "user": "Whatfix",
+        "content": "Hi, everyone. Thank you for taking the time to discuss the pricing for our digital adoption platform. I'm excited to review the details with you. As we discussed during the demo, our platform can help address the challenges you're facing with adapting to changing customer behavior and preferences, risk and compliance management, and low user adoption rates of digital banking platforms and tools."
+      },
+      {
+        "user": "ICICI Bank (Piyush)",
+        "content": "Yes, we're interested in understanding the pricing model and how it can fit our budget constraints. We have a budget of $15,500.00 per month, and we need to ensure that the solution can meet our implementation timelines."
+      },
+      {
+        "user": "Whatfix",
+        "content": "Absolutely, Piyush. Our pricing model is based on two components: a flat per-application fee, plus user license fees. We also offer a free trial and premium subscription plans starting at $15,500.00 per month, which aligns with your budget constraints. Would you like me to explain the pricing model in more detail?"
+      },
+      {
+        "user": "ICICI Bank (Rohan)",
+        "content": "Yes, please explain the pricing model in detail. We want to understand how it works and what we can expect from the implementation."
+      },
+      {
+        "user": "Whatfix",
+        "content": "Our pricing model is designed to be flexible and scalable to meet your growing needs. The flat per-application fee covers the cost of the platform, and the user license fees are based on the number of users you have. We also offer discounts for long-term commitments. With our premium subscription plan, you'll get access to advanced features, dedicated support, and regular updates."
+      },
+      {
+        "user": "ICICI Bank (Piyush)",
+        "content": "That sounds interesting. Can you tell us more about the implementation costs and timelines? We need to ensure that the solution can be implemented within our desired timeframe."
+      },
+      {
+        "user": "Whatfix",
+        "content": "We understand the importance of timely implementation. Our implementation process is designed to be efficient and streamlined. We can discuss the implementation timelines and process in more detail, but we can typically implement the solution within 6-8 weeks. We'll work closely with your team to ensure a smooth transition and minimize any disruptions to your business."
+      },
+      {
+        "user": "ICICI Bank (Rohan)",
+        "content": "That sounds reasonable. What kind of ROI can we expect from the implementation of your digital adoption platform?"
+      },
+      {
+        "user": "Whatfix",
+        "content": "Our digital adoption platform has been proven to increase user adoption rates, reduce training times, and improve overall productivity. Based on our historical case studies, our customers have seen an average ROI of 3:1 within the first six months of implementation. We're confident that our platform can deliver similar results for ICICI Bank."
+      },
+      {
+        "user": "ICICI Bank (Piyush)",
+        "content": "That's impressive. What kind of KPIs would we use to measure the success of the implementation?"
+      },
+      {
+        "user": "Whatfix",
+        "content": "We recommend tracking KPIs such as user adoption rates, time-to-competency, and overall user engagement. We can work with you to define the KPIs that are most relevant to your business goals and objectives."
+      },
+      {
+        "user": "ICICI Bank (Rohan)",
+        "content": "We're interested in moving forward with the implementation. What are the next steps?"
+      },
+      {
+        "user": "Whatfix",
+        "content": "I'm glad to hear that. The next steps would be to finalize the implementation plan, discuss the integration with your existing systems, and outline the dedicated support services we'll provide. I'll send over a summary of our discussion and the proposed implementation plan for your review. Would that work for you?"
+      }
+    ]
+  },
+  "pricing_analysis_buyer_data": {
+    "concerns": [
+      "fit our budget constraints",
+      "implementation timelines",
+      "ROI expectations",
+      "measuring success"
+    ],
+    "budget_constraints": [
+      "$15,500.00 per month"
+    ],
+    "timelines_to_close": [
+      "implementation within our desired timeframe"
+    ],
+    "preferred_pricing_models": [],
+    "KPIs": [
+      "user adoption rates",
+      "time-to-competency",
+      "overall user engagement"
+    ],
+    "company_financial_priorities": []
+  },
+  "pricing_analysis_seller_data": {
+    "pricing_options": [
+      "flat per-application fee, plus user license fees",
+      "free trial and premium subscription plans starting at $15,500.00 per month"
+    ],
+    "pricing_levers": [
+      "flexible and scalable pricing model",
+      "discounts for long-term commitments",
+      "access to advanced features, dedicated support, and regular updates"
+    ],
+    "negotiation_tactics": [
+      "emphasizing the importance of timely implementation",
+      "highlighting the ROI expectations"
+    ],
+    "assets_used": [
+      "historical case studies",
+      "implementation process"
+    ],
+    "ROI_calculators": [
+      "average ROI of 3:1 within the first six months of implementation"
+    ],
+    "historical_case_studies": [
+      "previous customers have seen an average ROI of 3:1 within the first six months of implementation"
+    ]
+  },
+  "negotiation_transcript": {
+    "messages": [
+      {
+        "user": "Whatfix",
+        "content": "Hi Rohan, Piyush, thank you for taking the time to discuss the pricing and implementation details of our digital adoption platform. I'm excited to move forward with the negotiation process."
+      },
+      {
+        "user": "Rohan",
+        "content": "Thank you, Whatfix. Yes, we're interested in moving forward, but we do have some concerns that we'd like to discuss. Our main priority is to ensure that your solution fits within our budget constraints of $15,500 per month."
+      },
+      {
+        "user": "Whatfix",
+        "content": "I completely understand, Rohan. Our pricing model is designed to be flexible and scalable, and we're confident that we can work within your budget constraints. In fact, we offer discounts for long-term commitments, which could be beneficial for ICICI Bank. Can you tell me more about your implementation timelines and how we can work together to ensure a successful rollout?"
+      },
+      {
+        "user": "Piyush",
+        "content": "Our implementation timelines are quite aggressive, and we need to ensure that your solution can be implemented within our desired timeframe. We're also concerned about the ROI expectations and how we can measure the success of your solution."
+      },
+      {
+        "user": "Whatfix",
+        "content": "I understand your concerns, Piyush. Our solution has been proven to provide an average ROI of 3:1 within the first six months of implementation. We also offer historical case studies and implementation process documentation to help alleviate any concerns you may have. In terms of measuring success, we can work with you to establish key performance indicators, such as user adoption rates, time-to-competency, and overall user engagement."
+      },
+      {
+        "user": "Rohan",
+        "content": "That sounds great, Whatfix. However, we do have some contract terms and procurement concerns that we need to discuss. Can you provide us with a detailed contract outline and address any concerns we may have about procurement?"
+      },
+      {
+        "user": "Whatfix",
+        "content": "Absolutely, Rohan. I'd be happy to provide you with a detailed contract outline and address any concerns you may have about procurement. In terms of contract terms, we're willing to offer a 10% discount for a long-term commitment, and we're also open to negotiating the terms of our contract to meet your needs. Can you tell me more about your procurement concerns and how we can work together to alleviate them?"
+      },
+      {
+        "user": "Piyush",
+        "content": "Our main concern is ensuring that your solution integrates seamlessly with our existing systems. Can you provide us with more information about your scalability and integration capabilities?"
+      },
+      {
+        "user": "Whatfix",
+        "content": "Our digital adoption platform is designed to be scalable and can integrate with your existing systems. We have a proven track record of successful integrations with some of the largest financial institutions in the world. I'd be happy to provide you with more information and introduce you to our technical team if needed."
+      },
+      {
+        "user": "Rohan",
+        "content": "That sounds great, Whatfix. I think we're getting close to a decision. Can you summarize the key points we've discussed and provide us with a final proposal?"
+      },
+      {
+        "user": "Whatfix",
+        "content": "Certainly, Rohan. To summarize, we've discussed the pricing and implementation details of our digital adoption platform, and we've addressed your concerns about budget constraints, implementation timelines, ROI expectations, and contract terms. We're willing to offer a 10% discount for a long-term commitment and are open to negotiating the terms of our contract to meet your needs. We believe our solution can provide significant value to ICICI Bank, and we're excited about the opportunity to work together. I'll send over a final proposal by the end of the day, and we can discuss any further questions or concerns you may have."
+      }
+    ]
+  },
+  "negotiation_analysis_buyer_data": {
+    "final_objections": [
+      "implementation timelines",
+      "budget constraints"
+    ],
+    "key_decision_makers": [
+      "Piyush",
+      "Rohan"
+    ],
+    "remaining_concerns": [
+      "implementation costs",
+      "ROI expectations",
+      "KPIs for measuring success"
+    ],
+    "contract_terms": [
+      "pricing model",
+      "implementation plan",
+      "integration with existing systems",
+      "dedicated support services"
+    ]
+  },
+  "negotiation_analysis_seller_data": {
+    "concessions_discounts": [
+      "discounts for long-term commitments"
+    ],
+    "objection_handling": [
+      "handling budget constraints by offering a premium subscription plan starting at $15,500.00 per month",
+      "addressing implementation timelines concern by explaining the implementation process and providing a timeline of 6-8 weeks"
+    ],
+    "stakeholder_consensus": [
+      "involving key decision makers Piyush and Rohan in the discussion",
+      "addressing concerns and questions from both stakeholders"
+    ],
+    "contract_procurement": [
+      "discussing the pricing model and its components",
+      "outlining the implementation plan and integration with existing systems",
+      "highlighting dedicated support services"
+    ],
+    "closing_tactics": [
+      "emphasizing the ROI of 3:1 within the first six months of implementation",
+      "providing a summary of the discussion and the proposed implementation plan for review"
+    ],
+    "assests_used": [
+      "historical case studies to demonstrate the ROI of the digital adoption platform"
+    ]
   }
 }

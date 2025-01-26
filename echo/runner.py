@@ -3,20 +3,24 @@ from crewai import LLM
 import os
 from echo.utils import get_llm
 
+from echo.step_templates.generic import aget_call_structure as aget_call_structure_from_transcripts
+
+
 from echo.step_templates.discovery import asimulate_data as asimulate_discovery_data
 from echo.step_templates.discovery import aget_analysis as aget_discovery_analysis
+from echo.step_templates.discovery import get_client_data_to_embed as get_discovery_data_to_embed
+from echo.step_templates.discovery import get_client_data_to_save as get_discovery_data_to_save
 
 from echo.step_templates.demo import asimulate_data as asimulate_demo_data
 from echo.step_templates.demo import aget_analysis as aget_demo_analysis
-from echo.step_templates.generic import aget_call_structure as aget_call_structure_from_transcripts
-
-from echo.step_templates.discovery import get_client_data_to_embed as get_discovery_data_to_embed
 from echo.step_templates.demo import get_client_data_to_embed as get_demo_data_to_embed
-
-from echo.step_templates.discovery import get_client_data_to_save as get_discovery_data_to_save
 from echo.step_templates.demo import get_client_data_to_save as get_demo_data_to_save
 
+from echo.step_templates.pricing import asimulate_data as asimulate_pricing_data
+from echo.step_templates.pricing import aget_analysis as aget_pricing_analysis
 
+from echo.step_templates.negotiation import asimulate_data as asimulate_negotiation_data
+from echo.step_templates.negotiation import aget_analysis as aget_negotiation_analysis
 
 from echo.constants import *
 
@@ -55,6 +59,14 @@ call_fns = {
         ANALYSIS: aget_demo_analysis,
         EMBED_DATA: get_demo_data_to_embed,
         SAVE_DATA: get_demo_data_to_save
+    },
+    PRICING: {
+        SIMULATION: asimulate_pricing_data,
+        ANALYSIS: aget_pricing_analysis
+    },
+    NEGOTIATION: {
+        SIMULATION: asimulate_negotiation_data,
+        ANALYSIS: aget_negotiation_analysis
     }
 }
 
@@ -62,7 +74,7 @@ async def aget_call_structure(call_type, clients, inputs, llm: LLM = None, **cre
     """
     Required that the transcripts are already simulated/created
     """
-    assert call_type in [DISCOVERY, DEMO], f"call_type must be one of {DISCOVERY}, {DEMO}"
+    assert call_type in [DISCOVERY, DEMO, PRICING, NEGOTIATION], f"call_type must be one of {DISCOVERY}, {DEMO}, {PRICING}, {NEGOTIATION}"
     if llm is None:
         llm = get_llm()
         
@@ -85,7 +97,7 @@ async def aget_call_structure(call_type, clients, inputs, llm: LLM = None, **cre
 
 
 async def simulate_calls(call_type, clients, inputs, llm: LLM = None, **crew_config):
-    assert call_type in [DISCOVERY, DEMO], f"call_type must be one of {DISCOVERY}, {DEMO}"
+    assert call_type in [DISCOVERY, DEMO, PRICING, NEGOTIATION], f"call_type must be one of {DISCOVERY}, {DEMO}, {PRICING}, {NEGOTIATION}"
     if llm is None:
         llm = get_llm()
         
@@ -94,7 +106,7 @@ async def simulate_calls(call_type, clients, inputs, llm: LLM = None, **crew_con
 
 
 async def get_analysis(call_type, clients, inputs, llm: LLM = None, **crew_config):
-    assert call_type in [DISCOVERY, DEMO], f"call_type must be one of {DISCOVERY}, {DEMO}"
+    assert call_type in [DISCOVERY, DEMO, PRICING, NEGOTIATION], f"call_type must be one of {DISCOVERY}, {DEMO}, {PRICING}, {NEGOTIATION}"
     if llm is None:
         llm = get_llm()
         
@@ -103,7 +115,7 @@ async def get_analysis(call_type, clients, inputs, llm: LLM = None, **crew_confi
 
 
 async def make_call(call_type, clients, inputs, llm: LLM = None, **crew_config):
-    assert call_type in [DISCOVERY, DEMO], f"call_type must be one of {DISCOVERY}, {DEMO}"
+    assert call_type in [DISCOVERY, DEMO, PRICING, NEGOTIATION], f"call_type must be one of {DISCOVERY}, {DEMO}, {PRICING}, {NEGOTIATION}"
     if llm is None:
         llm = get_llm()
     

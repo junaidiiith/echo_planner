@@ -11,7 +11,7 @@ SECTION_MERGER = 'merger'
 DISCOVERY = 'discovery'
 DEMO = 'demo'
 PRICING = 'pricing'
-NEGOTIAION = 'negotiation'
+NEGOTIATION = 'negotiation'
 
 BUYER = 'buyer'
 SELLER = 'seller'
@@ -30,7 +30,29 @@ ALLOWED_KEYS = [
     "demo_transcript",
     "demo_analysis_buyer_data",
     "demo_analysis_seller_data",
+    
+    'pricing_transcript',
+    'pricing_analysis_buyer_data',
+    'pricing_analysis_seller_data',
+    
+    'negotiation_transcript',
+    'negotiation_analysis_buyer_data',
+    'negotiation_analysis_seller_data',
 ]
 
 
 EMBED_STRING_HASH_KEY = 'embed_string_hash'
+
+
+OPENAI = 'openai'
+FIREWORKS = 'fireworks'
+
+LLM_TYPE = 'LLM_TYPE'
+EMBED_MODEL_TYPE = 'EMBED_MODEL_TYPE'
+
+OPENAI_MODEL = 'OPENAI_MODEL'
+FIREWORKS_LLM = 'FIREWORKS_LLM'
+
+OPENAI_API_KEY = 'OPENAI_API_KEY'
+FIREWORKS_API_KEY = 'FIREWORKS_API_KEY'
+EMBED_BATCH_SIZE = 'EMBED_BATCH_SIZE'

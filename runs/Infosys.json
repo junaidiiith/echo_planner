@@ -501,5 +501,221 @@
     "engagement_questions": [
       "Before we dive in, I just want to confirm that we have Ramesh, our primary decision-maker, on the call."
     ]
+  },
+  "pricing_transcript": {
+    "messages": [
+      {
+        "user": "Whatfix",
+        "content": "Hi Ramesh, thank you for taking the time to discuss the pricing model for Whatfix. I understand that you've had a chance to review the demo and we're excited to move forward. Can you start by sharing your thoughts on the demo and what you're looking to get out of our digital adoption platform?"
+      },
+      {
+        "user": "Ramesh",
+        "content": "Yes, thank you for the demo. It was very informative and we're impressed with the features. We're looking to improve user adoption rates and reduce support requests. We also want to make sure that the platform can be customized to meet our specific business needs."
+      },
+      {
+        "user": "Whatfix",
+        "content": "Absolutely, our platform is designed to be highly customizable and scalable to meet the needs of large enterprises like Infosys. Now, let's discuss our pricing models. We offer a range of options to fit your business needs. We have a Free plan with 30 credits, a Basic plan for up to 2500 users at $39/month, a Growth plan for up to 10,000 users at $499/month, and an Enterprise plan for large-scale businesses with a custom quote. We also offer a Per-Application Fee model with a flat fee plus user license fees, also with a custom quote."
+      },
+      {
+        "user": "Ramesh",
+        "content": "That's helpful, thank you. We're concerned about the steep learning curve and limited customization options. Can you walk us through how you handle implementation and customization for large enterprises like ours?"
+      },
+      {
+        "user": "Whatfix",
+        "content": "I completely understand your concerns. We've worked with numerous large enterprises and have a proven track record of delivering tailored solutions. Our implementation process is designed to be smooth and efficient, and our support team is dedicated to ensuring a successful rollout. We also offer customization options to meet specific business needs, and our AI-Powered Guidance feature can help users navigate even the most complex workflows."
+      },
+      {
+        "user": "Ramesh",
+        "content": "That sounds promising. What kind of ROI can we expect from implementing Whatfix?"
+      },
+      {
+        "user": "Whatfix",
+        "content": "Our clients have seen significant ROI from implementing Whatfix. For example, one of our clients, a large IT consulting firm, saw a 30% reduction in support requests and a 25% increase in user adoption rates within the first six months of implementation. We can provide a customized ROI analysis based on your specific business needs and goals."
+      },
+      {
+        "user": "Ramesh",
+        "content": "That's impressive. What kind of budget are we looking at for the Enterprise plan?"
+      },
+      {
+        "user": "Whatfix",
+        "content": "We can work with you to create a custom quote that fits your budget constraints. However, we typically see a significant reduction in costs associated with support requests and user adoption. We can also offer flexible pricing options to meet your needs."
+      },
+      {
+        "user": "Ramesh",
+        "content": "We're looking to make a decision within the next 24 hours. Can you provide a proposal that outlines the details of the Enterprise plan and the custom quote?"
+      },
+      {
+        "user": "Whatfix",
+        "content": "Absolutely, I can have that proposal sent over to you within the next few hours. We're excited about the opportunity to work with Infosys and help you achieve your digital transformation goals. Are there any other concerns or questions you have at this point?"
+      },
+      {
+        "user": "Ramesh",
+        "content": "No, that's all for now. Thank you for your time and we look forward to reviewing the proposal."
+      },
+      {
+        "user": "Whatfix",
+        "content": "You're welcome, Ramesh. It was a pleasure speaking with you and I'm confident that Whatfix can help Infosys achieve its goals. I'll follow up with the proposal and we can discuss next steps. Thank you again for your time."
+      }
+    ]
+  },
+  "pricing_analysis_buyer_data": {
+    "concerns": [
+      "steep learning curve",
+      "limited customization options"
+    ],
+    "budget_constraints": [
+      "budget constraints",
+      "costs associated with support requests and user adoption"
+    ],
+    "timelines_to_close": [
+      "make a decision within the next 24 hours"
+    ],
+    "preferred_pricing_models": [],
+    "KPIs": [
+      "user adoption rates",
+      "support requests"
+    ],
+    "company_financial_priorities": [
+      "reduce costs associated with support requests and user adoption",
+      "achieve digital transformation goals"
+    ]
+  },
+  "pricing_analysis_seller_data": {
+    "pricing_options": [
+      "Free plan with 30 credits",
+      "Basic plan for up to 2500 users at $39/month",
+      "Growth plan for up to 10,000 users at $499/month",
+      "Enterprise plan for large-scale businesses with a custom quote",
+      "Per-Application Fee model with a flat fee plus user license fees, also with a custom quote"
+    ],
+    "pricing_levers": [
+      "highly customizable and scalable",
+      "smooth and efficient implementation process",
+      "dedicated support team",
+      "AI-Powered Guidance feature"
+    ],
+    "negotiation_tactics": [
+      "flexible pricing options to meet budget constraints",
+      "custom quote based on business needs"
+    ],
+    "assets_used": [
+      "demo",
+      "digital adoption platform",
+      "implementation process",
+      "support team",
+      "AI-Powered Guidance feature"
+    ],
+    "ROI_calculators": [
+      "customized ROI analysis based on business needs and goals"
+    ],
+    "historical_case_studies": [
+      "large IT consulting firm that saw a 30% reduction in support requests and a 25% increase in user adoption rates within the first six months of implementation"
+    ]
+  },
+  "negotiation_transcript": {
+    "messages": [
+      {
+        "user": "Whatfix",
+        "content": "Hi Ramesh, thanks for taking the time to discuss the next steps for implementing Whatfix at Infosys. I understand that you've had a chance to review our demo and discuss internally. Can you share your thoughts on where you stand in terms of moving forward?"
+      },
+      {
+        "user": "Ramesh",
+        "content": "Yes, thank you for following up. We've had a good discussion internally, and we're interested in moving forward. However, we do have some concerns that we'd like to address before finalizing the deal."
+      },
+      {
+        "user": "Whatfix",
+        "content": "Absolutely, Ramesh. I'm happy to help address any concerns you may have. What are some of the key issues that you'd like to discuss?"
+      },
+      {
+        "user": "Ramesh",
+        "content": "Well, one of our primary concerns is the steep learning curve. We've had issues with user adoption in the past, and we want to make sure that Whatfix can help us improve that."
+      },
+      {
+        "user": "Whatfix",
+        "content": "I completely understand, Ramesh. Whatfix is designed to be highly customizable and scalable to meet the needs of large enterprises like Infosys. Our platform can integrate with a wide range of systems and tools, and our support team is dedicated to ensuring a smooth implementation process. Can I walk you through some of our success stories with similar clients who've seen significant improvements in user adoption rates?"
+      },
+      {
+        "user": "Ramesh",
+        "content": "That sounds great. We'd love to hear more about that. But we're also concerned about the limited customization options. Can you show us how Whatfix can be tailored to our specific business needs?"
+      },
+      {
+        "user": "Whatfix",
+        "content": "Whatfix provides a range of features that can help you improve user adoption, streamline software adoption processes, and enhance your clients' overall software experiences. Our platform is highly customizable to meet the specific needs of your business. I'd be happy to provide a customized demo to show you how our platform can be tailored to your needs."
+      },
+      {
+        "user": "Ramesh",
+        "content": "Okay, that sounds good. We'd also like to discuss the contract terms and procurement process. What are your typical terms, and how does the procurement process work?"
+      },
+      {
+        "user": "Whatfix",
+        "content": "We're flexible when it comes to contract terms and procurement processes. We've worked with numerous enterprises and understand the importance of meeting your needs. We can offer a customized contract that meets your requirements. In terms of procurement, we've worked with procurement teams in the past and are happy to provide any necessary information to facilitate the process."
+      },
+      {
+        "user": "Ramesh",
+        "content": "That's good to hear. We'd also like to discuss the pricing model. Can you provide some flexibility in terms of discounts and concessions to meet our budget constraints?"
+      },
+      {
+        "user": "Whatfix",
+        "content": "I understand that budget constraints are an important consideration. Whatfix is committed to providing a flexible pricing model that meets your needs. We can offer a customized pricing plan that takes into account your budget constraints and provides the necessary ROI to justify the investment. Let me see what I can do to provide some concessions that meet your needs."
+      },
+      {
+        "user": "Whatfix",
+        "content": "After reviewing your requirements, I'm happy to offer a 10% discount on our standard pricing model. This should help meet your budget constraints and provide a clear ROI on your investment. What are your thoughts on this proposal?"
+      },
+      {
+        "user": "Ramesh",
+        "content": "That sounds good. We'll need to discuss this internally and get back to you. Can you provide a summary of the proposal, including the customized pricing plan and contract terms?"
+      },
+      {
+        "user": "Whatfix",
+        "content": "Absolutely, Ramesh. I'll send over a summary of the proposal, including the customized pricing plan and contract terms, within the next 24 hours. If you have any questions or concerns, please don't hesitate to reach out. We're looking forward to working with Infosys and helping you achieve your digital transformation goals."
+      }
+    ]
+  },
+  "negotiation_analysis_buyer_data": {
+    "final_objections": [
+      "budget",
+      "customization options",
+      "implementation and customization for large enterprises"
+    ],
+    "key_decision_makers": [
+      "Ramesh"
+    ],
+    "remaining_concerns": [
+      "steep learning curve",
+      "customization options",
+      "implementation and customization for large enterprises"
+    ],
+    "contract_terms": [
+      "custom quote for the Enterprise plan",
+      "flexible pricing options"
+    ]
+  },
+  "negotiation_analysis_seller_data": {
+    "concessions_discounts": [
+      "flexible pricing options"
+    ],
+    "objection_handling": [
+      "addressing steep learning curve concerns",
+      "emphasizing customization options and implementation process for large enterprises",
+      "highlighting ROI and cost reduction benefits"
+    ],
+    "stakeholder_consensus": [
+      "attempting to understand Infosys's business needs and goals",
+      "emphasizing Whatfix's ability to cater to large enterprises"
+    ],
+    "contract_procurement": [
+      "custom quote for the Enterprise plan",
+      "flexible pricing options"
+    ],
+    "closing_tactics": [
+      "providing a proposal outlining the details of the Enterprise plan and custom quote",
+      "expressing enthusiasm for the opportunity to work with Infosys"
+    ],
+    "assests_used": [
+      "demo",
+      "ROI analysis",
+      "case study of a similar IT consulting firm"
+    ]
   }
 }

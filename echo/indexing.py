@@ -18,11 +18,29 @@ from echo.settings import (
     CHUNK_OVERLAP,    
 )
 
+
 class IndexType(enum.Enum):
     HISTORICAL = "historical"
     BUYER_RESEARCH = "buyer_research"
     SELLER_RESEARCH = "seller_research"
+    TRANSCRIPT = "transcripts"
     SALES_PLAYBOOK = "sales_playbook"
+
+
+metadata_keys = {
+    IndexType.HISTORICAL: [
+        "seller", 
+        "buyer", 
+        "call_type", 
+        "company_size", 
+        "industry", 
+        "description"
+    ],
+    IndexType.BUYER_RESEARCH: ["buyer"],
+    IndexType.SELLER_RESEARCH: ["seller"],
+    IndexType.SALES_PLAYBOOK: [],
+    IndexType.TRANSCRIPT: ["seller", "buyer", "call_type"]
+}
 
 
 def get_vector_index(
@@ -74,3 +92,43 @@ def get_nodes_from_documents(data: str, metadata: Dict[str, str]):
         )
         for doc in docs
     ]
+
+def check_node_exists(
+    data: str, 
+    metadata: Dict[str, str], 
+    index: VectorStoreIndex
+):
+    filters = MetadataFilters(
+        filters=[
+            MetadataFilter(
+                key=k, 
+                value=v,
+            ) for k, v in metadata.items()
+        ],
+    )
+    retriever = index.as_retriever(filters=filters, similarity_top_k=3)
+    if any([n.text == data for n in retriever.retrieve("")]):
+        print(f"Node already exists in index: {metadata}")
+        return True
+    return False
+
+
+def add_data(
+    data: str, 
+    metadata: Dict[str, str], 
+    index_name: str, 
+    index_type: IndexType
+):
+    assert all([k in metadata for k in metadata_keys[index_type]]), f"Missing metadata keys for {index_type}. \nRequired keys: {metadata_keys[index_type]}. \nProvided keys: {metadata.keys()}"
+    filtered_metadata = {
+        k: v for k, v in metadata.items() 
+        if k in metadata_keys[index_type]
+    }
+    filtered_metadata['data_json'] = data
+    index = get_vector_index(index_name, index_type)
+    nodes = get_nodes_from_documents(data, metadata=filtered_metadata)
+    filtered_nodes = [
+        n for n in nodes 
+        if not check_node_exists(n.text, filtered_metadata, index)
+    ]
+    index.insert_nodes(filtered_nodes)

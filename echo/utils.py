@@ -138,7 +138,7 @@ def check_data_exists(client_name):
         return False
     return True
 
-def get_client_data(client_name):
+def get_client_data(client_name) -> Dict:
     os.makedirs(save_dir, exist_ok=True)
     with open(f"{save_dir}/{client_name}.json") as f:
         return json.load(f)
@@ -314,3 +314,8 @@ def json_to_markdown(json_obj: Union[Dict, List], bullet_position: int = 0):
         markdown += f"{json_obj}\n"
     
     return markdown
+
+
+def snake_to_camel(snake_str: str):
+    components = snake_str.split('_')
+    return components[0] + ''.join(x.title() for x in components[1:])

@@ -506,5 +506,233 @@
     "engagement_questions": [
       "Can you tell me a little bit about what you're hoping to get out of this demo today?"
     ]
+  },
+  "pricing_transcript": {
+    "messages": [
+      {
+        "user": "Whatfix Sales",
+        "content": "Hi everyone, thanks for taking the time to discuss the pricing for our digital adoption platform. As we discussed during the demo, our platform is designed to help organizations like Shell maximize their technology investments and drive user adoption. I'd like to walk you through our pricing models and answer any questions you may have."
+      },
+      {
+        "user": "Wael Sawan (CEO)",
+        "content": "Thanks for the intro. We're interested in understanding the pricing models and how they align with our budget constraints. Can you please present the options?"
+      },
+      {
+        "user": "Whatfix Sales",
+        "content": "Absolutely. We have four pricing models to choose from: Custom Pricing, Standard, Premium, and Flat Fee + User License Fees. The Custom Pricing model is composed of a flat fee, plus user license fees, and is priced based on the specific product and plan. The Standard model is ideal for small to medium-sized businesses and is priced with a custom quote. The Premium model is ideal for large enterprises and is also priced with a custom quote. The Flat Fee + User License Fees model is composed of a flat fee, plus user license fees, and is priced based on the specific product and plan."
+      },
+      {
+        "user": "Mark (Shell icon)",
+        "content": "That's a lot of options. Can you explain the key differences between each model and how they would benefit Shell?"
+      },
+      {
+        "user": "Whatfix Sales",
+        "content": "Of course. The Custom Pricing model offers the most flexibility and is ideal for organizations with complex requirements. The Standard model is a good starting point for smaller businesses, while the Premium model offers more advanced features for larger enterprises. The Flat Fee + User License Fees model is similar to the Custom Pricing model but with a flat fee. We've found that our customers who choose the Custom Pricing model see the highest ROI, as it's tailored to their specific needs."
+      },
+      {
+        "user": "IT",
+        "content": "I have a concern about integrating with our existing systems. Can you address that?"
+      },
+      {
+        "user": "Whatfix Sales",
+        "content": "We've developed a robust integration framework that allows us to integrate with a wide range of systems. We can also provide custom API integrations if needed. We've worked with many organizations with custom-built applications and have a proven track record of successful integrations."
+      },
+      {
+        "user": "Operations",
+        "content": "What's the typical implementation timeline and cost for an organization of our size?"
+      },
+      {
+        "user": "Whatfix Sales",
+        "content": "Our implementation timeline typically ranges from 6-12 weeks, depending on the complexity of the implementation. As for cost, we offer a custom pricing model that takes into account the specific needs and requirements of our customers. We can provide a detailed quote based on your specific needs."
+      },
+      {
+        "user": "Wael Sawan (CEO)",
+        "content": "We're looking to make a decision within the next 2-3 months. Can you work with us to meet that timeline?"
+      },
+      {
+        "user": "Whatfix Sales",
+        "content": "Absolutely. We can work closely with your team to ensure a smooth implementation process that meets your timeline. We've worked with many organizations to implement our platform within a similar timeframe."
+      },
+      {
+        "user": "Mark (Shell icon)",
+        "content": "What kind of ROI can we expect from implementing your platform?"
+      },
+      {
+        "user": "Whatfix Sales",
+        "content": "Our customers typically see a significant increase in user adoption rates and a reduction in the time it takes for employees to become proficient in new tools. We've seen ROI of up to 300% within the first year of implementation. I can provide some case studies and ROI analysis to support this."
+      },
+      {
+        "user": "Wael Sawan (CEO)",
+        "content": "That sounds impressive. What kind of KPIs would you recommend we track to measure success?"
+      },
+      {
+        "user": "Whatfix Sales",
+        "content": "We recommend tracking user adoption rates, time to proficiency, and ROI of the digital adoption platform. These KPIs will give you a clear understanding of the impact of our platform on your business."
+      },
+      {
+        "user": "Mark (Shell icon)",
+        "content": "Our company's financial priority is to balance oil demand with climate goals. How does your platform align with this priority?"
+      },
+      {
+        "user": "Whatfix Sales",
+        "content": "Our platform is designed to help organizations like Shell maximize their technology investments and drive user adoption, which aligns with your financial priority. We've seen many organizations use our platform to reduce their environmental impact while improving their bottom line."
+      },
+      {
+        "user": "Wael Sawan (CEO)",
+        "content": "Thank you for the detailed presentation and answers to our questions. We'll review the pricing models and discuss next steps. What are the next steps from your side?"
+      },
+      {
+        "user": "Whatfix Sales",
+        "content": "I'll send over the pricing models and case studies we discussed today. I'd like to schedule a follow-up call in a week to answer any additional questions you may have and discuss the next steps. Is that acceptable?"
+      }
+    ]
+  },
+  "pricing_analysis_buyer_data": {
+    "concerns": [
+      "integration with existing systems"
+    ],
+    "budget_constraints": [
+      "align with budget constraints"
+    ],
+    "timelines_to_close": [
+      "make a decision within the next 2-3 months"
+    ],
+    "preferred_pricing_models": [],
+    "KPIs": [
+      "user adoption rates",
+      "time to proficiency",
+      "ROI of the digital adoption platform"
+    ],
+    "company_financial_priorities": [
+      "balance oil demand with climate goals"
+    ]
+  },
+  "pricing_analysis_seller_data": {
+    "pricing_options": [
+      "Custom Pricing",
+      "Standard",
+      "Premium",
+      "Flat Fee + User License Fees"
+    ],
+    "pricing_levers": [
+      "flexibility",
+      "advanced features",
+      "tailored to specific needs",
+      "custom API integrations"
+    ],
+    "negotiation_tactics": [
+      "addressing concerns",
+      "highlighting benefits",
+      "providing custom quotes"
+    ],
+    "assets_used": [
+      "demo",
+      "pricing models presentation",
+      "case studies",
+      "ROI analysis"
+    ],
+    "ROI_calculators": [
+      "300% ROI within the first year of implementation"
+    ],
+    "historical_case_studies": [
+      "successful integrations with custom-built applications",
+      "implementations within similar timeframe"
+    ]
+  },
+  "negotiation_transcript": {
+    "messages": [
+      {
+        "user": "Whatfix",
+        "content": "Hi Wael, Mark, and the Shell team, thank you for taking the time to speak with me today. I'm excited to discuss how Whatfix can help you maximize technology investments and drive user adoption. Can you tell me a little bit about what you're hoping to get out of this negotiation call today?"
+      },
+      {
+        "user": "Wael Sawan (CEO)",
+        "content": "Thank you for having us. We're interested in discussing the terms of the agreement and ensuring that Whatfix can meet our requirements. Our key concerns are integration with existing systems and the cost and implementation timeline."
+      },
+      {
+        "user": "Whatfix",
+        "content": "I completely understand your concerns. I'd like to address the integration issue first. We've worked with many organizations with custom-built applications, and we've developed a robust integration framework that allows us to integrate with a wide range of systems. We can also provide custom API integrations if needed. Can I provide some specific examples of how we've helped similar organizations?"
+      },
+      {
+        "user": "Mark (Shell icon)",
+        "content": "That sounds promising. However, we're still concerned about the cost and implementation timeline. Can you provide more details on that?"
+      },
+      {
+        "user": "Whatfix",
+        "content": "Our implementation timeline typically ranges from 6-12 weeks, depending on the complexity of the implementation. As for cost, we offer a custom pricing model that takes into account the specific needs and requirements of our customers. I'd be happy to provide a customized quote for Shell. In fact, we've worked with British Petroleum, who saw a significant increase in user adoption rates after implementing our platform. I can provide some case studies and ROI analysis to support our proposal."
+      },
+      {
+        "user": "Wael Sawan (CEO)",
+        "content": "We appreciate your efforts to address our concerns. However, we need to ensure that the contract terms align with our budget constraints. Can you discuss some potential discounts or concessions?"
+      },
+      {
+        "user": "Whatfix",
+        "content": "I understand your budget concerns. We're willing to provide a 10% discount on the total cost of the implementation, considering the scope and timeline of the project. Additionally, we can offer a flexible pricing model that aligns with your budget constraints. We're committed to making this work for Shell."
+      },
+      {
+        "user": "Mark (Shell icon)",
+        "content": "That's a good starting point. However, we also need to discuss the procurement process and ensure that it meets our internal requirements. Can you walk us through your process?"
+      },
+      {
+        "user": "Whatfix",
+        "content": "Absolutely. Our procurement process is designed to be transparent and efficient. We can provide all necessary documentation and support to ensure a smooth process. I'd be happy to discuss the details with your procurement team and ensure that we meet all your requirements."
+      },
+      {
+        "user": "Wael Sawan (CEO)",
+        "content": "Thank you for addressing our concerns. We'll need to discuss this further internally and get input from our IT and Operations teams. Can you provide a summary of the discussion and the next steps?"
+      },
+      {
+        "user": "Whatfix",
+        "content": "I'll send a summary of our discussion, including the customized quote and contract terms, to your team by the end of the day. I'll also set up a follow-up call for next week to answer any additional questions and discuss the next steps. Thank you for your time, and I look forward to working with you to finalize the agreement."
+      }
+    ]
+  },
+  "negotiation_analysis_buyer_data": {
+    "final_objections": [
+      "pricing models",
+      "integration with existing systems",
+      "implementation timeline and cost",
+      "ROI and KPIs"
+    ],
+    "key_decision_makers": [
+      "Wael Sawan (CEO)",
+      "Mark (Shell icon)",
+      "IT",
+      "Operations"
+    ],
+    "remaining_concerns": [
+      "integration with existing systems",
+      "implementation timeline and cost",
+      "balancing oil demand with climate goals"
+    ],
+    "contract_terms": [
+      "custom pricing model",
+      "implementation timeline of 6-12 weeks"
+    ]
+  },
+  "negotiation_analysis_seller_data": {
+    "concessions_discounts": [],
+    "objection_handling": [
+      "Addressed concern about integrating with existing systems by explaining the robust integration framework and custom API integrations.",
+      "Handled concern about implementation timeline and cost by providing a range of 6-12 weeks and emphasizing a custom pricing model.",
+      "Addressed concern about ROI and KPIs by explaining the typical ROI of up to 300% and recommending tracking user adoption rates, time to proficiency, and ROI."
+    ],
+    "stakeholder_consensus": [
+      "Involved multiple stakeholders including Wael Sawan (CEO), Mark (Shell icon), IT, and Operations in the discussion.",
+      "Asked questions to clarify the needs and concerns of each stakeholder."
+    ],
+    "contract_procurement": [
+      "Discussed implementation timeline of 6-12 weeks.",
+      "Explained the custom pricing model and its flexibility to accommodate Shell's specific needs."
+    ],
+    "closing_tactics": [
+      "Offered to send over the pricing models and case studies for review.",
+      "Scheduled a follow-up call in a week to answer additional questions and discuss next steps."
+    ],
+    "assests_used": [
+      "Case studies",
+      "ROI analysis",
+      "Pricing models presentation"
+    ]
   }
 }

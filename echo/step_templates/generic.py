@@ -6,12 +6,15 @@ from crewai import LLM
 from crewai.crews.crew_output import CrewOutput
 from echo.constants import *
 from tqdm.asyncio import tqdm
+from echo.indexing import IndexType, add_data
 from echo.memory import LTMSQLiteStorage, RAGStorage
 from echo.utils import add_pydantic_structure, get_crew, format_response
 from echo.utils import (
     get_db_type, 
     get_sql_client, 
     get_rag_client, 
+    save_client_data,
+    json_to_markdown
 )
 
 
@@ -19,7 +22,7 @@ class CallType(enum.Enum):
     DISCOVERY = "discovery"
     DEMO = "demo"
     PRICING = "pricing"
-    PROCUREMENT = "procurement"
+    NEGOTIATION = "negotiation"
 
 
 
@@ -330,3 +333,19 @@ def embed_client_call_data(client_name, user_type, call_type, metadata, data):
     )
     
     return data
+
+
+def save_transcript_data(data, call_type):
+    buyer, seller = data['buyer'], data['seller']
+    save_client_data(buyer, data)    
+    print("Adding Discovery Transcript Data to Vector Store")
+    add_data(
+        data=json_to_markdown(data[f'{call_type}_transcript']),
+        metadata={
+            "seller": seller,
+            "buyer": buyer,
+            "call_type": call_type,
+        },
+        index_name=seller,
+        index_type=IndexType.TRANSCRIPT
+    )

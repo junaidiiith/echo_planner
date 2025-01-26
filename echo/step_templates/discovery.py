@@ -7,9 +7,11 @@ from echo.constants import *
 from pydantic import BaseModel, Field
 from typing import Dict, List
 from echo.utils import add_pydantic_structure, format_response
-from echo.step_templates.generic import Transcript, save_client_call_data, embed_client_call_data
+from echo.step_templates.generic import CallType, Transcript, save_transcript_data
 from echo.utils import get_crew as get_crew_obj
 import echo.utils as utils
+
+from echo.indexing import IndexType, add_data
 
 class SellerInfo(BaseModel):
 	name: str = Field(..., title="Seller's Name", description="The name of the seller.")
@@ -423,6 +425,59 @@ seller_keys = {
 }
 
 
+def get_buyer_info(data: Dict):
+    buyer_info_keys = [
+        "name",
+        "description",
+        "industry",
+        "company_size",
+    ]
+    data_str = "\n".join([f"{utils.snake_to_camel(k)}\n{data[k]}" for k in buyer_info_keys])
+    return data_str
+
+
+def get_buyer_research_data(data: Dict):
+    buyer_research_keys = [
+        "buyer_research",
+        "competitive_info",
+        "anticipated_qopcs",
+    ]
+    
+    data_str = "\n".join([f"{utils.snake_to_camel(k)}\n{utils.json_to_markdown(data[k])}" for k in buyer_research_keys])
+    return data_str
+
+
+def get_seller_research_data(data: Dict):
+    seller_research_keys = [
+        "seller_research",
+        "seller_pricing",
+    ]
+    
+    data_str = "\n".join([f"{utils.snake_to_camel(k)}\n{utils.json_to_markdown(data[k])}" for k in seller_research_keys])
+    return data_str
+
+
+def get_analysis_data(data: Dict):
+    analysis_keys = [
+        "discovery_analysis_buyer_data",
+        "discovery_analysis_seller_data",
+    ]
+    
+    data_str = "\n".join([f"{utils.snake_to_camel(k)}\n{utils.json_to_markdown(data[k])}" for k in analysis_keys])
+    return data_str
+    
+
+def get_analysis_metadata(data: Dict):
+    return {
+        "seller": data['seller'],
+        "buyer": data['buyer'],
+        "call_type": CallType.DISCOVERY.value,
+        "company_size": data["buyer_research"]["company_size"],
+        "industry": data["buyer_research"]["industry"],
+        "description": data["buyer_research"]["description"]
+    }
+
+
 def get_client_data_to_embed(client_name, user_type):
     data = utils.get_client_data(client_name)
     if user_type == BUYER:
@@ -479,13 +534,45 @@ def get_crew(step: str, llm: LLM, **crew_config) -> Crew:
 
 async def aget_research_data_for_client(inputs: dict, llm: LLM, **crew_config):
     assert all([k in inputs for k in ["seller", "n_competitors", "buyer"]]), "Invalid input data for research"
+    
+    def save_data():
+        utils.save_client_data(client, data)
+        print(f"Adding Seller: {seller} Data for {client}")
+        add_data(
+            data=get_seller_research_data(data),
+            metadata={
+                "seller": data['seller'],
+            },
+            index_name=data['seller'],
+            index_type=IndexType.SELLER_RESEARCH
+        )
+        
+        print(f"Adding Buyer: {client} Data")
+        add_data(
+            data=get_buyer_research_data(data),
+            metadata={
+                "buyer": client,
+            },
+            index_name=data['seller'],
+            index_type=IndexType.BUYER_RESEARCH
+        )
+
+    
+    client, seller = inputs['buyer'], inputs['seller']
+    
     if utils.check_data_exists(inputs['buyer']):
-        return utils.get_client_data(inputs['buyer'])
+        data = utils.get_client_data(inputs['buyer'])
+        data.update(inputs)
+        return data
     
     crew = get_crew(RESEARCH, llm, **crew_config)
     add_pydantic_structure(crew, inputs)
     response = await crew.kickoff_async(inputs=inputs)
-    return process_research_data_output(response)
+    data = process_research_data_output(response)
+    data.update(inputs)
+    
+    save_data()
+    return data
 
 
 async def aget_simulation_data_for_client(inputs: dict, llm: LLM, **crew_config):
@@ -498,20 +585,38 @@ async def aget_simulation_data_for_client(inputs: dict, llm: LLM, **crew_config)
         "competitive_info", 
         "anticipated_qopcs",
     ]]), f"Invalid input data for simulation call: {inputs.keys()}"
+    
     if utils.check_data_exists(inputs['buyer']):
         data = utils.get_client_data(inputs['buyer'])
         if 'discovery_transcript' in data:
             return data
-    
+
     crew = get_crew(SIMULATION, llm, **crew_config)
     add_pydantic_structure(crew, inputs)
     response = await crew.kickoff_async(inputs=inputs)
-    return {
+    
+    data = {
         "discovery_transcript": format_response(response.tasks_output[0])
     }
-
+    
+    data.update(inputs)
+    save_transcript_data(data, CallType.DISCOVERY.value)
+    
+    return data
+    
 
 async def aanalyze_data_for_client(inputs: dict, llm: LLM, **crew_config):
+    
+    def save_data():
+        utils.save_client_data(client, data)
+        print("Adding Analysis Data to Vector Store")
+        add_data(
+            data=get_analysis_data(data),
+            metadata=get_analysis_metadata(data),
+            index_name=seller,
+            index_type=IndexType.HISTORICAL
+        )
+    
     assert all([k in inputs for k in [
         "seller", 
         "buyer", 
@@ -521,15 +626,26 @@ async def aanalyze_data_for_client(inputs: dict, llm: LLM, **crew_config):
         "competitive_info", 
         "discovery_transcript"
     ]]), f"Invalid input data for simulation: {inputs.keys()}"
-    if utils.check_data_exists(inputs['buyer']):
-        data = utils.get_client_data(inputs['buyer'])
+    
+    client, seller = inputs['buyer'], inputs['seller']
+    
+    if utils.check_data_exists(client):
+        data: Dict = utils.get_client_data(client)
+        data.update(inputs)
         if 'discovery_analysis_buyer_data' in data:
+            save_data()
             return data
+        
     
     crew = get_crew(ANALYSIS, llm, **crew_config)
     add_pydantic_structure(crew, inputs)
     response = await crew.kickoff_async(inputs=inputs)
-    return process_analysis_data_output(response)
+    data = process_analysis_data_output(response)
+    data.update(inputs)
+    save_data()
+    
+    return data
+    
 
 
 async def aget_research_data(clients: List[str], inputs: dict, llm: LLM, **crew_config):
@@ -541,7 +657,6 @@ async def aget_research_data(clients: List[str], inputs: dict, llm: LLM, **crew_
         data['buyer'] = client
         response = await aget_research_data_for_client(data, llm, **crew_config)
         data.update(response)
-        utils.save_client_data(client, data)
         research_data[client] = data
     
     return research_data
@@ -579,17 +694,5 @@ async def aget_analysis(
         utils.save_client_data(client, data)
         analysis_data[client] = data
         
-        save_client_data_to_db(client, inputs['seller'])
     
     return analysis_data
-
-
-def save_client_data_to_db(client_name, seller_name):
-    inputs = {
-        SELLER: seller_name,
-        BUYER: client_name,
-    }
-    print(f"Saving Data for {client_name}")
-    save_client_call_data(client_name, BUYER, DISCOVERY, inputs, get_client_data_to_save(client_name, BUYER))
-    save_client_call_data(client_name, SELLER, DISCOVERY, inputs, get_client_data_to_save(client_name, SELLER))
-    embed_client_call_data(client_name, BUYER, DISCOVERY, inputs, get_client_data_to_embed(client_name, BUYER))
