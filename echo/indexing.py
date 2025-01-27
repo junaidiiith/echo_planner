@@ -84,6 +84,7 @@ def get_nodes_from_documents(data: str, metadata: Dict[str, str]):
         chunk_size=CHUNK_SIZE, 
         chunk_overlap=CHUNK_OVERLAP
     )
+    print("Splitting text into documents", data)
     docs = splitter.split_text(data)
     return [
         TextNode(

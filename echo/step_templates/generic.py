@@ -338,7 +338,7 @@ def embed_client_call_data(client_name, user_type, call_type, metadata, data):
 def save_transcript_data(data, call_type):
     buyer, seller = data['buyer'], data['seller']
     save_client_data(buyer, data)    
-    print("Adding Discovery Transcript Data to Vector Store")
+    print(f"Adding {call_type} Transcript Data to Vector Store")
     add_data(
         data=json_to_markdown(data[f'{call_type}_transcript']),
         metadata={

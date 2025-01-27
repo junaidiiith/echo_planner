@@ -318,4 +318,9 @@ def json_to_markdown(json_obj: Union[Dict, List], bullet_position: int = 0):
 
 def snake_to_camel(snake_str: str):
     components = snake_str.split('_')
-    return components[0] + ''.join(x.title() for x in components[1:])
+    return ' '.join(x.title() for x in components)
+
+
+def get_data_str(key_items: Dict, data):
+    data_str = "\n".join([f"{snake_to_camel(k)} Fields Description: {get_model_code_with_comments(v)}\n{json_to_markdown(data[k])}" for k, v in key_items.items()])
+    return data_str

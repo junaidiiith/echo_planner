@@ -249,12 +249,12 @@ seller_keys = {
 
 
 def get_analysis_data(data: Dict):
-    analysis_keys = [
-        "pricing_analysis_buyer_data",
-        "pricing_analysis_seller_data",
-    ]
+    analysis_keys = {
+        "pricing_analysis_buyer_data": BuyerDataExtracted,
+        "pricing_analysis_seller_data": SellerDataExtracted,
+    }
     
-    data_str = "\n".join([f"{utils.snake_to_camel(k)}\n{utils.json_to_markdown(data[k])}" for k in analysis_keys])
+    data_str = utils.get_data_str(analysis_keys, data)
     return data_str
     
 

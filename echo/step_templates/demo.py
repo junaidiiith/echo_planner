@@ -277,12 +277,12 @@ seller_keys = {
 
 
 def get_analysis_data(data: Dict):
-    analysis_keys = [
-        "demo_analysis_buyer_data",
-        "demo_analysis_seller_data",
-    ]
+    analysis_keys = {
+        "demo_analysis_buyer_data": BuyerDataExtracted,
+        "demo_analysis_seller_data": SellerDataExtracted,
+    }
     
-    data_str = "\n".join([f"{utils.snake_to_camel(k)}\n{utils.json_to_markdown(data[k])}" for k in analysis_keys])
+    data_str = utils.get_data_str(analysis_keys, data)
     return data_str
     
 
@@ -369,8 +369,7 @@ async def aget_simulation_data_for_client(inputs: dict, llm: LLM, **crew_config)
         "competitive_info", 
         "anticipated_qopcs", 
     ]]), "Invalid input data for simulation"
- 
-    client, seller = inputs['buyer'], inputs['seller']
+
  
 
     if utils.check_data_exists(inputs['buyer']):
@@ -419,6 +418,7 @@ async def aanalyze_data_for_client(inputs: dict, llm: LLM, **crew_config):
         data = utils.get_client_data(inputs['buyer'])
         data.update(inputs)
         if 'demo_analysis_buyer_data' in data:
+            save_data()
             return data
     
     crew = get_crew(ANALYSIS, llm, **crew_config)
@@ -485,7 +485,6 @@ async def aget_analysis(
         data['buyer'] = client
         response = await aanalyze_data_for_client(data, llm, **crew_config)
         data.update(response)
-        utils.save_client_data(client, data)
         analysis_data[client] = data
   
     

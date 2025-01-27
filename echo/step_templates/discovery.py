@@ -425,45 +425,35 @@ seller_keys = {
 }
 
 
-def get_buyer_info(data: Dict):
-    buyer_info_keys = [
-        "name",
-        "description",
-        "industry",
-        "company_size",
-    ]
-    data_str = "\n".join([f"{utils.snake_to_camel(k)}\n{data[k]}" for k in buyer_info_keys])
-    return data_str
-
-
 def get_buyer_research_data(data: Dict):
-    buyer_research_keys = [
-        "buyer_research",
-        "competitive_info",
-        "anticipated_qopcs",
-    ]
+    buyer_research_keys = {
+        "buyer_research": ClientResearchResponse,
+        "competitive_info": CompetitorComparison,
+        "anticipated_qopcs": AnticipatedPainsAndObjections,
+    }
     
-    data_str = "\n".join([f"{utils.snake_to_camel(k)}\n{utils.json_to_markdown(data[k])}" for k in buyer_research_keys])
+    data_str = utils.get_data_str(buyer_research_keys, data)
     return data_str
 
 
 def get_seller_research_data(data: Dict):
-    seller_research_keys = [
-        "seller_research",
-        "seller_pricing",
-    ]
+    seller_research_keys = {
+        "seller_research": SellerResearchResponse,
+        "seller_pricing": SellerPricingModels,
+    }
     
-    data_str = "\n".join([f"{utils.snake_to_camel(k)}\n{utils.json_to_markdown(data[k])}" for k in seller_research_keys])
+    data_str = utils.get_data_str(seller_research_keys, data)
     return data_str
 
 
+
 def get_analysis_data(data: Dict):
-    analysis_keys = [
-        "discovery_analysis_buyer_data",
-        "discovery_analysis_seller_data",
-    ]
+    analysis_keys = {
+        "discovery_analysis_buyer_data": BuyerDataExtracted,
+        "discovery_analysis_seller_data": SellerDataExtracted,
+    }
     
-    data_str = "\n".join([f"{utils.snake_to_camel(k)}\n{utils.json_to_markdown(data[k])}" for k in analysis_keys])
+    data_str = utils.get_data_str(analysis_keys, data)
     return data_str
     
 
@@ -563,6 +553,7 @@ async def aget_research_data_for_client(inputs: dict, llm: LLM, **crew_config):
     if utils.check_data_exists(inputs['buyer']):
         data = utils.get_client_data(inputs['buyer'])
         data.update(inputs)
+        save_data()
         return data
     
     crew = get_crew(RESEARCH, llm, **crew_config)
@@ -588,7 +579,9 @@ async def aget_simulation_data_for_client(inputs: dict, llm: LLM, **crew_config)
     
     if utils.check_data_exists(inputs['buyer']):
         data = utils.get_client_data(inputs['buyer'])
+        data.update(inputs)
         if 'discovery_transcript' in data:
+            save_transcript_data(data, CallType.DISCOVERY.value)
             return data
 
     crew = get_crew(SIMULATION, llm, **crew_config)
