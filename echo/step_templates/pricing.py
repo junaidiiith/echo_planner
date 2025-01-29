@@ -7,7 +7,7 @@ from pydantic import BaseModel, Field
 from typing import Dict, List
 from echo.indexing import IndexType, add_data
 from echo.utils import add_pydantic_structure, format_response
-from echo.step_templates.generic import CallType, Transcript, save_transcript_data
+from echo.step_templates.generic import CallType, Transcript, aget_clients_call_data, save_transcript_data
 from echo.utils import get_crew as get_crew_obj
 import echo.utils as utils
 
@@ -305,29 +305,31 @@ def process_analysis_data_output(response: CrewOutput):
 
 
 async def aget_simulation_data_for_client(inputs: dict, llm: LLM, **crew_config):
+    data = copy.deepcopy(inputs)
     if utils.check_data_exists(inputs['buyer']):
-        data = utils.get_client_data(inputs['buyer'])
-        data.update(inputs)
+        data.update(utils.get_client_data(inputs['buyer']))
         if 'pricing_transcript' in data:
             save_transcript_data(data, CallType.PRICING.value)
             return data
         else:
             print("Data exists but pricing transcript not found")
+    else:
+        raise Exception("Cannot simulate data without buyer data")
+   
    
     crew = get_crew(SIMULATION, llm, **crew_config)
     add_pydantic_structure(crew, inputs)
     response = await crew.kickoff_async(inputs=inputs)
-    data = {
+    data.update({
         "pricing_transcript": format_response(response.tasks_output[0])
-    }
-    data.update(inputs)
+    })
     save_transcript_data(data, CallType.PRICING.value)
     
     return data
 
 
 async def aanalyze_data_for_client(inputs: dict, llm: LLM, **crew_config):
-    
+    data = copy.deepcopy(inputs)
     client, seller = inputs['buyer'], inputs['seller']
     def save_data():
         utils.save_client_data(client, data)
@@ -341,55 +343,44 @@ async def aanalyze_data_for_client(inputs: dict, llm: LLM, **crew_config):
       
     
     if utils.check_data_exists(inputs['buyer']):
-        data = utils.get_client_data(inputs['buyer'])
-        data.update(inputs)
+        data.update(utils.get_client_data(inputs['buyer']))
         if 'pricing_analysis_buyer_data' in data:
             save_data()
             return data
-        else:
-            print("Data exists but pricing transcript not found")
+        
+    try:
+        assert all([k in data for k in [
+            "pricing_transcript"
+        ]]), "Invalid input data for simulation"
+    except AssertionError as e:
+        simulation_data = await aget_simulation_data_for_client(data, llm, **crew_config)
+        data.update(simulation_data)
+    
     
     crew = get_crew(ANALYSIS, llm, **crew_config)
-    add_pydantic_structure(crew, inputs)
-    response = await crew.kickoff_async(inputs=inputs)
-    data = process_analysis_data_output(response)
-    data.update(inputs)
+    add_pydantic_structure(crew, data)
+    response = await crew.kickoff_async(inputs=data)
+    analysis_data = process_analysis_data_output(response)
+    data.update(analysis_data)
     save_data()
     return data
 
 
-async def asimulate_data(clients: List[str], inputs: dict, llm: LLM, **crew_config):
-    simulation_data: Dict[str, Dict] = dict()
-    for client in tqdm(clients, desc="Simulating Data"):
-        print(f"Simulating Data for {client}")
-        data = copy.deepcopy(inputs)
-        data['buyer'] = client
-        response = await aget_simulation_data_for_client(data, llm, **crew_config)
-        data.update(response)
-        utils.save_client_data(client, data)
-        simulation_data[client] = data
-
-    return simulation_data
-
-
-
-async def aget_analysis(
+async def aget_data_for_clients(
+    task_type: str, 
     clients: List[str], 
     inputs: dict, 
     llm: LLM, 
     **crew_config
 ):
-    analysis_data = dict()
-    simulated_data = await asimulate_data(clients, inputs, llm, **crew_config)
+    assert task_type in [SIMULATION, ANALYSIS], f"Invalid task type: {task_type}"
+    task_to_data_extraction_fn = {
+        SIMULATION: aget_simulation_data_for_client,
+        ANALYSIS: aanalyze_data_for_client
+    }
+    task_fn = task_to_data_extraction_fn[task_type]
     
-    for client in tqdm(clients, desc="Analyzing Data"):
-        data: Dict = copy.deepcopy(simulated_data[client])
-        data.update(inputs)
-        data['buyer'] = client
-        response = await aanalyze_data_for_client(data, llm, **crew_config)
-        data.update(response)
-        utils.save_client_data(client, data)
-        analysis_data[client] = data
-  
-  
-    return analysis_data
+    assert all([k in inputs for k in ["seller", "n_competitors"]]), f"Invalid input data for {task_type}"
+    print(f"Getting {task_type} Data")
+    data = await aget_clients_call_data(task_fn, clients, inputs, llm, **crew_config)
+    return data

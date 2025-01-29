@@ -7,7 +7,7 @@ from pydantic import BaseModel, Field
 from typing import Dict, List
 from echo.indexing import IndexType, add_data
 from echo.utils import add_pydantic_structure, format_response
-from echo.step_templates.generic import CallType, Transcript, save_transcript_data
+from echo.step_templates.generic import CallType, Transcript, aget_clients_call_data, save_transcript_data
 from echo.utils import get_crew as get_crew_obj
 import echo.utils as utils
 
@@ -296,6 +296,24 @@ def get_analysis_metadata(data: Dict):
         "description": data["buyer_research"]["description"]
     }
 
+def get_research_data(data: Dict):
+    research_keys = {
+        "demo_features": FeaturesAnticipated,
+    }
+    
+    data_str = utils.get_data_str(research_keys, data)
+    return data_str
+
+
+def get_research_metadata(data: Dict):
+    return {
+        "seller": data['seller'],
+        "buyer": data['buyer'],
+        "call_type": CallType.DEMO.value,
+        "company_size": data["seller_research"]["company_size"],
+        "industry": data["seller_research"]["industry"],
+        "description": data["seller_research"]["description"]
+    }
 
 
 def get_client_data_to_embed(client_name, user_type):
@@ -343,46 +361,59 @@ def process_analysis_data_output(response: CrewOutput):
 
 
 async def aget_research_data_for_client(inputs: dict, llm: LLM, **crew_config):
+    data = copy.deepcopy(inputs)
+    
+    def save_data():
+        utils.save_client_data(inputs['buyer'], data)
+        print("Adding Research Data to Vector Store")
+        add_data(
+            data=get_research_data(data),
+            metadata=get_research_metadata(data),
+            index_name=inputs['seller'],
+            index_type=IndexType.BUYER_RESEARCH
+        )
+    
     if utils.check_data_exists(inputs['buyer']):
-        data: Dict = utils.get_client_data(inputs['buyer'])
+        data.update(utils.get_client_data(inputs['buyer']))
         if 'demo_features' in data:
+            save_data()
             return data
-        else:
-            inputs.update(copy.deepcopy(data))
     else:
-        raise ValueError(f"Data for client {inputs['buyer']} does not exist.")
+        raise ValueError(f"Discovery Data for client {inputs['buyer']} does not exist.")
     
     crew = get_crew(RESEARCH, llm, **crew_config)
-    add_pydantic_structure(crew, inputs)
-    response = await crew.kickoff_async(inputs=inputs)
+    add_pydantic_structure(crew, data)
+    response = await crew.kickoff_async(inputs=data)
     data.update(process_research_data_output(response))
+    save_data()
     return data
 
 
 async def aget_simulation_data_for_client(inputs: dict, llm: LLM, **crew_config):
-    assert all([k in inputs for k in [
-        "seller", 
-        "buyer", 
-        "seller_research", 
-        "seller_pricing", 
-        "buyer_research", 
-        "competitive_info", 
-        "anticipated_qopcs", 
-    ]]), "Invalid input data for simulation"
-
- 
-
+    data = copy.deepcopy(inputs)
     if utils.check_data_exists(inputs['buyer']):
-        data = utils.get_client_data(inputs['buyer'])
-        data.update(inputs)
+        data.update(utils.get_client_data(inputs['buyer']))
         if 'demo_transcript' in data:
             save_transcript_data(data, CallType.DEMO.value)
             return data
-
+    else:
+        print(f"Data for client {inputs['buyer']} does not exist.")
+        data.update(await aget_research_data_for_client(inputs, llm, **crew_config))
+                
     
+    try:
+        assert all([k in data for k in [
+        "discovery_analysis_buyer_data",
+        "discovery_analysis_seller_data",
+        "demo_features"
+    ]]), "Invalid input data for simulation"
+    except AssertionError as e:
+        research_data = await aget_research_data_for_client(data, llm, **crew_config)
+        data.update(research_data)
+        
     crew = get_crew(SIMULATION, llm, **crew_config)
-    add_pydantic_structure(crew, inputs)
-    response = await crew.kickoff_async(inputs=inputs)
+    add_pydantic_structure(crew, data)
+    response = await crew.kickoff_async(inputs=data)
     response_data = {
         "demo_transcript": format_response(response.tasks_output[0])
     }
@@ -391,17 +422,8 @@ async def aget_simulation_data_for_client(inputs: dict, llm: LLM, **crew_config)
     return data
 
 
-async def aanalyze_data_for_client(inputs: dict, llm: LLM, **crew_config):
-    assert all([k in inputs for k in [
-        "seller", 
-        "buyer", 
-        "seller_research", 
-        "seller_pricing", 
-        "buyer_research", 
-        "competitive_info", 
-        "demo_transcript"
-    ]]), "Invalid input data for simulation"
- 
+async def aanalyze_data_for_client(inputs: dict, llm: LLM, **crew_config): 
+    data = copy.deepcopy(inputs)
     client, seller = inputs['buyer'], inputs['seller']
     def save_data():
         utils.save_client_data(client, data)
@@ -415,77 +437,47 @@ async def aanalyze_data_for_client(inputs: dict, llm: LLM, **crew_config):
       
  
     if utils.check_data_exists(inputs['buyer']):
-        data = utils.get_client_data(inputs['buyer'])
-        data.update(inputs)
+        data.update(utils.get_client_data(inputs['buyer']))
         if 'demo_analysis_buyer_data' in data:
             save_data()
             return data
+    else:
+        data.update(await aget_simulation_data_for_client(inputs, llm, **crew_config))
     
+    try:
+        assert all([k in data for k in [
+            "demo_transcript"
+        ]]), "Invalid input data for simulation"
+    except AssertionError as e:
+        simulation_data = await aget_simulation_data_for_client(data, llm, **crew_config)
+        data.update(simulation_data)
+     
+     
     crew = get_crew(ANALYSIS, llm, **crew_config)
-    add_pydantic_structure(crew, inputs)
-    response = await crew.kickoff_async(inputs=inputs)
-    data = process_analysis_data_output(response)
-    data.update(inputs)
+    add_pydantic_structure(crew, data)
+    response = await crew.kickoff_async(inputs=data)
+    data.update(process_analysis_data_output(response))
     save_data()
     
     return data
 
 
-async def aget_research_data(
-    clients: List[str],
-    inputs: dict,
-    llm: LLM,
-    **crew_config
-):
-    research_data: Dict[str, Dict] = dict()
-    for client in tqdm(clients, desc="Get Research Data"):
-        data = copy.deepcopy(inputs)
-        data['buyer'] = client
-        response = await aget_research_data_for_client(
-            data,
-            llm,
-            **crew_config
-        )
-        data.update(response)
-        utils.save_client_data(client, data)
-        research_data[client] = data
-    
-    return research_data
-
-
-async def asimulate_data(clients: List[str], inputs: dict, llm: LLM, **crew_config):
-    research_data = await aget_research_data(clients, inputs, llm, **crew_config)
-    simulation_data: Dict[str, Dict] = dict()
-    for client in tqdm(clients, desc="Simulating Data"):
-        print(f"Simulating Data for {client}")
-        data = copy.deepcopy(research_data[client])
-        data.update(inputs)
-        data['buyer'] = client
-        response = await aget_simulation_data_for_client(data, llm, **crew_config)
-        data.update(response)
-        utils.save_client_data(client, data)
-        simulation_data[client] = data
-
-    return simulation_data
-
-
-
-async def aget_analysis(
+async def aget_data_for_clients(
+    task_type: str, 
     clients: List[str], 
     inputs: dict, 
     llm: LLM, 
     **crew_config
 ):
-    analysis_data = dict()
-    simulated_data = await asimulate_data(clients, inputs, llm, **crew_config)
+    assert task_type in [RESEARCH, SIMULATION, ANALYSIS], f"Invalid task type: {task_type}"
+    task_to_data_extraction_fn = {
+        RESEARCH: aget_research_data_for_client,
+        SIMULATION: aget_simulation_data_for_client,
+        ANALYSIS: aanalyze_data_for_client
+    }
+    task_fn = task_to_data_extraction_fn[task_type]
     
-    for client in tqdm(clients, desc="Analyzing Data"):
-        data: Dict = copy.deepcopy(simulated_data[client])
-        data.update(inputs)
-        data['buyer'] = client
-        response = await aanalyze_data_for_client(data, llm, **crew_config)
-        data.update(response)
-        analysis_data[client] = data
-  
-    
-    return analysis_data
+    assert all([k in inputs for k in ["seller", "n_competitors"]]), f"Invalid input data for {task_type}"
+    print(f"Getting {task_type} Data")
+    data = await aget_clients_call_data(task_fn, clients, inputs, llm, **crew_config)
+    return data

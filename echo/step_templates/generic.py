@@ -1,3 +1,4 @@
+import copy
 import enum
 import os
 from typing import Dict, List
@@ -281,7 +282,6 @@ def embed_clients_data(user_type, clients, metadata):
             )
             
     print(f"Saved {user_type} call data for {clients}")
-    
     return data
 
 
@@ -349,3 +349,22 @@ def save_transcript_data(data, call_type):
         index_name=seller,
         index_type=IndexType.TRANSCRIPT
     )
+    
+
+async def aget_clients_call_data(
+    task_fn: callable, 
+    clients: List[str], 
+    inputs: dict, 
+    llm: LLM, 
+    **crew_config
+):
+    task_data: Dict[str, Dict] = dict()
+    for client in tqdm(clients, desc=f"Getting Data"):
+        print(f"Getting Data for {client}")
+        data: Dict = copy.deepcopy(inputs)
+        data['buyer'] = client
+        response = await task_fn(data, llm, **crew_config)
+        data.update(response)
+        task_data[client] = data
+    
+    return task_data

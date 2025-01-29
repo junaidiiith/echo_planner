@@ -23,6 +23,7 @@ class IndexType(enum.Enum):
     HISTORICAL = "historical"
     BUYER_RESEARCH = "buyer_research"
     SELLER_RESEARCH = "seller_research"
+    CURRENT_CALL = "current_call"
     TRANSCRIPT = "transcripts"
     SALES_PLAYBOOK = "sales_playbook"
 
@@ -45,11 +46,11 @@ metadata_keys = {
 
 def get_vector_index(
     index_name: str, 
-    index_type: IndexType
+    index_type: str
 ):
     chroma_db_path = db_storage_path(index_name)
     db = chromadb.PersistentClient(path=str(chroma_db_path))
-    chroma_collection = db.get_or_create_collection(f"{index_type.value}")
+    chroma_collection = db.get_or_create_collection(f"{index_type}")
     vector_store = ChromaVectorStore(chroma_collection=chroma_collection)
     index = VectorStoreIndex.from_vector_store(vector_store)
 
@@ -125,8 +126,8 @@ def add_data(
         k: v for k, v in metadata.items() 
         if k in metadata_keys[index_type]
     }
-    filtered_metadata['data_json'] = data
-    index = get_vector_index(index_name, index_type)
+    # filtered_metadata['data_json'] = data
+    index = get_vector_index(index_name, index_type.value)
     nodes = get_nodes_from_documents(data, metadata=filtered_metadata)
     filtered_nodes = [
         n for n in nodes 
