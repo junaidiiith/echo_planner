@@ -276,7 +276,107 @@ def get_queries(seller):
             )
         ]    
     )
+    
+    relevant_pricing_plans = Query(
+        query="Summarize the two responses around pricing plans relevant to the buyer that woukd be presented in a pricing sales call?",
+        seller=seller,
+        call_type=CallType.PRICING.value,
+        sub_queries=[
+            SubQuery(
+                query="What are the top concerns and priorities of the buyer?",
+                index_type=IndexType.CURRENT_CALL.value
+            ),
+            SubQuery(
+                query="what are the top objections till now around the product ROI and value?",
+                index_type=IndexType.CURRENT_CALL.value
+            ),
+            SubQuery(
+                query="What pricing plans are relevant to buyers with pain points and priotities and top concerns around the product?",
+                index_type=IndexType.HISTORICAL.value,
+                context_tasks=[0, 1]
+            ),
+            SubQuery(
+                query="What pricing plans are relevant to buyers with pain points and priotities and top concerns around the product?",
+                index_type=IndexType.SELLER_RESEARCH.value,
+                context_tasks=[0, 1]
+            )
+        ]
+    )
 
+    roi_and_business_justification = Query(
+        query="Given the pains and objections of the buyer, What are the top ways to make a business case and ROI justification to the buyer?",
+        seller=seller,
+        call_type=CallType.PRICING.value,
+        sub_queries=[
+            SubQuery(
+                query="What are the top concerns and priorities of the buyer?",
+                index_type=IndexType.CURRENT_CALL.value
+            ),
+            SubQuery(
+                query="What are the top objections till now around the product ROI and value?",
+                index_type=IndexType.CURRENT_CALL.value
+            ),
+        ]    
+    )
+    
+
+    negotiation_pending_concerns = Query(
+        query="What are pending concerns to be addressed before close?",
+        seller=seller,
+        call_type=CallType.NEGOTIATION.value,
+        sub_queries=[
+            SubQuery(
+                query="What are pending concerns to be addressed before close?",
+                index_type=IndexType.CURRENT_CALL.value
+            )
+        ]    
+    )
+    
+    discounts_and_concessions = Query(
+        query="What discounts and concessions can and have been offered?",
+        seller=seller,
+        call_type=CallType.NEGOTIATION.value,
+        sub_queries=[
+            SubQuery(
+                query="What discounts and concessions can and have been offered during pricing calls?",
+                index_type=IndexType.HISTORICAL.value,
+                inputs={
+                    "call_type": CallType.PRICING.value
+                }
+            ),
+            SubQuery(
+                query="What discounts and concessions can and have been offered during negotiation calls?",
+                index_type=IndexType.HISTORICAL.value,
+                inputs={
+                    "call_type": CallType.NEGOTIATION.value
+                }
+            )
+        ]    
+    )
+    
+    possible_legal_concerns = Query(
+        query="What are the possible legal concerns that could come up during negotiation?",
+        seller=seller,
+        call_type=CallType.NEGOTIATION.value,
+        sub_queries=[
+            SubQuery(
+                query="What are the procurement and legal concerns possible?",
+                index_type=IndexType.HISTORICAL.value
+            )
+        ]
+    )
+    
+    closing_tactics = Query(
+        query="What final closing tactics can be used for their account?",
+        seller=seller,
+        call_type=CallType.NEGOTIATION.value,
+        sub_queries=[
+            SubQuery(
+                query="What are the closing tactics that have been successful in the past?",
+                index_type=IndexType.HISTORICAL.value
+            )
+        ]
+    )
 
     queries = {
         "Info To Cover": discovery_info_to_cover,
