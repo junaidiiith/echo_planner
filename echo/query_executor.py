@@ -206,6 +206,7 @@ def get_qe_crew(response_format: ResponseFormat = ResponseFormat.MARKDOWN):
 
 
 async def aget_qe_crew_response(query: str, sub_queries_context: List[Dict], response_format: ResponseFormat = ResponseFormat.MARKDOWN):
+    print("Running final query", query)
     qe_crew = get_qe_crew(response_format=response_format)
     sub_queries_context_str = "\n".join([f"{sq['query']}\n{sq['context']}" for sq in sub_queries_context])
     inputs = {
@@ -239,6 +240,7 @@ def get_sub_queries_context(
         
     sub_queries_context = list()
     for sub_query in query.sub_queries:
+        print("Running sub query", sub_query.query)
         sub_query_inputs = copy.deepcopy(inputs)
         if sub_query.inputs:
             sub_query_inputs.update(sub_query.inputs)
@@ -256,6 +258,7 @@ def get_sub_queries_context(
                 if context_extraction_mode == ContextExtractionMode.QUERY_ENGINE \
                 else retrieve_content(sub_query.query, metadata_filters)
         })
+        print("Sub query context", sub_queries_context[-1])
     
     return sub_queries_context
 

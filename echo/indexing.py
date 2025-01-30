@@ -48,6 +48,7 @@ def get_vector_index(
     index_name: str, 
     index_type: str
 ):
+    index_type = IndexType.HISTORICAL.value if index_type == IndexType.CURRENT_CALL.value else index_type
     chroma_db_path = db_storage_path(index_name)
     db = chromadb.PersistentClient(path=str(chroma_db_path))
     chroma_collection = db.get_or_create_collection(f"{index_type}")
