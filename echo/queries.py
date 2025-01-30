@@ -380,18 +380,24 @@ def get_queries(seller):
 
     queries = {
         "Info To Cover": discovery_info_to_cover,
-        # "Stakeholder Priorities": stakeholder_priorities,
-        # "Value Proposition": value_proposition,
-        # "Discovery Questions": discovery_questions,
-        # "Competitor Analysis": competitor_analysis,
-        # "Decision Makers": decision_makers,
-        # "Rapport Building": rapport_building,
-        # "Possible Objections": possible_objections,
-        # "Top Pains Identified": top_pains_identified,
-        # "Features To Demo": features_to_demo,
-        # "Possible Demo Objections": possible_demo_objections,
-        # "Missing Info To Uncover": missing_info_to_uncover,
-        # "Pricing Levers": pricing_levers
+        "Stakeholder Priorities": stakeholder_priorities,
+        "Value Proposition": value_proposition,
+        "Discovery Questions": discovery_questions,
+        "Competitor Analysis": competitor_analysis,
+        "Decision Makers": decision_makers,
+        "Rapport Building": rapport_building,
+        "Possible Objections": possible_objections,
+        "Top Pains Identified": top_pains_identified,
+        "Features To Demo": features_to_demo,
+        "Possible Demo Objections": possible_demo_objections,
+        "Missing Info To Uncover": missing_info_to_uncover,
+        "Pricing Levers": pricing_levers,
+        "Relevant Pricing Plans": relevant_pricing_plans,
+        "ROI and Business Justification": roi_and_business_justification,
+        "Negotiation Pending Concerns": negotiation_pending_concerns,
+        "Discounts and Concessions": discounts_and_concessions,
+        "Possible Legal Concerns": possible_legal_concerns,
+        "Closing Tactics": closing_tactics
     }
     
     return queries
