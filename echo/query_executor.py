@@ -333,7 +333,7 @@ async def aget_query_response(
     sub_queries_context = get_sub_queries_context(
         query, inputs, context_extraction_mode, **kwargs
     )
-    response = await aget_qe_crew_response(query, sub_queries_context, response_format)
+    response = await aget_qe_crew_response(query.query, sub_queries_context, response_format)
     return response, sub_queries_context
 
 
