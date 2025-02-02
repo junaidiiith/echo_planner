@@ -20,44 +20,77 @@ class ContextExtractionMode(enum.Enum):
     RETRIEVER = "retriever"
     QUERY_ENGINE = "query_engine"
 
+
 class ResponseFormat(enum.Enum):
     JSON = "json"
     MARKDOWN = "markdown"
 
 
-
 class FilledSubsection(BaseModel):
-    name: str = Field(..., title="Subsection Name", description="The name of the subsection.")
-    content: str = Field(..., title="Subsection Content", description="The content of the subsection.")
+    name: str = Field(
+        ..., title="Subsection Name", description="The name of the subsection."
+    )
+    content: str = Field(
+        ..., title="Subsection Content", description="The content of the subsection."
+    )
+
 
 class FilledSection(BaseModel):
     name: str = Field(..., title="Section Name", description="The name of the section.")
-    content: str = Field(..., title="Section Content", description="The content of the section.")
-    subsections: List[FilledSubsection] = Field(..., title="Subsections", description="The subsections of the section.")
+    content: str = Field(
+        ..., title="Section Content", description="The content of the section."
+    )
+    subsections: List[FilledSubsection] = Field(
+        ..., title="Subsections", description="The subsections of the section."
+    )
 
 
 class QueryResponse(BaseModel):
-    sections: List[FilledSection] = Field(..., title="Sections", description="The filled sections of the call transcript.")
+    sections: List[FilledSection] = Field(
+        ..., title="Sections", description="The filled sections of the call transcript."
+    )
 
 
 class QueryMetadata(BaseModel):
     key: str = Field(..., title="Key", description="The key for the metadata.")
     value: str = Field(..., title="Value", description="The value for the metadata.")
-    operator: FilterOperator = Field(..., title="Operator", description="The operator for the metadata.")
+    operator: FilterOperator = Field(
+        ..., title="Operator", description="The operator for the metadata."
+    )
+
 
 class SubQuery(BaseModel):
-    query: str = Field(..., title="Sub Query", description="The sub query for which the response is needed.")
-    index_type: str = Field(..., title="Index Type", description="The index type for the sub query.")
-    inputs: Optional[Dict] = Field(default=None, title="Inputs", description="The inputs for the sub query.")
-    context_tasks: Optional[List[int]] = Field(default=None, title="Context Tasks", description="The context tasks for the sub query.")
-    
+    query: str = Field(
+        ...,
+        title="Sub Query",
+        description="The sub query for which the response is needed.",
+    )
+    index_type: str = Field(
+        ..., title="Index Type", description="The index type for the sub query."
+    )
+    inputs: Optional[Dict] = Field(
+        default=None, title="Inputs", description="The inputs for the sub query."
+    )
+    context_tasks: Optional[List[int]] = Field(
+        default=None,
+        title="Context Tasks",
+        description="The context tasks for the sub query.",
+    )
+
 
 class Query(BaseModel):
     seller: str = Field(..., title="Seller", description="The seller for the call.")
-    call_type: str = Field(..., title="Call Type", description="The call type for which the response is needed.")
-    query: str = Field(..., title="Query", description="The query for which the response is needed.")
-    sub_queries: List[SubQuery] = Field(..., title="Sub Queries", description="The sub queries and their context.")
-
+    call_type: str = Field(
+        ...,
+        title="Call Type",
+        description="The call type for which the response is needed.",
+    )
+    query: str = Field(
+        ..., title="Query", description="The query for which the response is needed."
+    )
+    sub_queries: List[SubQuery] = Field(
+        ..., title="Sub Queries", description="The sub queries and their context."
+    )
 
 
 METADATA_KEYS_MAP = {
@@ -77,7 +110,7 @@ METADATA_KEYS_MAP = {
         {
             "key": "company_size",
             "operator": FilterOperator.EQ,
-        }
+        },
     ],
     IndexType.CURRENT_CALL.value: [
         {
@@ -91,7 +124,7 @@ METADATA_KEYS_MAP = {
         {
             "key": "call_type",
             "operator": FilterOperator.EQ,
-        }
+        },
     ],
     IndexType.BUYER_RESEARCH.value: [
         {
@@ -118,19 +151,16 @@ METADATA_KEYS_MAP = {
         {
             "key": "call_type",
             "operator": FilterOperator.EQ,
-        }
-    ]
+        },
+    ],
 }
 
 
 def get_llama_metadata_filters(metadata: List[QueryMetadata]):
     filters = MetadataFilters(
         filters=[
-            MetadataFilter(
-                key=md.key, 
-                value=md.value,
-                operator=md.operator
-            ) for md in metadata
+            MetadataFilter(key=md.key, value=md.value, operator=md.operator)
+            for md in metadata
         ],
     )
     return filters
@@ -138,8 +168,16 @@ def get_llama_metadata_filters(metadata: List[QueryMetadata]):
 
 def get_metadata_filters(index_type: str, metadata: Dict):
     index_keys = METADATA_KEYS_MAP[index_type]
-    assert all([item['key'] in metadata for item in index_keys]), f"Metadata keys missing for index type {index_type}: {[i['key'] for i in index_keys]}"
-    filters = [QueryMetadata(key=item['key'], value=metadata[item['key']], operator=item['operator']) for item in index_keys if metadata[item['key']]]
+    assert all([item["key"] in metadata for item in index_keys]), (
+        f"Metadata keys missing for index type {index_type}: {[i['key'] for i in index_keys]}"
+    )
+    filters = [
+        QueryMetadata(
+            key=item["key"], value=metadata[item["key"]], operator=item["operator"]
+        )
+        for item in index_keys
+        if metadata[item["key"]]
+    ]
     filters = get_llama_metadata_filters(filters)
     return filters
 
@@ -150,7 +188,7 @@ def get_qe_crew(response_format: ResponseFormat = ResponseFormat.MARKDOWN):
         "The document should contain all the relevant information that the sales agent needs to know to prepare for the call."
         "Provide the response in markdown format that is easy to read and understand."
     )
-    
+
     json_response_format = (
         "Your response should be in the form of a structured document with clear sections and subsections."
         "The document should contain all the relevant information that the sales agent needs to know to prepare for the call."
@@ -161,17 +199,15 @@ def get_qe_crew(response_format: ResponseFormat = ResponseFormat.MARKDOWN):
         "{pydantic_structure}\n"
         "Make sure there are no comments in the response JSON and it should be a valid JSON."
     )
-    
+
     def get_response_format():
         if response_format == ResponseFormat.JSON:
             return {
-                'expected_output': json_response_format,
-                'output_pydantic': QueryResponse
+                "expected_output": json_response_format,
+                "output_pydantic": QueryResponse,
             }
-        return {
-            'expected_output': markdown_response_format
-        }
-    
+        return {"expected_output": markdown_response_format}
+
     agent = Agent(
         role="Sales Call Preparation Specialist",
         backstory=(
@@ -180,11 +216,10 @@ def get_qe_crew(response_format: ResponseFormat = ResponseFormat.MARKDOWN):
             "You are an expert in helping sales agents prepare for their calls with potential buyers."
             "You have access to historical data from past deals, information about the potential buyer needs and seller goals."
             "Given a query, you can reason about the query and provide an answer to a specific query asked by the sales agent with the most relevant information."
-            
             "MOST IMPORTANTLY: YOU NEED TO USE THE INFORMATION ONLY PROVIDED HERE AND NOT ANY PRIOR KNOWLEDGE."
         ),
         goal="You need to provide the sales agent with the most relevant information that helps them to understand the needs of the client and successfully close the deal.",
-        llm=get_llm()
+        llm=get_llm(),
     )
 
     task = Task(
@@ -199,18 +234,24 @@ def get_qe_crew(response_format: ResponseFormat = ResponseFormat.MARKDOWN):
             "Answer the following query: {query}"
         ),
         agent=agent,
-        **get_response_format()
+        **get_response_format(),
     )
 
-    qe_crew = Crew(name='Query Resolution Crew', agents=[agent], tasks=[task])
+    qe_crew = Crew(name="Query Resolution Crew", agents=[agent], tasks=[task])
 
     return qe_crew
 
 
-async def aget_qe_crew_response(query: str, sub_queries_context: List[Dict], response_format: ResponseFormat = ResponseFormat.MARKDOWN):
+async def aget_qe_crew_response(
+    query: str,
+    sub_queries_context: List[Dict],
+    response_format: ResponseFormat = ResponseFormat.MARKDOWN,
+):
     print("Running final query", query)
     qe_crew = get_qe_crew(response_format=response_format)
-    sub_queries_context_str = "\n".join([f"{sq['query']}\n{sq['context']}" for sq in sub_queries_context])
+    sub_queries_context_str = "\n".join(
+        [f"{sq['query']}\n{sq['context']}" for sq in sub_queries_context]
+    )
     inputs = {
         "query": query,
         "sub_queries_context": sub_queries_context_str,
@@ -218,84 +259,98 @@ async def aget_qe_crew_response(query: str, sub_queries_context: List[Dict], res
     add_pydantic_structure(qe_crew, inputs)
     response = await qe_crew.kickoff_async(inputs=inputs)
     return format_response(response.tasks_output[0])
-    
+
 
 def get_sub_queries_context(
-    query: Query, 
+    query: Query,
     inputs: Dict[str, str],
-    context_extraction_mode: ContextExtractionMode = ContextExtractionMode.QUERY_ENGINE, 
+    context_extraction_mode: ContextExtractionMode = ContextExtractionMode.QUERY_ENGINE,
     similarity_top_k=SIMILARITY_TOP_K,
-    **kwargs
+    **kwargs,
 ) -> List[Dict]:
-    
-    doc_data = lambda doc: f"Document Text: {doc.text}\n" + f"Document Metadata: {doc.metadata}"
-    
+    doc_data = (
+        lambda doc: f"Document Text: {doc.text}\n"
+        + f"Document Metadata: {doc.metadata}"
+    )
+
     def retrieve_content(query: str, filters: MetadataFilters):
-        docs: List[NodeWithScore] = vector_index.as_retriever(filters=filters, similarity_top_k=similarity_top_k, **kwargs).retrieve(query)
-        return "Relevant Document Details\n" + "\n".join([doc_data(doc) for doc in docs])
-    
+        docs: List[NodeWithScore] = vector_index.as_retriever(
+            filters=filters, similarity_top_k=similarity_top_k, **kwargs
+        ).retrieve(query)
+        return "Relevant Document Details\n" + "\n".join(
+            [doc_data(doc) for doc in docs]
+        )
+
     def query_content(query: str, filters: MetadataFilters):
-        response = vector_index.as_query_engine(filters=filters, similarity_top_k=similarity_top_k, **kwargs).query(query)
+        response = vector_index.as_query_engine(
+            filters=filters, similarity_top_k=similarity_top_k, **kwargs
+        ).query(query)
         return "Relevant Context:\n" + str(response)
-    
+
     inputs.update({"seller": query.seller, "call_type": query.call_type})
-        
+
     sub_queries_context = list()
     for sub_query in query.sub_queries:
         print("Running sub query", sub_query.query)
         sub_query_inputs = copy.deepcopy(inputs)
         if sub_query.inputs:
             sub_query_inputs.update(sub_query.inputs)
-            
+
         metadata_filters = get_metadata_filters(sub_query.index_type, sub_query_inputs)
         vector_index = get_vector_index(query.seller, sub_query.index_type)
         if sub_query.context_tasks:
-            assert all([task < len(sub_queries_context) for task in sub_query.context_tasks]), f"Incorrect dependencies for context tasks: {sub_query.context_tasks}"
-            context_str = "Context: \n" + "\n".join([f"{sub_queries_context[task]['context']}" for task in sub_query.context_tasks])
+            assert all(
+                [task < len(sub_queries_context) for task in sub_query.context_tasks]
+            ), f"Incorrect dependencies for context tasks: {sub_query.context_tasks}"
+            context_str = "Context: \n" + "\n".join(
+                [
+                    f"{sub_queries_context[task]['context']}"
+                    for task in sub_query.context_tasks
+                ]
+            )
             sub_query.query = f"{sub_query.query}\n{context_str}"
-            
-        sub_queries_context.append({
-            "query": sub_query.query,
-            "context": query_content(sub_query.query, metadata_filters)\
-                if context_extraction_mode == ContextExtractionMode.QUERY_ENGINE \
-                else retrieve_content(sub_query.query, metadata_filters)
-        })
+
+        sub_queries_context.append(
+            {
+                "query": sub_query.query,
+                "context": query_content(sub_query.query, metadata_filters)
+                if context_extraction_mode == ContextExtractionMode.QUERY_ENGINE
+                else retrieve_content(sub_query.query, metadata_filters),
+            }
+        )
         print("Sub query context", sub_queries_context[-1])
-    
+
     return sub_queries_context
 
 
 async def aget_query_response(
-    query: Query, 
+    query: Query,
     inputs: Dict[str, str],
-    response_format=ResponseFormat.MARKDOWN, 
+    response_format=ResponseFormat.MARKDOWN,
     context_extraction_mode: ContextExtractionMode = ContextExtractionMode.QUERY_ENGINE,
-    **kwargs
+    **kwargs,
 ):
-    sub_queries_context = get_sub_queries_context(query, inputs, context_extraction_mode, **kwargs)
+    sub_queries_context = get_sub_queries_context(
+        query, inputs, context_extraction_mode, **kwargs
+    )
     response = await aget_qe_crew_response(query, sub_queries_context, response_format)
     return response, sub_queries_context
-    
-    
+
 
 async def arun_queries(
-    queries: Dict[str, Query], 
+    queries: Dict[str, Query],
     inputs: Dict[str, str],
-    response_format=ResponseFormat.MARKDOWN, 
+    response_format=ResponseFormat.MARKDOWN,
     context_extraction_mode: ContextExtractionMode = ContextExtractionMode.QUERY_ENGINE,
-    **kwargs
+    **kwargs,
 ):
     responses = dict()
     for query_name, query in queries.items():
         response, sub_queries_context = await aget_query_response(
-            query, 
-            inputs,
-            response_format, 
-            context_extraction_mode, 
-            **kwargs
+            query, inputs, response_format, context_extraction_mode, **kwargs
         )
         responses[query_name] = {
             "response": response,
-            "sub_queries_context": sub_queries_context
+            "sub_queries_context": sub_queries_context,
         }
     return responses

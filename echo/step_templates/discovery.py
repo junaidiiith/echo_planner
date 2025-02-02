@@ -7,88 +7,224 @@ from echo.constants import *
 from pydantic import BaseModel, Field
 from typing import Dict, List
 from echo.utils import add_pydantic_structure, format_response
-from echo.step_templates.generic import CallType, Transcript, aget_clients_call_data, save_transcript_data
+from echo.step_templates.generic import (
+    CallType,
+    Transcript,
+    aget_clients_call_data,
+    save_transcript_data,
+)
 from echo.utils import get_crew as get_crew_obj
 import echo.utils as utils
 
 from echo.indexing import IndexType, add_data
 
+
 class SellerInfo(BaseModel):
-	name: str = Field(..., title="Seller's Name", description="The name of the seller.")
-	website: str = Field(..., title="Seller's Website", description="The website of the seller.")
-	description: str = Field(..., title="Seller's Description", description="A description of the seller.")
-	industry: str = Field(..., title="Seller's Industry", description="The industry that the seller belongs to.")
-	products: List[str] = Field(..., title="Seller's Products", description="The products offered by the seller.")
-	solutions: List[str] = Field(..., title="Seller's Solutions", description="The solutions offered by the seller.")
-	use_cases: List[str] = Field(..., title="Seller's Use Cases", description="The use cases of the seller's products.")
+    name: str = Field(..., title="Seller's Name", description="The name of the seller.")
+    website: str = Field(
+        ..., title="Seller's Website", description="The website of the seller."
+    )
+    description: str = Field(
+        ..., title="Seller's Description", description="A description of the seller."
+    )
+    industry: str = Field(
+        ...,
+        title="Seller's Industry",
+        description="The industry that the seller belongs to.",
+    )
+    products: List[str] = Field(
+        ...,
+        title="Seller's Products",
+        description="The products offered by the seller.",
+    )
+    solutions: List[str] = Field(
+        ...,
+        title="Seller's Solutions",
+        description="The solutions offered by the seller.",
+    )
+    use_cases: List[str] = Field(
+        ...,
+        title="Seller's Use Cases",
+        description="The use cases of the seller's products.",
+    )
+
 
 class SellerPricingModel(BaseModel):
-	type: str = Field(..., title="Seller's Pricing Models", description="The pricing models offered by the seller, such free, subscription, premium, etc.")
-	description: str = Field(..., title="Seller's Pricing Description", description="A description of the pricing model.")
-	price: str = Field(..., title="Seller's Pricing numbers", description="The pricing (NUMBERS) of the seller's products.")
-	duration: str = Field(..., title="Seller's Pricing Duration", description="The duration of the pricing model.")
+    type: str = Field(
+        ...,
+        title="Seller's Pricing Models",
+        description="The pricing models offered by the seller, such free, subscription, premium, etc.",
+    )
+    description: str = Field(
+        ...,
+        title="Seller's Pricing Description",
+        description="A description of the pricing model.",
+    )
+    price: str = Field(
+        ...,
+        title="Seller's Pricing numbers",
+        description="The pricing (NUMBERS) of the seller's products.",
+    )
+    duration: str = Field(
+        ...,
+        title="Seller's Pricing Duration",
+        description="The duration of the pricing model.",
+    )
+
 
 class SellerPricingModels(BaseModel):
-	pricing_models: List[SellerPricingModel] = Field(..., title="Seller's Pricing Models", description="The pricing models offered by the seller.")
+    pricing_models: List[SellerPricingModel] = Field(
+        ...,
+        title="Seller's Pricing Models",
+        description="The pricing models offered by the seller.",
+    )
+
 
 class SellerResearchResponse(BaseModel):
-	info: SellerInfo = Field(..., title="Seller's Information", description="The information of the seller.")
-	pricing: SellerPricingModels = Field(..., title="Seller's Pricing Models", description="The pricing models offered by the seller.")
+    info: SellerInfo = Field(
+        ..., title="Seller's Information", description="The information of the seller."
+    )
+    pricing: SellerPricingModels = Field(
+        ...,
+        title="Seller's Pricing Models",
+        description="The pricing models offered by the seller.",
+    )
 
 
 class ClientResearchResponse(BaseModel):
-	name: str = Field(..., title="Buyer's Name", description="The name of the client.")
-	website: str = Field(..., title="Buyer's Website", description="The website of the buyer.")
-	description: str = Field(..., title="Buyer's Description", description="A description of the buyer.")
-	industry: str = Field(..., title="Buyer's Industry", description="The industry that the buyer belongs to.")
-	company_size: str = Field(..., title="Buyer's Company Size", description="The size of the buyer's company as one of the types - smb, mid-market, enterprise.")
-	goals: List[str] = Field(..., title="Buyer's Goals", description="The goals of the buyer.")
-	use_cases: List[str] = Field(..., title="Buyer's Use Cases", description="The use cases of the buyer.")
-	challenges: List[str] = Field(..., title="Buyer's Challenges", description="The challenges faced by the buyer.")
-	stakeholders: List[str] = Field(..., title="Buyer's Stakeholders", description="The stakeholders of the buyer.")
+    name: str = Field(..., title="Buyer's Name", description="The name of the client.")
+    website: str = Field(
+        ..., title="Buyer's Website", description="The website of the buyer."
+    )
+    description: str = Field(
+        ..., title="Buyer's Description", description="A description of the buyer."
+    )
+    industry: str = Field(
+        ...,
+        title="Buyer's Industry",
+        description="The industry that the buyer belongs to.",
+    )
+    company_size: str = Field(
+        ...,
+        title="Buyer's Company Size",
+        description="The size of the buyer's company as one of the types - smb, mid-market, enterprise.",
+    )
+    goals: List[str] = Field(
+        ..., title="Buyer's Goals", description="The goals of the buyer."
+    )
+    use_cases: List[str] = Field(
+        ..., title="Buyer's Use Cases", description="The use cases of the buyer."
+    )
+    challenges: List[str] = Field(
+        ...,
+        title="Buyer's Challenges",
+        description="The challenges faced by the buyer.",
+    )
+    stakeholders: List[str] = Field(
+        ..., title="Buyer's Stakeholders", description="The stakeholders of the buyer."
+    )
 
 
 class CompetitorComparison(BaseModel):
-	name: str = Field(..., title="Competitor's Name", description="The name of the competitor.")
-	pros: List[str] = Field(..., title="Competitor's Pros", description="The pros of the competitor.")
-	cons: List[str] = Field(..., title="Competitor's Cons", description="The cons of the competitor.")
-	differentiators: List[str] = Field(..., title="Competitor's Differentiators", description="The differentiators of the seller against the competitor.")
+    name: str = Field(
+        ..., title="Competitor's Name", description="The name of the competitor."
+    )
+    pros: List[str] = Field(
+        ..., title="Competitor's Pros", description="The pros of the competitor."
+    )
+    cons: List[str] = Field(
+        ..., title="Competitor's Cons", description="The cons of the competitor."
+    )
+    differentiators: List[str] = Field(
+        ...,
+        title="Competitor's Differentiators",
+        description="The differentiators of the seller against the competitor.",
+    )
 
 
 class SellerCompetitorAnalysisResponse(BaseModel):
-	competitors: List[CompetitorComparison] = Field(..., title="Competitor Analysis", description="The list of competitors of the seller.")
+    competitors: List[CompetitorComparison] = Field(
+        ...,
+        title="Competitor Analysis",
+        description="The list of competitors of the seller.",
+    )
 
 
 class ObjectionResolutionPair(BaseModel):
-    objection: str = Field(..., title="Objection", description="The objection raised by the buyer.")
-    resolution: str = Field(..., title="Resolution", description="The resolution provided by the seller.")
+    objection: str = Field(
+        ..., title="Objection", description="The objection raised by the buyer."
+    )
+    resolution: str = Field(
+        ..., title="Resolution", description="The resolution provided by the seller."
+    )
+
 
 class AnticipatedPainsAndObjections(BaseModel):
-    pains: List[str] = Field(..., title="Pain Points", description="The pain points identified in the call.")
-    objections: List[str] = Field(..., title="Objections", description="The objections identified in the call.")
+    pains: List[str] = Field(
+        ..., title="Pain Points", description="The pain points identified in the call."
+    )
+    objections: List[str] = Field(
+        ..., title="Objections", description="The objections identified in the call."
+    )
 
 
 class BuyerDataExtracted(BaseModel):
-    pain_points: List[str] = Field(..., title="Pain Points", description="The pain points identified in the call.")
-    objections: List[str] = Field(..., title="Objections", description="The objections identified in the call.")
-    time_lines: List[str] = Field(..., title="Time Lines", description="The time lines identified in the call.")
-    success_indicators: List[str] = Field(..., title="Success Indicators", description="The success indicators identified in the call.")
-    budget_constraints: List[str] = Field(..., title="Budget Constraints", description="The budget constraints identified in the call.")
-    competition: List[str] = Field(..., title="Competitors", description="The competitors identified in the call.")
-    decision_committee: List[str] = Field(..., title="Decision Committee Members", description="The members of the decision committee identified in the call.")
-    
+    pain_points: List[str] = Field(
+        ..., title="Pain Points", description="The pain points identified in the call."
+    )
+    objections: List[str] = Field(
+        ..., title="Objections", description="The objections identified in the call."
+    )
+    time_lines: List[str] = Field(
+        ..., title="Time Lines", description="The time lines identified in the call."
+    )
+    success_indicators: List[str] = Field(
+        ...,
+        title="Success Indicators",
+        description="The success indicators identified in the call.",
+    )
+    budget_constraints: List[str] = Field(
+        ...,
+        title="Budget Constraints",
+        description="The budget constraints identified in the call.",
+    )
+    competition: List[str] = Field(
+        ..., title="Competitors", description="The competitors identified in the call."
+    )
+    decision_committee: List[str] = Field(
+        ...,
+        title="Decision Committee Members",
+        description="The members of the decision committee identified in the call.",
+    )
+
 
 class SellerDataExtracted(BaseModel):
-    discovery_questions: List[str] = Field(..., title="Discovery Questions", description="The discovery questions asked by the seller.")
-    decision_making_process_questions: List[str] = Field(..., title="Decision Making Process Questions", description="The decision making process questions asked by the seller.")
-    objection_resolution_pairs: List[ObjectionResolutionPair] = Field(..., title="Objection Resolution Pairs", description="The objection resolution pairs identified in the call.")
-    insights: List[str] = Field(..., title="Insights", description="The insights identified in the call.")
-    improvements: List[str] = Field(..., title="Areas of Improvement", description="The areas of improvement identified in the call.")
+    discovery_questions: List[str] = Field(
+        ...,
+        title="Discovery Questions",
+        description="The discovery questions asked by the seller.",
+    )
+    decision_making_process_questions: List[str] = Field(
+        ...,
+        title="Decision Making Process Questions",
+        description="The decision making process questions asked by the seller.",
+    )
+    objection_resolution_pairs: List[ObjectionResolutionPair] = Field(
+        ...,
+        title="Objection Resolution Pairs",
+        description="The objection resolution pairs identified in the call.",
+    )
+    insights: List[str] = Field(
+        ..., title="Insights", description="The insights identified in the call."
+    )
+    improvements: List[str] = Field(
+        ...,
+        title="Areas of Improvement",
+        description="The areas of improvement identified in the call.",
+    )
 
 
-tools = {
-	"search_tool": SerperDevTool()
-}
+tools = {"search_tool": SerperDevTool()}
 
 agent_templates = {
     RESEARCH: {
@@ -109,10 +245,10 @@ agent_templates = {
                 "You are an expert in preparing for sales calls."
                 "Your goal is to check the requirements and goals that can be fulfilled by the {seller} and anticipate the questions, objections, pain points, and challenges that may arise during the call."
                 "You are also responsible for providing potential resolutions to the anticipated questions, objections, pain points, and challenges."
-            )
-        )
+            ),
+        ),
     },
-	SIMULATION: {
+    SIMULATION: {
         "CallSimulationAgent": dict(
             role="Sales Call Simulation Specialist",
             goal="Simulate a very elaborated, detailed call between buyer and {seller}.",
@@ -121,7 +257,7 @@ agent_templates = {
                 "You have been tasked with simulating a detailed call between buyer and {seller}."
                 "Your goal is to provide a realistic and engaging simulation of the call."
                 "The sales call simulation should be structured, engaging, and informative."
-            )
+            ),
         )
     },
     EXTRACTION: {
@@ -131,7 +267,7 @@ agent_templates = {
             backstory=(
                 "You are an expert in extracting information from research reports and call transcripts."
                 "Your goal is to extract the required information from the call transcripts to provide insights to the sales team."
-            )
+            ),
         )
     },
     ANALYSIS: {
@@ -143,9 +279,9 @@ agent_templates = {
                 "Your goal is to analyze the sales call between buyer and {seller}."
                 "Your goal is to identify the pain points and objections, areas of improvement, and potential strategies for future calls."
                 ""
-            )
+            ),
         )
-    }
+    },
 }
 
 task_templates = {
@@ -163,7 +299,7 @@ task_templates = {
                 "Make sure there are no comments in the response JSON and it should be a valid JSON."
             ),
             output_pydantic=SellerInfo,
-            agent="PreCallResearchAgent"	
+            agent="PreCallResearchAgent",
         ),
         "SellerPricingModelTask": dict(
             name="Seller Pricing Model Research",
@@ -180,7 +316,7 @@ task_templates = {
                 "Make sure there are no comments in the response JSON and it should be a valid JSON."
             ),
             output_pydantic=SellerPricingModels,
-            agent="PreCallResearchAgent"	
+            agent="PreCallResearchAgent",
         ),
         "BuyerResearcher": dict(
             name="Client for {seller}",
@@ -217,9 +353,9 @@ task_templates = {
             ),
             agent="PreCallResearchAgent",
             context=[
-                "SellerIndustryResearchTask", 
-                "SellerPricingModelTask", 
-                "BuyerResearcher"
+                "SellerIndustryResearchTask",
+                "SellerPricingModelTask",
+                "BuyerResearcher",
             ],
             output_pydantic=SellerCompetitorAnalysisResponse,
         ),
@@ -240,13 +376,13 @@ task_templates = {
             ),
             output_pydantic=AnticipatedPainsAndObjections,
             context=[
-                "SellerIndustryResearchTask", 
-                "SellerPricingModelTask", 
+                "SellerIndustryResearchTask",
+                "SellerPricingModelTask",
                 "BuyerResearcher",
-                "CompetitorAnalysisTask"
+                "CompetitorAnalysisTask",
             ],
-            agent="DiscoveryCallPreparationAgent"
-        )
+            agent="DiscoveryCallPreparationAgent",
+        ),
     },
     SIMULATION: {
         "CallSimulationTask": dict(
@@ -256,17 +392,13 @@ task_templates = {
                 "The {buyer}'s team can be represented by one or more persons during the call.\n"
                 "You need to simulate the call as a conversation between the {seller}'s sales person and the {buyer}'s team.\n"
                 "You are provided with the {buyer}'s and {seller}'s information as well as the competitive landscape.\n"
-                
                 "You need to the following as context -"
                 "\n1.) anticipated Questions, Objections, Pain Points, and Challenges\n"
                 " to simulate the call.\n"
-                
-                
                 "In the call, {seller}'s sales person will aim to discover the goals, requirements, potential pain points, challenges, and objections of the buyer."
                 "In the call, person from {buyer}'s team will aim to provide their goals, requirements, potential pain points, challenges, and objections."
                 "The {buyer}'s team will talk mostly in their own vocabulary that they use in their company."
                 "The {seller}'s team person is supposed to be very confident, inquistive, empathetic and understanding."
-
                 "Your goal is to provide a realistic and engaging simulation of the call. "
                 "The sales call simuation should be a very realistic simulation of a discovery call. "
                 "The sales call MUST clearly cover the {buyer}'s goals, requirements, pain points and objections. "
@@ -276,13 +408,11 @@ task_templates = {
                 "The sales call simulation MUST find out the success indicators for the buyer. "
                 "The sales call simulation MUST find out the time lines for the buyer. "
                 "The sales call simulation MUST find out the budget constraints for the buyer. "
-                
                 "The goal of the discovery call is to discover the goals, requirements, potential pain points, challenges, and objections of the buyer. "
                 "The contents of each message should be as detailed and realistic as possible like a human conversation. "
                 "The call should be structured and flow naturally like a real discovery call. "
                 "The call should have a smooth flow and should be engaging and informative. "
                 "The call should not end abruptly and should have a proper conclusion. "
-        
                 "You are provided with the following context -\n"
                 "{seller}'s research information {seller_research}\n"
                 "{seller}'s pricing model {seller_pricing}\n"
@@ -297,7 +427,7 @@ task_templates = {
                 "Make sure there are no comments in the response JSON and it should be a valid JSON."
             ),
             agent="CallSimulationAgent",
-            output_pydantic=Transcript
+            output_pydantic=Transcript,
         )
     },
     ANALYSIS: {
@@ -305,7 +435,6 @@ task_templates = {
             name="Analyze Discovery Call",
             description=(
                 "Given a the discovery sales call transcript between {buyer} and {seller} to identify the following key elements about the {buyer}'s data -\n"
-                
                 "1. Buyer's Pain Points - The pain points expressed by the buyer during the call.\n"
                 "2. Buyer's Objections - The objections raised by the buyer during the call.\n"
                 "3. Buyer's Time Lines - The time lines mentioned by the buyer during the call.\n"
@@ -313,10 +442,8 @@ task_templates = {
                 "5. Buyer's Budget Constraints - The budget constraints expressed by the buyer during the call.\n"
                 "6. Buyer's Decision Committee - The members of the decision mentioned by the buyer during the call.\n"
                 "7. Buyer's Competition - The competitors mentioned by the buyer during the call.\n"
-                                
                 "The goal is to provide insights to the sales team for improving future calls and addressing the buyer's needs effectively and also to prepare for the demo call."
                 "The discovery call transcript:\n{discovery_transcript}\n"
-                
                 "You are provided with the following context -\n"
                 "{seller}'s research information {seller_research}\n"
                 "{seller}'s pricing model {seller_pricing}\n"
@@ -330,22 +457,19 @@ task_templates = {
                 "Make sure there are no comments in the response JSON and it should be a valid JSON."
             ),
             agent="DiscoveryCallAnalysisAgent",
-            output_pydantic=BuyerDataExtracted
+            output_pydantic=BuyerDataExtracted,
         ),
         "SellerDataExtraction": dict(
             name="Analyze Discovery Call",
             description=(
                 "Given a the discovery sales call transcript between {buyer} and {seller} to identify the following key elements from the {seller}'s perspective -\n"
-                
                 "1. Seller's Discovery Questions - The discovery questions asked by the seller during the call.\n"
                 "2. Seller's Decision Making Process Questions - The decision making process questions asked by the seller during the call.\n"
                 "3. Seller's Objection Resolution Pairs - The objection resolution pairs identified by the seller during the call, i.e., for each objection raised by {buyer}, the resolution that the {seller} provided. \n"
                 "4. Seller's Insights - The insights identified by the seller during the call.\n"
                 "5. Seller's Areas of Improvement - The areas of improvement identified by the seller during the call.\n"
-                                
                 "The goal is to provide insights to the sales team for improving future calls and addressing the buyer's needs effectively and also to prepare for the demo call."
                 "The discovery call transcript:\n{discovery_transcript}\n"
-                
                 "You are provided with the following context -\n"
                 "{seller}'s research information {seller_research}\n"
                 "{seller}'s pricing model {seller_pricing}\n"
@@ -361,17 +485,13 @@ task_templates = {
             ),
             agent="DiscoveryCallAnalysisAgent",
             context=["BuyerDataExtraction"],
-            output_pydantic=SellerDataExtracted
-        )
-    }
+            output_pydantic=SellerDataExtracted,
+        ),
+    },
 }
 
 inputs = {
-    RESEARCH: [
-        "seller",
-        "buyer",
-        "n_competitors"
-    ],
+    RESEARCH: ["seller", "buyer", "n_competitors"],
     SIMULATION: [
         "seller",
         "buyer",
@@ -380,7 +500,7 @@ inputs = {
         "buyer_research",
         "competitive_info",
         "anticipated_qopcs",
-    ],   
+    ],
 }
 
 
@@ -424,13 +544,14 @@ seller_keys = {
     "Objection Resolution Pairs": "discovery_analysis_seller_data.objection_resolution_pairs",
 }
 
+
 def get_buyer_research_data(data: Dict):
     buyer_research_keys = {
         "buyer_research": ClientResearchResponse,
         "competitive_info": CompetitorComparison,
         "anticipated_qopcs": AnticipatedPainsAndObjections,
     }
-    
+
     data_str = utils.get_data_str(buyer_research_keys, data)
     return data_str
 
@@ -440,10 +561,9 @@ def get_seller_research_data(data: Dict):
         "seller_research": SellerResearchResponse,
         "seller_pricing": SellerPricingModels,
     }
-    
+
     data_str = utils.get_data_str(seller_research_keys, data)
     return data_str
-
 
 
 def get_analysis_data(data: Dict):
@@ -451,19 +571,19 @@ def get_analysis_data(data: Dict):
         "discovery_analysis_buyer_data": BuyerDataExtracted,
         "discovery_analysis_seller_data": SellerDataExtracted,
     }
-    
+
     data_str = utils.get_data_str(analysis_keys, data)
     return data_str
-    
+
 
 def get_analysis_metadata(data: Dict):
     return {
-        "seller": data['seller'],
-        "buyer": data['buyer'],
+        "seller": data["seller"],
+        "buyer": data["buyer"],
         "call_type": CallType.DISCOVERY.value,
         "company_size": data["buyer_research"]["company_size"],
         "industry": data["buyer_research"]["industry"],
-        "description": data["buyer_research"]["description"]
+        "description": data["buyer_research"]["description"],
     }
 
 
@@ -489,7 +609,7 @@ def process_research_data_output(output: CrewOutput):
     buyer_research = format_response(output.tasks_output[2])
     competitive_info = format_response(output.tasks_output[3])
     qopcs = format_response(output.tasks_output[4])
-    
+
     return {
         "seller_research": seller_research,
         "seller_pricing": seller_pricing,
@@ -502,113 +622,119 @@ def process_research_data_output(output: CrewOutput):
 def process_analysis_data_output(output: CrewOutput):
     buyer_data = format_response(output.tasks_output[0])
     seller_data = format_response(output.tasks_output[1])
-    
+
     return {
         "discovery_analysis_buyer_data": buyer_data,
         "discovery_analysis_seller_data": seller_data,
     }
-    
+
 
 def get_crew(step: str, llm: LLM, **crew_config) -> Crew:
-    assert step in [RESEARCH, SIMULATION, EXTRACTION, ANALYSIS],\
+    assert step in [RESEARCH, SIMULATION, EXTRACTION, ANALYSIS], (
         f"Invalid step type: {step} Must be one of 'research', 'simulation', 'extraction', 'analysis'"
-    
+    )
+
     return get_crew_obj(
         agent_templates=agent_templates[step],
         task_templates=task_templates[step],
         llm=llm,
-        **crew_config
+        **crew_config,
     )
 
 
 async def aget_research_data_for_client(inputs: dict, llm: LLM, **crew_config):
-    assert all([k in inputs for k in ["seller", "n_competitors", "buyer"]]), "Invalid input data for research"
+    assert all([k in inputs for k in ["seller", "n_competitors", "buyer"]]), (
+        "Invalid input data for research"
+    )
     data = copy.deepcopy(inputs)
-    
+
     def save_data():
         utils.save_client_data(client, data)
         print(f"Adding Seller: {seller} Data for {client}")
         add_data(
             data=get_seller_research_data(data),
             metadata={
-                "seller": data['seller'],
+                "seller": data["seller"],
             },
-            index_name=data['seller'],
-            index_type=IndexType.SELLER_RESEARCH
+            index_name=data["seller"],
+            index_type=IndexType.SELLER_RESEARCH,
         )
-        
+
         print(f"Adding Buyer: {client} Data")
         add_data(
             data=get_buyer_research_data(data),
             metadata={
                 "buyer": client,
             },
-            index_name=data['seller'],
-            index_type=IndexType.BUYER_RESEARCH
+            index_name=data["seller"],
+            index_type=IndexType.BUYER_RESEARCH,
         )
 
-    
-    client, seller = inputs['buyer'], inputs['seller']
-    
-    if utils.check_data_exists(inputs['buyer']):
-        data.update(utils.get_client_data(inputs['buyer']))
+    client, seller = inputs["buyer"], inputs["seller"]
+
+    if utils.check_data_exists(inputs["buyer"]):
+        data.update(utils.get_client_data(inputs["buyer"]))
         save_data()
         return data
-    
+
     crew = get_crew(RESEARCH, llm, **crew_config)
     add_pydantic_structure(crew, data)
     response = await crew.kickoff_async(inputs=data)
     data.update(process_research_data_output(response))
-    
+
     save_data()
     return data
 
 
 async def aget_simulation_data_for_client(inputs: dict, llm: LLM, **crew_config):
     data = copy.deepcopy(inputs)
-    if utils.check_data_exists(inputs['buyer']):
-        data.update(utils.get_client_data(inputs['buyer']))
-        if 'discovery_transcript' in data:
+    if utils.check_data_exists(inputs["buyer"]):
+        data.update(utils.get_client_data(inputs["buyer"]))
+        if "discovery_transcript" in data:
             save_transcript_data(data, CallType.DISCOVERY.value)
             return data
     else:
         print(f"Data not found for client: {inputs['buyer']}")
         data.update(await aget_research_data_for_client(inputs, llm, **crew_config))
-    
-    
+
     try:
-        assert all([k in data for k in [
-            "seller", 
-            "buyer", 
-            "seller_research", 
-            "seller_pricing", 
-            "buyer_research", 
-            "competitive_info", 
-            "anticipated_qopcs",
-        ]]), f"Invalid input data for simulation call: {inputs.keys()}"
+        assert all(
+            [
+                k in data
+                for k in [
+                    "seller",
+                    "buyer",
+                    "seller_research",
+                    "seller_pricing",
+                    "buyer_research",
+                    "competitive_info",
+                    "anticipated_qopcs",
+                ]
+            ]
+        ), f"Invalid input data for simulation call: {inputs.keys()}"
     except AssertionError as e:
         print("Research data not found for the client. Getting Research Data...")
         research_data = await aget_research_data_for_client(data, llm, **crew_config)
         data.update(research_data)
-        
 
     crew = get_crew(SIMULATION, llm, **crew_config)
     add_pydantic_structure(crew, data)
     response = await crew.kickoff_async(inputs=data)
-    
+
     simulation_data = {
         "discovery_transcript": format_response(response.tasks_output[0])
     }
-    
+
     data.update(simulation_data)
     save_transcript_data(data, CallType.DISCOVERY.value)
-    
+
     return data
-    
+
 
 async def aanalyze_data_for_client(inputs: dict, llm: LLM, **crew_config):
-    client, seller = inputs['buyer'], inputs['seller']
+    client, seller = inputs["buyer"], inputs["seller"]
     data = copy.deepcopy(inputs)
+
     def save_data():
         utils.save_client_data(client, data)
         print("Adding Analysis Data to Vector Store")
@@ -616,62 +742,68 @@ async def aanalyze_data_for_client(inputs: dict, llm: LLM, **crew_config):
             data=get_analysis_data(data),
             metadata=get_analysis_metadata(data),
             index_name=seller,
-            index_type=IndexType.HISTORICAL
+            index_type=IndexType.HISTORICAL,
         )
-    
-    client = inputs['buyer']
+
+    client = inputs["buyer"]
     if utils.check_data_exists(client):
         data.update(utils.get_client_data(client))
-        if 'discovery_analysis_buyer_data' in data:
+        if "discovery_analysis_buyer_data" in data:
             save_data()
             return data
     else:
         print(f"Data not found for client: {client}")
         data.update(await aget_simulation_data_for_client(inputs, llm, **crew_config))
-    
-    
+
     try:
-        assert all([k in data for k in [
-            "seller", 
-            "buyer", 
-            "seller_research", 
-            "seller_pricing", 
-            "buyer_research", 
-            "competitive_info", 
-            "discovery_transcript"
-        ]]), f"Invalid input data for simulation: {data.keys()}"
+        assert all(
+            [
+                k in data
+                for k in [
+                    "seller",
+                    "buyer",
+                    "seller_research",
+                    "seller_pricing",
+                    "buyer_research",
+                    "competitive_info",
+                    "discovery_transcript",
+                ]
+            ]
+        ), f"Invalid input data for simulation: {data.keys()}"
     except AssertionError as e:
         print("Simulation data not found for the client. Getting Simulation Data...")
-        simulation_data = await aget_simulation_data_for_client(data, llm, **crew_config)
+        simulation_data = await aget_simulation_data_for_client(
+            data, llm, **crew_config
+        )
         data.update(simulation_data)
-        
-    client, seller = inputs['buyer'], inputs['seller']        
-    
+
+    client, seller = inputs["buyer"], inputs["seller"]
+
     crew = get_crew(ANALYSIS, llm, **crew_config)
     add_pydantic_structure(crew, data)
     response = await crew.kickoff_async(inputs=data)
     data.update(process_analysis_data_output(response))
     save_data()
-    
+
     return data
 
 
 async def aget_data_for_clients(
-    task_type: str, 
-    clients: List[str], 
-    inputs: dict, 
-    llm: LLM, 
-    **crew_config
+    task_type: str, clients: List[str], inputs: dict, llm: LLM, **crew_config
 ):
-    assert task_type in [RESEARCH, SIMULATION, ANALYSIS], f"Invalid task type: {task_type}"
+    assert task_type in [RESEARCH, SIMULATION, ANALYSIS], (
+        f"Invalid task type: {task_type}"
+    )
     task_to_data_extraction_fn = {
         RESEARCH: aget_research_data_for_client,
         SIMULATION: aget_simulation_data_for_client,
-        ANALYSIS: aanalyze_data_for_client
+        ANALYSIS: aanalyze_data_for_client,
     }
     task_fn = task_to_data_extraction_fn[task_type]
-    
-    assert all([k in inputs for k in ["seller", "n_competitors"]]), f"Invalid input data for {task_type}"
+
+    assert all([k in inputs for k in ["seller", "n_competitors"]]), (
+        f"Invalid input data for {task_type}"
+    )
     print(f"Getting {task_type} Data")
     data = await aget_clients_call_data(task_fn, clients, inputs, llm, **crew_config)
     return data

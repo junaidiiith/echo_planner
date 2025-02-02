@@ -27,9 +27,11 @@ from echo.constants import EMBED_STRING_HASH_KEY
 def sha256_hash(text: str) -> str:
     return hashlib.sha256(text.encode()).hexdigest()
 
+
 def get_current_time():
-    timestamp = time.strftime('%Y-%m-%d %H:%M:%S')
+    timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
     return timestamp
+
 
 class Printer:
     def print(self, content: str, color: Optional[str] = None):
@@ -72,7 +74,6 @@ class Printer:
         print("\033[1m\033[93m {}\033[00m".format(content))
 
 
-
 @contextlib.contextmanager
 def suppress_logging(
     logger_name="chromadb.segment.impl.vector.local_persistent_hnsw",
@@ -88,7 +89,6 @@ def suppress_logging(
     ):
         yield
     logger.setLevel(original_level)
-
 
 
 def db_storage_path():
@@ -113,7 +113,6 @@ def get_project_directory_name():
         return project_directory_name
 
 
-
 class BaseRAGStorage(ABC):
     """
     Base class for RAG-based Storage implementations.
@@ -130,7 +129,7 @@ class BaseRAGStorage(ABC):
         self.type = type
         self.allow_reset = allow_reset
         self.embedder_config = embedder_config
-        
+
     @abstractmethod
     def save(self, value: Any, metadata: Dict[str, Any]) -> None:
         """Save a value with metadata to the storage."""
@@ -183,7 +182,7 @@ class EmbeddingConfigurator:
             "google": self._configure_google,
             "cohere": self._configure_cohere,
             "bedrock": self._configure_bedrock,
-            "huggingface": self._configure_huggingface
+            "huggingface": self._configure_huggingface,
         }
 
     def configure_embedder(
@@ -219,8 +218,7 @@ class EmbeddingConfigurator:
         )
 
         return OpenAIEmbeddingFunction(
-            api_key=os.getenv("OPENAI_API_KEY"), 
-            model_name="text-embedding-3-small"
+            api_key=os.getenv("OPENAI_API_KEY"), model_name="text-embedding-3-small"
         )
 
     @staticmethod
@@ -360,19 +358,16 @@ class RAGStorage(BaseRAGStorage):
         try:
             filter_criteria = {EMBED_STRING_HASH_KEY: text_hash}
             filter_criteria.update(metadata)
-            results = self.collection.get(
-                where=filter_criteria, include=["metadatas"]
-            )
+            results = self.collection.get(where=filter_criteria, include=["metadatas"])
             return len(results["metadatas"]) > 0
         except Exception as e:
             logging.error(f"Error checking if text is embedded: {str(e)}")
             return False
-    
-    
+
     def save(self, value: Any, metadata: Dict[str, Any]) -> None:
         if not hasattr(self, "app") or not hasattr(self, "collection"):
             self._initialize_app()
-        
+
         try:
             self._generate_embedding(value, metadata)
         except Exception as e:
@@ -414,7 +409,7 @@ class RAGStorage(BaseRAGStorage):
                         ]
                     )
                 ]
-            
+
             return results
         except Exception as e:
             logging.error(f"Error during {self.type} search: {str(e)}")
@@ -460,14 +455,13 @@ class RAGStorage(BaseRAGStorage):
         )
 
 
-
 class LTMSQLiteStorage:
     """
     An updated SQLite storage class for LTM data storage.
     """
 
     def __init__(
-        self, 
+        self,
         db_type: str = f"long_term_memory_storage.db",
         reset: bool = False,
     ) -> None:
@@ -485,8 +479,8 @@ class LTMSQLiteStorage:
                     print("Deleting existing table")
                     conn.execute("DROP TABLE IF EXISTS seller_data")
                     conn.commit()
-                
-                conn.execute('PRAGMA foreign_keys = ON;')
+
+                conn.execute("PRAGMA foreign_keys = ON;")
                 cursor = conn.cursor()
                 cursor.execute(
                     """
@@ -508,7 +502,6 @@ class LTMSQLiteStorage:
                 color="red",
             )
 
-
     def check_if_exists(self, seller, buyer, call_type, metadata: Dict) -> int:
         """
         Checks if a row exists in the LTM table
@@ -517,7 +510,9 @@ class LTMSQLiteStorage:
             1: if the row exists but metadata does not match
             2: if the row exists and metadata matches
         """
-        query = "SELECT * FROM seller_data WHERE seller = ? AND buyer = ? AND call_type = ?"
+        query = (
+            "SELECT * FROM seller_data WHERE seller = ? AND buyer = ? AND call_type = ?"
+        )
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
             cursor.execute(query, (seller, buyer, call_type))
@@ -527,47 +522,50 @@ class LTMSQLiteStorage:
                     row_metadata: Dict = json.loads(row[4])
                 except json.JSONDecodeError:
                     import ast
+
                     try:
                         row_metadata = json.loads(json.dumps(ast.literal_eval(row[4])))
                     except json.JSONDecodeError as e:
-                        raise json.JSONDecodeError(f"Could not decode the value: {row[4]} with error: {e}")
-                    
-                if all(
-                    [
-                        key in row_metadata
-                        for key in metadata
-                    ]
-                ):
+                        raise json.JSONDecodeError(
+                            f"Could not decode the value: {row[4]} with error: {e}"
+                        )
+
+                if all([key in row_metadata for key in metadata]):
                     print(f"Row already exists!")
                     return True
         return False
-                
-        
+
     def save(
-        self,
-        seller: str,
-        buyer: str,
-        call_type: str,
-        data: Dict[str, Any]
+        self, seller: str, buyer: str, call_type: str, data: Dict[str, Any]
     ) -> None:
         datetime = get_current_time()
         """Saves data to the LTM table with error handling."""
-        record_exists =  self.check_if_exists(seller, buyer, call_type, data)
-        assert record_exists in [0, 1, 2], f"Invalid record_exists value: {record_exists}"
+        record_exists = self.check_if_exists(seller, buyer, call_type, data)
+        assert record_exists in [0, 1, 2], (
+            f"Invalid record_exists value: {record_exists}"
+        )
         if record_exists == 2:
-            logging.info(f"Record already exists for seller: {seller}, buyer: {buyer}, call_type: {call_type}")
-            return 
+            logging.info(
+                f"Record already exists for seller: {seller}, buyer: {buyer}, call_type: {call_type}"
+            )
+            return
         else:
             try:
                 with sqlite3.connect(self.db_path) as conn:
                     cursor = conn.cursor()
                     if record_exists == 1:
                         query = "UPDATE seller_data SET data = ?, datetime = ? WHERE seller = ? AND buyer = ? AND call_type = ?"
-                        cursor.execute(query, (json.dumps(data), datetime, seller, buyer, call_type))
-                    
+                        cursor.execute(
+                            query,
+                            (json.dumps(data), datetime, seller, buyer, call_type),
+                        )
+
                     else:
                         query = "INSERT INTO seller_data (seller, buyer, call_type, data, datetime) VALUES (?, ?, ?, ?, ?)"
-                        cursor.execute(query, (seller, buyer, call_type, json.dumps(data), datetime))
+                        cursor.execute(
+                            query,
+                            (seller, buyer, call_type, json.dumps(data), datetime),
+                        )
                     conn.commit()
             except sqlite3.Error as e:
                 self._printer.print(
@@ -577,24 +575,24 @@ class LTMSQLiteStorage:
         return None
 
     def load(
-        self, 
+        self,
         buyer: str,
-        seller: str, 
-        call_type: str, 
-        data: Dict=None, 
-        latest_n: int
-    =-1) -> Optional[List[Dict[str, Any]]]:
+        seller: str,
+        call_type: str,
+        data: Dict = None,
+        latest_n: int = -1,
+    ) -> Optional[List[Dict[str, Any]]]:
         """Queries the LTM table by task description with error handling."""
         latest_n = latest_n if latest_n > 0 else 3
-        query = 'SELECT seller, buyer, call_type, data FROM seller_data WHERE seller = ? AND buyer = ? AND call_type = ? '
+        query = "SELECT seller, buyer, call_type, data FROM seller_data WHERE seller = ? AND buyer = ? AND call_type = ? "
         params = [seller, buyer, call_type]
         if data:
             for key, value in data.items():
-                query += f' AND json_extract(data, \'$.{key}\') = ?'
+                query += f" AND json_extract(data, '$.{key}') = ?"
                 params.append(value)
-        
-        query += f' ORDER BY datetime DESC LIMIT {latest_n}'
-        
+
+        query += f" ORDER BY datetime DESC LIMIT {latest_n}"
+
         try:
             rows = self.run_query(query, params)
             if rows:
@@ -613,26 +611,23 @@ class LTMSQLiteStorage:
                 color="red",
             )
         return None
-    
-    
+
     def run_query(
-        self, 
-        query: str, 
-        params: List[str] = None
+        self, query: str, params: List[str] = None
     ) -> Optional[List[Dict[str, Any]]]:
         """Queries the LTM table by task description with error handling."""
         if not params:
             params = []
-            
+
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
             cursor.execute(query, params)
             rows = cursor.fetchall()
             if rows:
                 return [r for r in rows]
-        
+
         return []
-        
+
     def reset(
         self,
     ) -> None:

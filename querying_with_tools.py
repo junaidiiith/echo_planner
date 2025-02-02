@@ -5,14 +5,9 @@ from pydantic import BaseModel, Field
 
 from crewai import Crew, Task, Agent, LLM
 
-from llama_index.core.vector_stores import (
-    MetadataFilter,
-    MetadataFilters
-)
+from llama_index.core.vector_stores import MetadataFilter, MetadataFilters
 
-from echo.settings import (
-    SIMILARITY_TOP_K
-)
+from echo.settings import SIMILARITY_TOP_K
 from echo.step_templates.generic import FilledSections
 from echo.utils import add_pydantic_structure
 
@@ -21,7 +16,7 @@ def get_llm():
     llm = LLM(
         model=os.getenv("FIREWORKS_MODEL_NAME"),
         base_url="https://api.fireworks.ai/inference/v1",
-        api_key=os.getenv("FIREWORKS_API_KEY")
+        api_key=os.getenv("FIREWORKS_API_KEY"),
     )
     return llm
 
@@ -43,44 +38,49 @@ def get_inputs():
     query = take_input("query").strip()
     query = f"Input parameters for the query: \ncall_type = {call_type}\nbuyer={buyer}\nseller={seller}\nquery={query}"
     return {
-		'query': query,
-	}
+        "query": query,
+    }
 
 
 class HistoricalIndexArguments(BaseModel):
     """Input schema for MyCustomTool."""
+
     query: str = Field(..., description="Query to retrieve from the index.")
     call_type: str = Field(..., description="Type of call")
     seller: str = Field(..., description="Name of the seller.")
 
 
 def historical_relevant_calls_info_retriever(
-    query: str, 
-    call_type: str, 
-    seller: str
+    query: str, call_type: str, seller: str
 ) -> str:
-	index = get_vector_index(seller, IndexType.HISTORICAL)
-	
-	filters_dict = {
-		"call_type": call_type
-	}
+    index = get_vector_index(seller, IndexType.HISTORICAL)
 
-	filters = MetadataFilters(
-		filters=[
-			MetadataFilter(
-				key=k, 
-				value=v,
-			) for k, v in filters_dict.items()
-		]
-	)
+    filters_dict = {"call_type": call_type}
 
-	retrieved_nodes = index.as_retriever(filters=filters, similarity_top_k=SIMILARITY_TOP_K).retrieve(query)
-	return f"\n".join([f"Historical Call: {i}\n{n.get_content()}" for i, n in enumerate(retrieved_nodes)])
+    filters = MetadataFilters(
+        filters=[
+            MetadataFilter(
+                key=k,
+                value=v,
+            )
+            for k, v in filters_dict.items()
+        ]
+    )
+
+    retrieved_nodes = index.as_retriever(
+        filters=filters, similarity_top_k=SIMILARITY_TOP_K
+    ).retrieve(query)
+    return f"\n".join(
+        [
+            f"Historical Call: {i}\n{n.get_content()}"
+            for i, n in enumerate(retrieved_nodes)
+        ]
+    )
 
 
 historical_call_index_tool = CrewStructuredTool.from_function(
     name="Historical Calls Information Retriever",
-    description = (
+    description=(
         """
         This tool retrieves relevant calls, i.e., calls with buyers that belong to similar industry, support similar use cases and so on.
         This tool uses seller and call type to retrieve the relevant calls.
@@ -111,37 +111,41 @@ historical_call_index_tool = CrewStructuredTool.from_function(
 
 class CurrentCallIndexArguments(BaseModel):
     """Input schema for MyCustomTool."""
+
     call_type: str = Field(..., description="Type of call")
     buyer: str = Field(..., description="Name of the buyer.")
     seller: str = Field(..., description="Name of the seller.")
 
 
 def current_call_info_retriver(self, call_type: str, buyer: str, seller: str) -> str:
-	index = get_vector_index(seller, IndexType.HISTORICAL)
-	
-	filters_dict = {
-		"seller": seller,
-		"buyer": buyer,
-		"call_type": call_type
-	}
+    index = get_vector_index(seller, IndexType.HISTORICAL)
 
-	filters = MetadataFilters(
-		filters=[
-			MetadataFilter(
-				key=k, 
-				value=v,
-			) for k, v in filters_dict.items()
-		]
-	)
+    filters_dict = {"seller": seller, "buyer": buyer, "call_type": call_type}
 
-	retrieved_nodes = index.as_retriever(filters=filters, similarity_top_k=SIMILARITY_TOP_K).retrieve("")
-	return f"\n".join([f"Current {call_type} Call Data: {i}\n{n.get_content()}" for i, n in enumerate(retrieved_nodes)])
+    filters = MetadataFilters(
+        filters=[
+            MetadataFilter(
+                key=k,
+                value=v,
+            )
+            for k, v in filters_dict.items()
+        ]
+    )
 
+    retrieved_nodes = index.as_retriever(
+        filters=filters, similarity_top_k=SIMILARITY_TOP_K
+    ).retrieve("")
+    return f"\n".join(
+        [
+            f"Current {call_type} Call Data: {i}\n{n.get_content()}"
+            for i, n in enumerate(retrieved_nodes)
+        ]
+    )
 
 
 current_call_info_retriver_tool = CrewStructuredTool.from_function(
     name="Current Call Information Retriever",
-    description = (
+    description=(
         """
         This tool retrieves the relevant information about the current call from the vector index.
         The relevant information about the current call includes the -
@@ -168,8 +172,10 @@ current_call_info_retriver_tool = CrewStructuredTool.from_function(
 
 class BuyerResearchIndexArguments(BaseModel):
     """Input schema for BuyerResearchIndexTool."""
+
     seller: str = Field(..., description="Name of the seller.")
     buyer: str = Field(..., description="Name of the buyer.")
+
 
 def buyer_research_info_retriever(buyer: str, seller: str) -> str:
     index = get_vector_index(seller, IndexType.BUYER_RESEARCH)
@@ -181,14 +187,23 @@ def buyer_research_info_retriever(buyer: str, seller: str) -> str:
     filters = MetadataFilters(
         filters=[
             MetadataFilter(
-                key=k, 
+                key=k,
                 value=v,
-            ) for k, v in filters_dict.items()
+            )
+            for k, v in filters_dict.items()
         ]
     )
 
-    retrieved_nodes = index.as_retriever(filters=filters, similarity_top_k=SIMILARITY_TOP_K).retrieve("")
-    return f"\n".join([f"Buyer Research Data: {i}\n{n.get_content()}" for i, n in enumerate(retrieved_nodes)])
+    retrieved_nodes = index.as_retriever(
+        filters=filters, similarity_top_k=SIMILARITY_TOP_K
+    ).retrieve("")
+    return f"\n".join(
+        [
+            f"Buyer Research Data: {i}\n{n.get_content()}"
+            for i, n in enumerate(retrieved_nodes)
+        ]
+    )
+
 
 buyer_research_index_tool = CrewStructuredTool.from_function(
     name="Buyer Research Information Retriever",
@@ -208,9 +223,12 @@ buyer_research_index_tool = CrewStructuredTool.from_function(
     func=buyer_research_info_retriever,
 )
 
+
 class SellerResearchIndexArguments(BaseModel):
     """Input schema for SellerResearchIndexTool."""
+
     seller: str = Field(..., description="Name of the seller.")
+
 
 def seller_research_info_retriever(seller: str) -> str:
     index = get_vector_index(seller, IndexType.SELLER_RESEARCH)
@@ -222,14 +240,23 @@ def seller_research_info_retriever(seller: str) -> str:
     filters = MetadataFilters(
         filters=[
             MetadataFilter(
-                key=k, 
+                key=k,
                 value=v,
-            ) for k, v in filters_dict.items()
+            )
+            for k, v in filters_dict.items()
         ]
     )
 
-    retrieved_nodes = index.as_retriever(filters=filters, similarity_top_k=SIMILARITY_TOP_K).retrieve("")
-    return f"\n".join([f"Seller Research Data: {i}\n{n.get_content()}" for i, n in enumerate(retrieved_nodes)])
+    retrieved_nodes = index.as_retriever(
+        filters=filters, similarity_top_k=SIMILARITY_TOP_K
+    ).retrieve("")
+    return f"\n".join(
+        [
+            f"Seller Research Data: {i}\n{n.get_content()}"
+            for i, n in enumerate(retrieved_nodes)
+        ]
+    )
+
 
 seller_research_index_tool = CrewStructuredTool.from_function(
     name="Seller Research Information Retriever",
@@ -256,48 +283,44 @@ agent = Agent(
     role="Call Preparation Support",
     goal="Provide most useful information that helps a salesperson prepare for a call.",
     backstory=(
-    	"You are an expert in preparing for sales deals. "
-		"Each deal involves different types of calls like discovery, demo, pricing and procurement. "
-		"You have been tasked with preparing for a call with a buyer. "
+        "You are an expert in preparing for sales deals. "
+        "Each deal involves different types of calls like discovery, demo, pricing and procurement. "
+        "You have been tasked with preparing for a call with a buyer. "
     ),
     llm=get_llm(),
     tools=[
         historical_call_index_tool,
         current_call_info_retriver_tool,
         buyer_research_index_tool,
-        seller_research_index_tool
-    ]
+        seller_research_index_tool,
+    ],
 )
 
 
 task = Task(
-	name="Information Retriever for Sales Calls",
-	description=(
-    	"You will be asked to retrieve relevant information for a sales call. "
-     	"Each query will require you to use your expertise in sales calls. "
-	 	"To answer each query, you will need to carefully plan how to answer the query. "
-		"You can break the query into smaller parts and define a sequence of actions to take. "
-		"You are provided with tools that vector indexes to help you answer the queries. "
-		"You can query these vector indexes to retrieve the relevant information. "
-		"You MUST use the retrieved information to answer the queries without making your own answers. "
-		"Below is the query that you need to answer. "
-		"{query}"
+    name="Information Retriever for Sales Calls",
+    description=(
+        "You will be asked to retrieve relevant information for a sales call. "
+        "Each query will require you to use your expertise in sales calls. "
+        "To answer each query, you will need to carefully plan how to answer the query. "
+        "You can break the query into smaller parts and define a sequence of actions to take. "
+        "You are provided with tools that vector indexes to help you answer the queries. "
+        "You can query these vector indexes to retrieve the relevant information. "
+        "You MUST use the retrieved information to answer the queries without making your own answers. "
+        "Below is the query that you need to answer. "
+        "{query}"
     ),
-	expected_output=(
-		"A structured overview of the call, seller's client with distinct sections."
-		"The response should conform to the provided schema."
-		"You need to extract the following information in the following pydantic structure -\n"
-		"{pydantic_structure}\n"
-	),
-	output_pydantic=FilledSections,
-	agent=agent
+    expected_output=(
+        "A structured overview of the call, seller's client with distinct sections."
+        "The response should conform to the provided schema."
+        "You need to extract the following information in the following pydantic structure -\n"
+        "{pydantic_structure}\n"
+    ),
+    output_pydantic=FilledSections,
+    agent=agent,
 )
 
-crew = Crew(
-	agents=[agent],
-	tasks=[task],
- 	verbose=True
-)
+crew = Crew(agents=[agent], tasks=[task], verbose=True)
 
 while True:
     inputs = get_inputs()

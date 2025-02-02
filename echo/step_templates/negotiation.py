@@ -6,7 +6,12 @@ from pydantic import BaseModel, Field
 from typing import Dict, List
 from echo.indexing import IndexType, add_data
 from echo.utils import add_pydantic_structure, format_response
-from echo.step_templates.generic import CallType, Transcript, aget_clients_call_data, save_transcript_data
+from echo.step_templates.generic import (
+    CallType,
+    Transcript,
+    aget_clients_call_data,
+    save_transcript_data,
+)
 from echo.utils import get_crew as get_crew_obj
 import echo.utils as utils
 
@@ -15,48 +20,34 @@ from echo.step_templates.generic import Transcript
 
 class BuyerDataExtracted(BaseModel):
     final_objections: List[str] = Field(
-        ..., 
-        title="Final objections raised by the buyer during the Negotiation call."
+        ..., title="Final objections raised by the buyer during the Negotiation call."
     )
     key_decision_makers: List[str] = Field(
-        ..., 
-        title="Key decision-makers involved in the final decision."
+        ..., title="Key decision-makers involved in the final decision."
     )
     remaining_concerns: List[str] = Field(
-        ..., 
-        title="Remaining unresolved concerns of the buyer."
+        ..., title="Remaining unresolved concerns of the buyer."
     )
     contract_terms: List[str] = Field(
-        ..., 
-        title="Contract terms and procurement concerns of the buyer."
+        ..., title="Contract terms and procurement concerns of the buyer."
     )
 
 
 class SellerDataExtracted(BaseModel):
     concessions_discounts: List[str] = Field(
-        ..., 
-        title="Concessions and discounts provided by the seller to the buyer."
+        ..., title="Concessions and discounts provided by the seller to the buyer."
     )
     objection_handling: List[str] = Field(
-        ..., 
-        title="Objection handling by the seller's team."
+        ..., title="Objection handling by the seller's team."
     )
     stakeholder_consensus: List[str] = Field(
-        ..., 
-        title="Stakeholder consensus tactics and efforts."
+        ..., title="Stakeholder consensus tactics and efforts."
     )
     contract_procurement: List[str] = Field(
-        ..., 
-        title="Contract and procurement concern handling."
+        ..., title="Contract and procurement concern handling."
     )
-    closing_tactics: List[str] = Field(
-        ..., 
-        title="Closing tactics and next steps."
-    )
-    assests_used: List[str] = Field(
-        ..., 
-        title="Assests used by the seller's team."
-    )
+    closing_tactics: List[str] = Field(..., title="Closing tactics and next steps.")
+    assests_used: List[str] = Field(..., title="Assests used by the seller's team.")
 
 
 agent_templates = {
@@ -69,7 +60,7 @@ agent_templates = {
                 "You have been tasked with simulating a detailed call between buyer and {seller}."
                 "Your goal is to provide a realistic and engaging simulation of the call."
                 "The sales call simulation should be tailored to addressing the buyer's needs."
-            )
+            ),
         )
     },
     ANALYSIS: {
@@ -80,9 +71,9 @@ agent_templates = {
                 "You are an expert in analyzing pricing sales calls and identifying key insights."
                 "Your goal is to analyze the sales call between buyer and {seller}."
                 "Your goal is identify the key concerns raised by the buyer and provide insights to the sales team."
-            )
+            ),
         )
-    }
+    },
 }
 
 task_templates = {
@@ -93,24 +84,18 @@ task_templates = {
                 "Simulate a very elaborated, detailed Negotiation call between {buyer} and {seller}. "
                 "Assume multiple stakeholder involved from the {buyer}'s side. "
                 "You are provided with the {buyer}'s and {seller}'s information as well as the discovery call information."
-    
                 "The information from the discovery call will be used to simulate the Negotiation call."
                 "\n{buyer}'s Data from the analysis of previous discovery call:\n{discovery_analysis_buyer_data}\n"
                 "\n{seller}'s Data from the analysis of previous discovery call:\n{discovery_analysis_seller_data}\n"
-       
                 "\n{buyer}'s Data from the analysis of previous demo call:\n{demo_analysis_buyer_data}\n"
                 "\n{seller}'s Data from the analysis of previous demo call:\n{demo_analysis_seller_data}\n"
-
                 "\n{buyer}'s Data from the analysis of previous pricing call:\n{pricing_analysis_buyer_data}\n"
                 "\n{seller}'s Data from the analysis of previous pricing call:\n{pricing_analysis_seller_data}\n"
-                
                 "The simulation MUST cover the following instructions -\n"
-                
                 "The {seller}'s team person is supposed to be very confident and knowledgeable about the product or service during the Negotiation."
                 "In order to simulate the Negotiation call, you need to follow the following steps - "
                 "1. Think about what is the objective of a general Negotiation sales call after the pricing call."
                 "2. Use the context, i.e., {seller}'s previous calls analysis summary to simulate the call that fulfills the objectives of a Negotiation call.\n"
-    
                 "The simulation MUST cover the following instructions -\n"
                 "1. The {buyer} raises some final objections during the Negotiation call and they MUST be handled by the {seller}.\n"
                 "2. The {buyer} mentions the key decision-makers involved in the final decision and the {seller} should build on it.\n"
@@ -119,14 +104,11 @@ task_templates = {
                 "5. {seller}'s team should do very clear and helpful objection handling\n"
                 "6. {seller}'s team should use stakeholder consensus tactics and efforts.\n"
                 "7. {seller}'s team should handle contract and procurement concern handling.\n"
-                
-
                 "Your goal is to provide a realistic and engaging simulation of a negotiation call."
                 "The contents of each message should be as detailed and realistic as possible like a human conversation. "
                 "The call should be structured and flow naturally like a real negotiation call. "
                 "The call should have a smooth flow and should be engaging and informative. "
                 "The call should not end abruptly and should have a proper conclusion with next steps according to how the call went. "
-                
             ),
             expected_output=(
                 "A realistic simulation of the negotiation call between {buyer} and {seller}."
@@ -135,7 +117,7 @@ task_templates = {
                 "Make sure there are no comments in the response JSON and it should be a valid JSON."
             ),
             agent="CallSimulationAgent",
-            output_pydantic=Transcript
+            output_pydantic=Transcript,
         )
     },
     ANALYSIS: {
@@ -145,13 +127,11 @@ task_templates = {
                 "Analyze the sales call between {buyer} and {seller} to extract the buyer's data.\n"
                 "You are provided with the transcript of the Negotiation call between {buyer} and {seller}.\n"
                 "Your goal is to analyze the call and provide insights to the sales team.\n"
-                
                 "The analysis should include -\n"
                 "1. The final objections raised by the buyer during the Negotiation call.\n"
                 "2. The key decision-makers involved in the final decision.\n"
                 "3. The remaining unresolved concerns of the buyer.\n"
                 "4. The contract terms and procurement concerns of the buyer.\n"
-                
                 "You are provided with the following context -\n"
                 "{pricing_transcript}\n"
             ),
@@ -163,7 +143,7 @@ task_templates = {
                 "Make sure there are no comments in the response JSON and it should be a valid JSON."
             ),
             agent="CallAnalysisAgent",
-            output_pydantic=BuyerDataExtracted
+            output_pydantic=BuyerDataExtracted,
         ),
         "SellerAnalysis": dict(
             name="Analyze the Negotiation Call and extract Seller data",
@@ -172,16 +152,12 @@ task_templates = {
                 "You are provided with the transcript of the Negotiation call between {buyer} and {seller}.\n"
                 "Your goal is to analyze the call and provide insights to the sales team.\n"
                 "The analysis should include -\n"
-        
                 "1. Concessions and discounts provided by the seller to the buyer.\n"
                 "2. Objection handling by the seller's team.\n"
                 "3. Stakeholder consensus tactics and efforts.\n"
                 "4. Contract and procurement concern handling.\n"
                 "5. Closing tactics and next steps.\n"
                 "6. Assests used by the seller's team.\n"
-
-
-                
                 "You are provided with the following context -\n"
                 "{pricing_transcript}\n"
             ),
@@ -194,9 +170,9 @@ task_templates = {
             ),
             context=["BuyerAnalysis"],
             agent="CallAnalysisAgent",
-            output_pydantic=SellerDataExtracted
-        )
-    }
+            output_pydantic=SellerDataExtracted,
+        ),
+    },
 }
 
 buyer_call_format = (
@@ -219,7 +195,7 @@ buyer_keys = {
     "Final Objections Raised": "final_objections",
     "Key Decision Makers": "key_decision_makers",
     "Remaining Concerns": "remaining_concerns",
-    "Contract Terms": "contract_terms"
+    "Contract Terms": "contract_terms",
 }
 
 seller_keys = {
@@ -228,7 +204,7 @@ seller_keys = {
     "Stakeholder Consensus": "stakeholder_consensus",
     "Contract Procurement": "contract_procurement",
     "Closing Tactics": "closing_tactics",
-    "Assests Used": "assests_used"
+    "Assests Used": "assests_used",
 }
 
 
@@ -237,21 +213,20 @@ def get_analysis_data(data: Dict):
         "negotiation_analysis_buyer_data": BuyerDataExtracted,
         "negotiation_analysis_seller_data": SellerDataExtracted,
     }
-    
+
     data_str = utils.get_data_str(analysis_keys, data)
     return data_str
-    
-    
+
+
 def get_analysis_metadata(data: Dict):
     return {
-        "seller": data['seller'],
-        "buyer": data['buyer'],
+        "seller": data["seller"],
+        "buyer": data["buyer"],
         "call_type": CallType.NEGOTIATION.value,
         "company_size": data["buyer_research"]["company_size"],
         "industry": data["buyer_research"]["industry"],
-        "description": data["buyer_research"]["description"]
+        "description": data["buyer_research"]["description"],
     }
-
 
 
 def get_client_data_to_embed(client_name, user_type):
@@ -270,51 +245,50 @@ def get_client_data_to_save(client_name, user_type):
         return utils.get_nested_key_values(seller_keys, data)
 
 
-
 def get_crew(step: str, llm: LLM, **crew_config) -> Crew:
-    assert step in [SIMULATION, ANALYSIS], \
+    assert step in [SIMULATION, ANALYSIS], (
         f"Invalid step type: {step} Must be one of 'research', 'simulation', 'extraction', 'analysis'"
-    
+    )
+
     return get_crew_obj(
         agent_templates=agent_templates[step],
         task_templates=task_templates[step],
         llm=llm,
-        **crew_config
+        **crew_config,
     )
 
 
 def process_analysis_data_output(response: CrewOutput):
     data = {
         "negotiation_analysis_buyer_data": format_response(response.tasks_output[0]),
-        "negotiation_analysis_seller_data": format_response(response.tasks_output[1])
+        "negotiation_analysis_seller_data": format_response(response.tasks_output[1]),
     }
     return data
 
 
 async def aget_simulation_data_for_client(inputs: dict, llm: LLM, **crew_config):
     data = copy.deepcopy(inputs)
-    if utils.check_data_exists(inputs['buyer']):
-        data.update(utils.get_client_data(inputs['buyer']))
-        if 'negotiation_transcript' in data:
+    if utils.check_data_exists(inputs["buyer"]):
+        data.update(utils.get_client_data(inputs["buyer"]))
+        if "negotiation_transcript" in data:
             save_transcript_data(data, CallType.NEGOTIATION.value)
             return data
         else:
             print("Data exists but pricing transcript not found")
-    
+
     crew = get_crew(SIMULATION, llm, **crew_config)
     add_pydantic_structure(crew, inputs)
     response = await crew.kickoff_async(inputs=inputs)
- 
-    data.update({
-        "negotiation_transcript": format_response(response.tasks_output[0])
-    })
+
+    data.update({"negotiation_transcript": format_response(response.tasks_output[0])})
     save_transcript_data(data, CallType.NEGOTIATION.value)
     return data
 
 
 async def aanalyze_data_for_client(inputs: dict, llm: LLM, **crew_config):
     data = copy.deepcopy(inputs)
-    client, seller = inputs['buyer'], inputs['seller']
+    client, seller = inputs["buyer"], inputs["seller"]
+
     def save_data():
         utils.save_client_data(client, data)
         print("Adding Analysis Data to Vector Store")
@@ -322,25 +296,25 @@ async def aanalyze_data_for_client(inputs: dict, llm: LLM, **crew_config):
             data=get_analysis_data(data),
             metadata=get_analysis_metadata(data),
             index_name=seller,
-            index_type=IndexType.HISTORICAL
+            index_type=IndexType.HISTORICAL,
         )
-      
-    
-    if utils.check_data_exists(inputs['buyer']):
-        data.update(utils.get_client_data(inputs['buyer']))
-        if 'negotiation_analysis_buyer_data' in data:
+
+    if utils.check_data_exists(inputs["buyer"]):
+        data.update(utils.get_client_data(inputs["buyer"]))
+        if "negotiation_analysis_buyer_data" in data:
             save_data()
             return data
-        
+
     try:
-        assert all([k in data for k in [
-            "negotiation_transcript"
-        ]]), "Invalid input data for simulation"
+        assert all([k in data for k in ["negotiation_transcript"]]), (
+            "Invalid input data for simulation"
+        )
     except AssertionError as e:
-        simulation_data = await aget_simulation_data_for_client(data, llm, **crew_config)
+        simulation_data = await aget_simulation_data_for_client(
+            data, llm, **crew_config
+        )
         data.update(simulation_data)
-    
-    
+
     crew = get_crew(ANALYSIS, llm, **crew_config)
     add_pydantic_structure(crew, data)
     response = await crew.kickoff_async(inputs=data)
@@ -351,20 +325,18 @@ async def aanalyze_data_for_client(inputs: dict, llm: LLM, **crew_config):
 
 
 async def aget_data_for_clients(
-    task_type: str, 
-    clients: List[str], 
-    inputs: dict, 
-    llm: LLM, 
-    **crew_config
+    task_type: str, clients: List[str], inputs: dict, llm: LLM, **crew_config
 ):
     assert task_type in [SIMULATION, ANALYSIS], f"Invalid task type: {task_type}"
     task_to_data_extraction_fn = {
         SIMULATION: aget_simulation_data_for_client,
-        ANALYSIS: aanalyze_data_for_client
+        ANALYSIS: aanalyze_data_for_client,
     }
     task_fn = task_to_data_extraction_fn[task_type]
-    
-    assert all([k in inputs for k in ["seller", "n_competitors"]]), f"Invalid input data for {task_type}"
+
+    assert all([k in inputs for k in ["seller", "n_competitors"]]), (
+        f"Invalid input data for {task_type}"
+    )
     print(f"Getting {task_type} Data")
     data = await aget_clients_call_data(task_fn, clients, inputs, llm, **crew_config)
     return data
