@@ -1,9 +1,14 @@
 import copy
-from tqdm.asyncio import tqdm
 from crewai_tools import SerperDevTool
 from crewai import Crew, LLM
 from crewai.crews.crew_output import CrewOutput
-from echo.constants import *
+from echo.constants import (
+    RESEARCH,
+    SIMULATION,
+    EXTRACTION,
+    ANALYSIS,
+    BUYER,
+)
 from pydantic import BaseModel, Field
 from typing import Dict, List
 from echo.utils import add_pydantic_structure, format_response
@@ -712,7 +717,7 @@ async def aget_simulation_data_for_client(inputs: dict, llm: LLM, **crew_config)
                 ]
             ]
         ), f"Invalid input data for simulation call: {inputs.keys()}"
-    except AssertionError as e:
+    except AssertionError:
         print("Research data not found for the client. Getting Research Data...")
         research_data = await aget_research_data_for_client(data, llm, **crew_config)
         data.update(research_data)
@@ -770,7 +775,7 @@ async def aanalyze_data_for_client(inputs: dict, llm: LLM, **crew_config):
                 ]
             ]
         ), f"Invalid input data for simulation: {data.keys()}"
-    except AssertionError as e:
+    except AssertionError:
         print("Simulation data not found for the client. Getting Simulation Data...")
         simulation_data = await aget_simulation_data_for_client(
             data, llm, **crew_config

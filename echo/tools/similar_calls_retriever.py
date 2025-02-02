@@ -45,7 +45,7 @@ class HistoricalCallIndex(BaseTool):
         retrieved_nodes = index.as_retriever(
             filters=filters, similarity_top_k=SIMILARITY_TOP_K
         ).retrieve(query)
-        return f"\n".join(
+        return "\n".join(
             [
                 f"Historical Call: {i}\n{n.get_content()}"
                 for i, n in enumerate(retrieved_nodes)
@@ -87,7 +87,7 @@ class CurrentCallIndex(BaseTool):
         retrieved_nodes = index.as_retriever(
             filters=filters, similarity_top_k=SIMILARITY_TOP_K
         ).retrieve("")
-        return f"\n".join(
+        return "\n".join(
             [
                 f"Current {call_type} Call Data: {i}\n{n.get_content()}"
                 for i, n in enumerate(retrieved_nodes)

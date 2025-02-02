@@ -1,13 +1,7 @@
 import copy
 from crewai import Crew, LLM
 from crewai.crews.crew_output import CrewOutput
-from echo.constants import (
-    RESEARCH,
-    SIMULATION,
-    ANALYSIS,
-    BUYER,
-    EXTRACTION
-)
+from echo.constants import RESEARCH, SIMULATION, ANALYSIS, BUYER, EXTRACTION
 from pydantic import BaseModel, Field
 from typing import Dict, List
 from echo.indexing import IndexType, add_data
@@ -500,7 +494,7 @@ async def aget_simulation_data_for_client(inputs: dict, llm: LLM, **crew_config)
                 ]
             ]
         ), "Invalid input data for simulation"
-    except AssertionError as e:
+    except AssertionError:
         research_data = await aget_research_data_for_client(data, llm, **crew_config)
         data.update(research_data)
 
@@ -539,7 +533,7 @@ async def aanalyze_data_for_client(inputs: dict, llm: LLM, **crew_config):
         assert all([k in data for k in ["demo_transcript"]]), (
             "Invalid input data for simulation"
         )
-    except AssertionError as e:
+    except AssertionError:
         simulation_data = await aget_simulation_data_for_client(
             data, llm, **crew_config
         )

@@ -8,7 +8,6 @@ from chromadb.api import ClientAPI
 from abc import ABC, abstractmethod
 from chromadb import EmbeddingFunction
 from chromadb.api.types import validate_embedding_function
-import os
 from pathlib import Path
 
 import appdirs
@@ -17,7 +16,6 @@ import io
 
 import json
 import sqlite3
-from typing import Any, Dict, List, Optional
 import hashlib
 import time
 
@@ -462,7 +460,7 @@ class LTMSQLiteStorage:
 
     def __init__(
         self,
-        db_type: str = f"long_term_memory_storage.db",
+        db_type: str = "long_term_memory_storage.db",
         reset: bool = False,
     ) -> None:
         self.db_path = f"{db_storage_path()}/{db_type}.db"
@@ -531,7 +529,7 @@ class LTMSQLiteStorage:
                         )
 
                 if all([key in row_metadata for key in metadata]):
-                    print(f"Row already exists!")
+                    print("Row already exists!")
                     return True
         return False
 

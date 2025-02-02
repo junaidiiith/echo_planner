@@ -13,7 +13,14 @@ from echo.step_templates.negotiation import (
     aget_data_for_clients as aget_negotiation_data_for_clients,
 )
 
-from echo.constants import *
+from echo.constants import (
+    DISCOVERY,
+    DEMO,
+    PRICING,
+    NEGOTIATION,
+    SIMULATION,
+    ANALYSIS,
+)
 
 
 test_clients = ["Shell", "Schneider electric"]

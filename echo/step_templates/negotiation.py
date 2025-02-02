@@ -1,7 +1,11 @@
 import copy
 from crewai import Crew, LLM
 from crewai.crews.crew_output import CrewOutput
-from echo.constants import *
+from echo.constants import (
+    SIMULATION,
+    ANALYSIS,
+    BUYER,
+)
 from pydantic import BaseModel, Field
 from typing import Dict, List
 from echo.indexing import IndexType, add_data
@@ -15,7 +19,6 @@ from echo.step_templates.generic import (
 from echo.utils import get_crew as get_crew_obj
 import echo.utils as utils
 
-from echo.step_templates.generic import Transcript
 
 
 class BuyerDataExtracted(BaseModel):
@@ -309,7 +312,7 @@ async def aanalyze_data_for_client(inputs: dict, llm: LLM, **crew_config):
         assert all([k in data for k in ["negotiation_transcript"]]), (
             "Invalid input data for simulation"
         )
-    except AssertionError as e:
+    except AssertionError:
         simulation_data = await aget_simulation_data_for_client(
             data, llm, **crew_config
         )

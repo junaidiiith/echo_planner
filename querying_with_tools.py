@@ -70,7 +70,7 @@ def historical_relevant_calls_info_retriever(
     retrieved_nodes = index.as_retriever(
         filters=filters, similarity_top_k=SIMILARITY_TOP_K
     ).retrieve(query)
-    return f"\n".join(
+    return "\n".join(
         [
             f"Historical Call: {i}\n{n.get_content()}"
             for i, n in enumerate(retrieved_nodes)
@@ -135,7 +135,7 @@ def current_call_info_retriver(self, call_type: str, buyer: str, seller: str) ->
     retrieved_nodes = index.as_retriever(
         filters=filters, similarity_top_k=SIMILARITY_TOP_K
     ).retrieve("")
-    return f"\n".join(
+    return "\n".join(
         [
             f"Current {call_type} Call Data: {i}\n{n.get_content()}"
             for i, n in enumerate(retrieved_nodes)
@@ -197,7 +197,7 @@ def buyer_research_info_retriever(buyer: str, seller: str) -> str:
     retrieved_nodes = index.as_retriever(
         filters=filters, similarity_top_k=SIMILARITY_TOP_K
     ).retrieve("")
-    return f"\n".join(
+    return "\n".join(
         [
             f"Buyer Research Data: {i}\n{n.get_content()}"
             for i, n in enumerate(retrieved_nodes)
@@ -250,7 +250,7 @@ def seller_research_info_retriever(seller: str) -> str:
     retrieved_nodes = index.as_retriever(
         filters=filters, similarity_top_k=SIMILARITY_TOP_K
     ).retrieve("")
-    return f"\n".join(
+    return "\n".join(
         [
             f"Seller Research Data: {i}\n{n.get_content()}"
             for i, n in enumerate(retrieved_nodes)

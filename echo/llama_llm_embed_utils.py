@@ -4,9 +4,17 @@ from llama_index.embeddings.fireworks import FireworksEmbedding
 from llama_index.embeddings.openai import OpenAIEmbedding
 import os
 from llama_index.core.llms import ChatMessage
-from echo.constants import *
-from dotenv import load_dotenv
-
+from echo.constants import (
+    LLM_TYPE,
+    OPENAI,
+    OPENAI_MODEL,
+    OPENAI_API_KEY,
+    FIREWORKS,
+    FIREWORKS_LLM,
+    FIREWORKS_API_KEY,
+    EMBED_MODEL_TYPE,
+    EMBED_BATCH_SIZE,    
+)
 
 def get_llm():
     llm_type = os.getenv(LLM_TYPE)

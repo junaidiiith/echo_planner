@@ -268,10 +268,10 @@ def get_sub_queries_context(
     similarity_top_k=SIMILARITY_TOP_K,
     **kwargs,
 ) -> List[Dict]:
-    doc_data = (
+    def doc_data(doc):
         lambda doc: f"Document Text: {doc.text}\n"
         + f"Document Metadata: {doc.metadata}"
-    )
+    
 
     def retrieve_content(query: str, filters: MetadataFilters):
         docs: List[NodeWithScore] = vector_index.as_retriever(

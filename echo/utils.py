@@ -26,7 +26,7 @@ def format_response(x: TaskOutput):
         data = ast.literal_eval(x.raw)
         print("Parsed successfully with Ast...")
         return data
-    except Exception as e:
+    except Exception:
         return x.raw
 
 
@@ -191,7 +191,7 @@ def get_nested_value(key, nested_dict):
         if isinstance(value, str):
             try:
                 value = json.loads(value)
-            except:
+            except Exception:
                 pass
         return value
 
