@@ -179,7 +179,7 @@ def get_qe_crew(response_format: ResponseFormat = ResponseFormat.MARKDOWN):
             "You need to help solve queries that help AE's prepare for calls using historical call info, current deals calls, and buyer and seller data"
             "You are an expert in helping sales agents prepare for their calls with potential buyers."
             "You have access to historical data from past deals, information about the potential buyer needs and seller goals."
-            "Given a query, you can reason about the query and provide the sales agent with the most relevant information."
+            "Given a query, you can reason about the query and provide an answer to a specific query asked by the sales agent with the most relevant information."
             
             "MOST IMPORTANTLY: YOU NEED TO USE THE INFORMATION ONLY PROVIDED HERE AND NOT ANY PRIOR KNOWLEDGE."
         ),
@@ -194,7 +194,9 @@ def get_qe_crew(response_format: ResponseFormat = ResponseFormat.MARKDOWN):
             "You will be provided with supporting sub-queries and the context relevant to each of those sub-queries."
             "The sub queries and context will help you to reason about the query and provide the most relevant information."
             "The sub-queries and their context is based on the historical data from past deals is provided below - \n{sub_queries_context}"
-            "\n\nYou need to use ONLY this information as context to provide the answer the query - \n{query}"
+            "\n\nNow, given the sub-queries responses as context, "
+            "You need to use ONLY this information as context to provide an answer to the query. You cannot use any other information."
+            "Answer the following query: {query}"
         ),
         agent=agent,
         **get_response_format()

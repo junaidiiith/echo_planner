@@ -245,7 +245,7 @@ def get_queries(seller):
     )
 
     pricing_levers = Query(
-        query="Summarize the various pricing levers that will be used in a pricing call we have given the historical justifications used for similar buyers, the features that excited the buyer, and the pains mentioned by the buyer. ",
+        query="Summarize the various pricing levers that will be used in a pricing call we have given the historical justifications used for similar buyers, the features that excited the buyer, and the pains mentioned by the buyer.",
         seller=seller,
         call_type=CallType.PRICING.value,
         sub_queries=[
