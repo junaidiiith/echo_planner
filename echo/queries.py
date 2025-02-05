@@ -352,7 +352,7 @@ def get_queries(seller):
     )
 
     queries = {
-        "discovery": {
+        CallType.DISCOVERY.value: {
             "Info To Cover": discovery_info_to_cover,
             "Stakeholder Priorities": stakeholder_priorities,
             "Value Proposition": value_proposition,
@@ -362,18 +362,18 @@ def get_queries(seller):
             "Rapport Building": rapport_building,
             "Possible Objections": possible_objections,
         },
-        "demo": {
+        CallType.DEMO.value: {
             "Top Pains Identified": top_pains_identified,
             "Features To Demo": features_to_demo,
             "Possible Demo Objections": possible_demo_objections,
             "Missing Info To Uncover": missing_info_to_uncover,
         },
-        "pricing": {
+        CallType.PRICING.value: {
             "Pricing Levers": pricing_levers,
             "Relevant Pricing Plans": relevant_pricing_plans,
             "ROI and Business Justification": roi_and_business_justification,
         },
-        "negotiation": {
+        CallType.NEGOTIATION.value: {
             "Negotiation Pending Concerns": negotiation_pending_concerns,
             "Discounts and Concessions": discounts_and_concessions,
             "Possible Legal Concerns": possible_legal_concerns,
