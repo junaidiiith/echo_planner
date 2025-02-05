@@ -308,8 +308,8 @@ async def aget_simulation_data_for_client(inputs: dict, llm: LLM, **crew_config)
         raise Exception("Cannot simulate data without buyer data")
 
     crew = get_crew(SIMULATION, llm, **crew_config)
-    add_pydantic_structure(crew, inputs)
-    response = await crew.kickoff_async(inputs=inputs)
+    add_pydantic_structure(crew, data)
+    response = await crew.kickoff_async(inputs={**data, 'call_type': CallType.PRICING.value})
     data.update({"pricing_transcript": format_response(response.tasks_output[0])})
     save_transcript_data(data, CallType.PRICING.value)
 
@@ -348,7 +348,7 @@ async def aanalyze_data_for_client(inputs: dict, llm: LLM, **crew_config):
 
     crew = get_crew(ANALYSIS, llm, **crew_config)
     add_pydantic_structure(crew, data)
-    response = await crew.kickoff_async(inputs=data)
+    response = await crew.kickoff_async(inputs={**data, 'call_type': CallType.PRICING.value})
     analysis_data = process_analysis_data_output(response)
     data.update(analysis_data)
     save_data()

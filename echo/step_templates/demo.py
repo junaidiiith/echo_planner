@@ -466,7 +466,7 @@ async def aget_research_data_for_client(inputs: dict, llm: LLM, **crew_config):
 
     crew = get_crew(RESEARCH, llm, **crew_config)
     add_pydantic_structure(crew, data)
-    response = await crew.kickoff_async(inputs=data)
+    response = await crew.kickoff_async(inputs={**data, 'call_type': CallType.DEMO.value})
     data.update(process_research_data_output(response))
     save_data()
     return data
@@ -500,7 +500,7 @@ async def aget_simulation_data_for_client(inputs: dict, llm: LLM, **crew_config)
 
     crew = get_crew(SIMULATION, llm, **crew_config)
     add_pydantic_structure(crew, data)
-    response = await crew.kickoff_async(inputs=data)
+    response = await crew.kickoff_async(inputs={**data, 'call_type': CallType.DEMO.value})
     response_data = {"demo_transcript": format_response(response.tasks_output[0])}
     data.update(response_data)
     save_transcript_data(data, CallType.DEMO.value)
@@ -541,7 +541,7 @@ async def aanalyze_data_for_client(inputs: dict, llm: LLM, **crew_config):
 
     crew = get_crew(ANALYSIS, llm, **crew_config)
     add_pydantic_structure(crew, data)
-    response = await crew.kickoff_async(inputs=data)
+    response = await crew.kickoff_async(inputs={**data, 'call_type': CallType.DEMO.value})
     data.update(process_analysis_data_output(response))
     save_data()
 
