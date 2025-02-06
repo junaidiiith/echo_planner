@@ -1,3 +1,5 @@
+BUYER_RESEARCH = "buyer_research"
+SELLER_RESEARCH = "seller_research"
 RESEARCH = "research"
 SIMULATION = "simulation"
 EXTRACTION = "extraction"
@@ -19,6 +21,7 @@ SELLER = "seller"
 ALLOWED_KEYS = [
     "seller_research",
     "seller_pricing",
+    "seller_clients",
     "buyer_research",
     "competitive_info",
     "anticipated_qopcs",

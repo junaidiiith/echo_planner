@@ -456,8 +456,8 @@ async def aget_research_data_for_client(inputs: dict, llm: LLM, **crew_config):
             index_type=IndexType.BUYER_RESEARCH,
         )
 
-    if utils.check_data_exists(inputs["buyer"]):
-        data.update(utils.get_client_data(inputs["buyer"]))
+    if utils.check_data_exists(f"{inputs['seller']}/{inputs['buyer']}"):
+        data.update(utils.get_client_data(f"{inputs['seller']}/{inputs['buyer']}"))
         if "demo_features" in data:
             save_data()
             return data
@@ -466,7 +466,9 @@ async def aget_research_data_for_client(inputs: dict, llm: LLM, **crew_config):
 
     crew = get_crew(RESEARCH, llm, **crew_config)
     add_pydantic_structure(crew, data)
-    response = await crew.kickoff_async(inputs={**data, 'call_type': CallType.DEMO.value})
+    response = await crew.kickoff_async(
+        inputs={**data, "call_type": CallType.DEMO.value}
+    )
     data.update(process_research_data_output(response))
     save_data()
     return data
@@ -474,8 +476,8 @@ async def aget_research_data_for_client(inputs: dict, llm: LLM, **crew_config):
 
 async def aget_simulation_data_for_client(inputs: dict, llm: LLM, **crew_config):
     data = copy.deepcopy(inputs)
-    if utils.check_data_exists(inputs["buyer"]):
-        data.update(utils.get_client_data(inputs["buyer"]))
+    if utils.check_data_exists(f"{inputs['seller']}/{inputs['buyer']}"):
+        data.update(utils.get_client_data(f"{inputs['seller']}/{inputs['buyer']}"))
         if "demo_transcript" in data:
             save_transcript_data(data, CallType.DEMO.value)
             return data
@@ -500,7 +502,9 @@ async def aget_simulation_data_for_client(inputs: dict, llm: LLM, **crew_config)
 
     crew = get_crew(SIMULATION, llm, **crew_config)
     add_pydantic_structure(crew, data)
-    response = await crew.kickoff_async(inputs={**data, 'call_type': CallType.DEMO.value})
+    response = await crew.kickoff_async(
+        inputs={**data, "call_type": CallType.DEMO.value}
+    )
     response_data = {"demo_transcript": format_response(response.tasks_output[0])}
     data.update(response_data)
     save_transcript_data(data, CallType.DEMO.value)
@@ -512,7 +516,7 @@ async def aanalyze_data_for_client(inputs: dict, llm: LLM, **crew_config):
     client, seller = inputs["buyer"], inputs["seller"]
 
     def save_data():
-        utils.save_client_data(client, data)
+        utils.save_client_data(f"{seller}/{client}", data)
         print("Adding Analysis Data to Vector Store")
         add_data(
             data=get_analysis_data(data),
@@ -521,8 +525,8 @@ async def aanalyze_data_for_client(inputs: dict, llm: LLM, **crew_config):
             index_type=IndexType.HISTORICAL,
         )
 
-    if utils.check_data_exists(inputs["buyer"]):
-        data.update(utils.get_client_data(inputs["buyer"]))
+    if utils.check_data_exists(f"{inputs['seller']}/{inputs['buyer']}"):
+        data.update(utils.get_client_data(f"{inputs['seller']}/{inputs['buyer']}"))
         if "demo_analysis_buyer_data" in data:
             save_data()
             return data
@@ -541,7 +545,9 @@ async def aanalyze_data_for_client(inputs: dict, llm: LLM, **crew_config):
 
     crew = get_crew(ANALYSIS, llm, **crew_config)
     add_pydantic_structure(crew, data)
-    response = await crew.kickoff_async(inputs={**data, 'call_type': CallType.DEMO.value})
+    response = await crew.kickoff_async(
+        inputs={**data, "call_type": CallType.DEMO.value}
+    )
     data.update(process_analysis_data_output(response))
     save_data()
 

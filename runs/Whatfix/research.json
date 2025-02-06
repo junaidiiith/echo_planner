@@ -1,0 +1,67 @@
+{
+  "seller_research": {
+    "name": "Whatfix",
+    "website": "https://whatfix.com/",
+    "description": "Whatfix is an Indian SaaS-based digital adoption platform that provides in-app guidance, training, and performance support for web applications and software.",
+    "industry": "Digital Adoption Platform",
+    "products": [
+      "Digital Adoption Platform",
+      "Software Platform",
+      "Product Analytics",
+      "In-App Guidance",
+      "User Onboarding",
+      "Employee Training",
+      "Performance Support"
+    ],
+    "solutions": [
+      "Accelerate digital transformation",
+      "Drive user adoption",
+      "Maximize technology investments",
+      "Achieve business outcomes"
+    ],
+    "use_cases": [
+      "Software adoption",
+      "User onboarding",
+      "Employee training",
+      "Performance support",
+      "Product-led growth",
+      "Field service employees support"
+    ]
+  },
+  "seller_pricing": {
+    "pricing_models": [
+      {
+        "type": "Flat fee plus user license fees",
+        "description": "Whatfix pricing is based on two components: a flat per-application fee, plus user license fees.",
+        "price": "Not specified",
+        "duration": "Annual billing, term length varies based on contract"
+      },
+      {
+        "type": "Free",
+        "description": "Whatfix offers a free plan with 30 credits.",
+        "price": "Free",
+        "duration": "Not specified"
+      },
+      {
+        "type": "Basic",
+        "description": "Whatfix offers a basic plan at $39 per month.",
+        "price": "$39/month",
+        "duration": "Not specified"
+      }
+    ]
+  },
+  "seller_clients": {
+    "clients": [
+      "Cardinal Health Canada",
+      "Cisco",
+      "Experian",
+      "DaVita Healthcare",
+      "BMC Software Inc.",
+      "Grant Thornton",
+      "Coca Cola",
+      "Equinix",
+      "Automation Anywhere",
+      "Oracle"
+    ]
+  }
+}

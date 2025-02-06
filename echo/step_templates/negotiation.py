@@ -20,7 +20,6 @@ from echo.utils import get_crew as get_crew_obj
 import echo.utils as utils
 
 
-
 class BuyerDataExtracted(BaseModel):
     final_objections: List[str] = Field(
         ..., title="Final objections raised by the buyer during the Negotiation call."
@@ -271,8 +270,8 @@ def process_analysis_data_output(response: CrewOutput):
 
 async def aget_simulation_data_for_client(inputs: dict, llm: LLM, **crew_config):
     data = copy.deepcopy(inputs)
-    if utils.check_data_exists(inputs["buyer"]):
-        data.update(utils.get_client_data(inputs["buyer"]))
+    if utils.check_data_exists(f"{inputs['seller']}/{inputs['buyer']}"):
+        data.update(utils.get_client_data(f"{inputs['seller']}/{inputs['buyer']}"))
         if "negotiation_transcript" in data:
             save_transcript_data(data, CallType.NEGOTIATION.value)
             return data
@@ -281,7 +280,9 @@ async def aget_simulation_data_for_client(inputs: dict, llm: LLM, **crew_config)
 
     crew = get_crew(SIMULATION, llm, **crew_config)
     add_pydantic_structure(crew, inputs)
-    response = await crew.kickoff_async(inputs={**data, 'call_type': CallType.NEGOTIATION.value})
+    response = await crew.kickoff_async(
+        inputs={**data, "call_type": CallType.NEGOTIATION.value}
+    )
 
     data.update({"negotiation_transcript": format_response(response.tasks_output[0])})
     save_transcript_data(data, CallType.NEGOTIATION.value)
@@ -293,7 +294,7 @@ async def aanalyze_data_for_client(inputs: dict, llm: LLM, **crew_config):
     client, seller = inputs["buyer"], inputs["seller"]
 
     def save_data():
-        utils.save_client_data(client, data)
+        utils.save_client_data(f"{seller}/{client}", data)
         print("Adding Analysis Data to Vector Store")
         add_data(
             data=get_analysis_data(data),
@@ -302,8 +303,8 @@ async def aanalyze_data_for_client(inputs: dict, llm: LLM, **crew_config):
             index_type=IndexType.HISTORICAL,
         )
 
-    if utils.check_data_exists(inputs["buyer"]):
-        data.update(utils.get_client_data(inputs["buyer"]))
+    if utils.check_data_exists(f"{inputs['seller']}/{inputs['buyer']}"):
+        data.update(utils.get_client_data(f"{inputs['seller']}/{inputs['buyer']}"))
         if "negotiation_analysis_buyer_data" in data:
             save_data()
             return data
@@ -320,7 +321,9 @@ async def aanalyze_data_for_client(inputs: dict, llm: LLM, **crew_config):
 
     crew = get_crew(ANALYSIS, llm, **crew_config)
     add_pydantic_structure(crew, data)
-    response = await crew.kickoff_async(inputs={**data, 'call_type': CallType.NEGOTIATION.value})
+    response = await crew.kickoff_async(
+        inputs={**data, "call_type": CallType.NEGOTIATION.value}
+    )
     analysis_data = process_analysis_data_output(response)
     data.update(analysis_data)
     save_data()

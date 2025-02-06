@@ -3,6 +3,8 @@ from crewai_tools import SerperDevTool
 from crewai import Crew, LLM
 from crewai.crews.crew_output import CrewOutput
 from echo.constants import (
+    BUYER_RESEARCH,
+    SELLER_RESEARCH,
     RESEARCH,
     SIMULATION,
     EXTRACTION,
@@ -85,6 +87,14 @@ class SellerPricingModels(BaseModel):
     )
 
 
+class SellerClients(BaseModel):
+    clients: List[str] = Field(
+        ...,
+        title="Seller's Clients",
+        description="The clients of the seller.",
+    )
+
+
 class SellerResearchResponse(BaseModel):
     info: SellerInfo = Field(
         ..., title="Seller's Information", description="The information of the seller."
@@ -93,6 +103,12 @@ class SellerResearchResponse(BaseModel):
         ...,
         title="Seller's Pricing Models",
         description="The pricing models offered by the seller.",
+    )
+
+    clients: SellerClients = Field(
+        ...,
+        title="Seller's Clients",
+        description="The clients of the seller.",
     )
 
 
@@ -232,18 +248,32 @@ class SellerDataExtracted(BaseModel):
 tools = {"search_tool": SerperDevTool()}
 
 agent_templates = {
+    SELLER_RESEARCH: {
+        "SellerResearchAgent": dict(
+            role="Seller Research Specialist",
+            goal=(
+                "Conduct in-depth research on {seller} to understand their products, solutions, use cases, and goals. "
+                "You also need to find out their current (or potential) clients"
+            ),
+            backstory=(
+                "You are an expert in generating detailed profile of a sales company, conducting in-depth research on sales companies."
+                "You can also extract out the list of current clients of {seller}"
+            ),
+            tools=[tools["search_tool"]],
+        )
+    },
     RESEARCH: {
-        "PreCallResearchAgent": dict(
+        "BuyerResearchAgent": dict(
             role="Sales Research Specialist",
             goal="Prepare for the sales call between a buyer and seller by conducting in-depth research about the buyer, seller, and competitive landscape.",
             backstory=(
-                "You are an expert in generating detailed profiles of potential clients, conducting in-depth research on sales companies, and analyzing competitors."
+                "You are an expert in generating detailed profile of a potential client, conducting in-depth research on sales companies, and analyzing competitors."
                 "You curate detailed information about the buyer, seller, and competitive landscape to prepare for the sales call between a potential buyer and {seller}."
                 "This information is supposed to help the sales team understand the buyer's needs, the {seller}'s offerings, and the competitive landscape."
             ),
             tools=[tools["search_tool"]],
         ),
-        "DiscoveryCallPreparationAgent": dict(
+        "CallPreparationAgent": dict(
             role="Sales Call Preparation Specialist",
             goal="Prepare for the sales call between buyer and {seller} by aligning the buyer's requirements and goals with the {seller}'s offerings.",
             backstory=(
@@ -290,10 +320,11 @@ agent_templates = {
 }
 
 task_templates = {
-    RESEARCH: {
+    SELLER_RESEARCH: {
         "SellerIndustryResearchTask": dict(
             name="Seller Industry Research",
             description=(
+                "You are providing with the link to the landing page of a seller as - {seller}. "
                 "Conduct in-depth research on {seller} to understand their products, solutions, use cases and goals."
             ),
             expected_output=(
@@ -304,7 +335,7 @@ task_templates = {
                 "Make sure there are no comments in the response JSON and it should be a valid JSON."
             ),
             output_pydantic=SellerInfo,
-            agent="PreCallResearchAgent",
+            agent="SellerResearchAgent",
         ),
         "SellerPricingModelTask": dict(
             name="Seller Pricing Model Research",
@@ -321,8 +352,32 @@ task_templates = {
                 "Make sure there are no comments in the response JSON and it should be a valid JSON."
             ),
             output_pydantic=SellerPricingModels,
-            agent="PreCallResearchAgent",
+            agent="SellerResearchAgent",
         ),
+        "SellerClientsTask": dict(
+            name="Seller Clients Research",
+            description=(
+                "You need to find out the buyers of {seller} by conducting in-depth research about {seller} online.\n"
+                "You need to get a list of upto {num_buyers} current clients of {seller}. "
+                "The buyer of the {seller} MUST BE PRESENT on the website of the {seller} so you should not create your own list of buyers. "
+                "If there are no current buyers, then you should get the list of potential buyers of {seller}."
+            ),
+            expected_output=(
+                "A list of current or potential buyers of the {seller}.\n"
+                "The response should conform to the provided schema.\n"
+                "You need to extract the following information in the following pydantic structure -\n"
+                "{pydantic_structure}\n"
+                "Make sure there are no comments in the response JSON and it should be a valid JSON."
+            ),
+            output_pydantic=SellerClients,
+            agent="SellerResearchAgent",
+            context=[
+                "SellerIndustryResearchTask",
+                "SellerPricingModelTask",
+            ],
+        ),
+    },
+    RESEARCH: {
         "BuyerResearcher": dict(
             name="Client for {seller}",
             description=(
@@ -330,6 +385,9 @@ task_templates = {
                 "You need to search for their website, company size, industry, goals, use cases, challenges, etc."
                 "You need extract a detailed profile including their company size, industry, goals."
                 "You need to extract everything that can be useful for the sales team to understand the client and prepare for a discovery call."
+                "Below is the information regarding {seller}\n"
+                "{seller}'s research information {seller_research}\n"
+                "{seller}'s pricing model {seller_pricing}\n"
             ),
             expected_output=(
                 "A detailed profile of the {buyer}'s team including their company size, industry, goals.\n"
@@ -338,8 +396,7 @@ task_templates = {
                 "{pydantic_structure}\n"
                 "Make sure there are no comments in the response JSON and it should be a valid JSON."
             ),
-            agent="PreCallResearchAgent",
-            context=["SellerIndustryResearchTask", "SellerPricingModelTask"],
+            agent="BuyerResearchAgent",
             output_pydantic=ClientResearchResponse,
         ),
         "CompetitorAnalysisTask": dict(
@@ -347,6 +404,9 @@ task_templates = {
             description=(
                 "Search for the top {n_competitors} of {seller}.\n"
                 "Analyze the pros, cons, and differentiators of {seller} compared to their competitors. "
+                "You can use the following the information regarding {seller}\n"
+                "{seller}'s research information {seller_research}\n"
+                "{seller}'s pricing model {seller_pricing}\n"
             ),
             expected_output=(
                 "A detailed analysis of the competitors of {seller} using their products, solutions, use cases, and pricing model.\n"
@@ -356,10 +416,8 @@ task_templates = {
                 "{pydantic_structure}\n"
                 "Make sure there are no comments in the response JSON and it should be a valid JSON."
             ),
-            agent="PreCallResearchAgent",
+            agent="BuyerResearchAgent",
             context=[
-                "SellerIndustryResearchTask",
-                "SellerPricingModelTask",
                 "BuyerResearcher",
             ],
             output_pydantic=SellerCompetitorAnalysisResponse,
@@ -371,6 +429,10 @@ task_templates = {
                 "You should anticipate the questions, objections, pain points, and challenges (QOPCs) based on the buyer's goals, requirements, and the competitive landscape."
                 "The QOPCs should be categorized as questions, objections, pain points, and challenges."
                 "The anticipated QOPCs are supposed to help the sales team prepare for the discovery call and provide potential resolutions."
+                
+                "You can use the following the information regarding {seller}\n"
+                "{seller}'s research information {seller_research}\n"
+                "{seller}'s pricing model {seller_pricing}\n"
             ),
             expected_output=(
                 "A list of possible questions, objections, pain points, and challenges for the sales call between {buyer} and {seller}.\n"
@@ -381,12 +443,10 @@ task_templates = {
             ),
             output_pydantic=AnticipatedPainsAndObjections,
             context=[
-                "SellerIndustryResearchTask",
-                "SellerPricingModelTask",
                 "BuyerResearcher",
                 "CompetitorAnalysisTask",
             ],
-            agent="DiscoveryCallPreparationAgent",
+            agent="CallPreparationAgent",
         ),
     },
     SIMULATION: {
@@ -496,7 +556,8 @@ task_templates = {
 }
 
 inputs = {
-    RESEARCH: ["seller", "buyer", "n_competitors"],
+    SELLER_RESEARCH: ["seller", "num_buyers"],
+    BUYER_RESEARCH: ["seller", "buyer", "n_competitors"],
     SIMULATION: [
         "seller",
         "buyer",
@@ -565,6 +626,7 @@ def get_seller_research_data(data: Dict):
     seller_research_keys = {
         "seller_research": SellerResearchResponse,
         "seller_pricing": SellerPricingModels,
+        "seller_clients": SellerClients,
     }
 
     data_str = utils.get_data_str(seller_research_keys, data)
@@ -608,16 +670,23 @@ def get_client_data_to_save(client_name, user_type):
         return utils.get_nested_key_values(seller_keys, data)
 
 
-def process_research_data_output(output: CrewOutput):
-    seller_research = format_response(output.tasks_output[0])
+def process_seller_research_data_output(output: CrewOutput):
+    seller_info = format_response(output.tasks_output[0])
     seller_pricing = format_response(output.tasks_output[1])
-    buyer_research = format_response(output.tasks_output[2])
-    competitive_info = format_response(output.tasks_output[3])
-    qopcs = format_response(output.tasks_output[4])
+    seller_clients = format_response(output.tasks_output[2])
 
     return {
-        "seller_research": seller_research,
+        "seller_research": seller_info,
         "seller_pricing": seller_pricing,
+        "seller_clients": seller_clients,
+    }
+
+def process_research_data_output(output: CrewOutput):
+    buyer_research = format_response(output.tasks_output[0])
+    competitive_info = format_response(output.tasks_output[1])
+    qopcs = format_response(output.tasks_output[2])
+
+    return {
         "buyer_research": buyer_research,
         "competitive_info": competitive_info,
         "anticipated_qopcs": qopcs,
@@ -635,7 +704,7 @@ def process_analysis_data_output(output: CrewOutput):
 
 
 def get_crew(step: str, llm: LLM, **crew_config) -> Crew:
-    assert step in [RESEARCH, SIMULATION, EXTRACTION, ANALYSIS], (
+    assert step in [SELLER_RESEARCH, RESEARCH, SIMULATION, EXTRACTION, ANALYSIS], (
         f"Invalid step type: {step} Must be one of 'research', 'simulation', 'extraction', 'analysis'"
     )
 
@@ -647,6 +716,38 @@ def get_crew(step: str, llm: LLM, **crew_config) -> Crew:
     )
 
 
+async def aget_seller_research_data(inputs: dict, llm: LLM, **crew_config):
+    assert "seller" in inputs, "Invalid input data for research"
+    data = copy.deepcopy(inputs)
+
+    def save_data():
+        utils.save_client_data(f"{seller}/research", data)
+        print(f"Adding Seller: {seller} Data")
+        add_data(
+            data=get_seller_research_data(data),
+            metadata={
+                "seller": seller,
+            },
+            index_name=seller,
+            index_type=IndexType.SELLER_RESEARCH,
+        )
+
+    seller = inputs["seller"]
+    if utils.check_data_exists(f"{seller}/research"):
+        data.update(utils.get_client_data(f"{seller}/research"))
+        save_data()
+        return data
+
+    crew = get_crew(SELLER_RESEARCH, llm, **crew_config)
+    add_pydantic_structure(crew, data)
+    response = await crew.kickoff_async(
+        inputs={**data, "call_type": CallType.DISCOVERY.value}
+    )
+    data.update(process_seller_research_data_output(response))
+    save_data()
+    return data
+
+
 async def aget_research_data_for_client(inputs: dict, llm: LLM, **crew_config):
     assert all([k in inputs for k in ["seller", "n_competitors", "buyer"]]), (
         "Invalid input data for research"
@@ -654,17 +755,6 @@ async def aget_research_data_for_client(inputs: dict, llm: LLM, **crew_config):
     data = copy.deepcopy(inputs)
 
     def save_data():
-        utils.save_client_data(client, data)
-        print(f"Adding Seller: {seller} Data for {client}")
-        add_data(
-            data=get_seller_research_data(data),
-            metadata={
-                "seller": data["seller"],
-            },
-            index_name=data["seller"],
-            index_type=IndexType.SELLER_RESEARCH,
-        )
-
         print(f"Adding Buyer: {client} Data")
         add_data(
             data=get_buyer_research_data(data),
@@ -675,16 +765,18 @@ async def aget_research_data_for_client(inputs: dict, llm: LLM, **crew_config):
             index_type=IndexType.BUYER_RESEARCH,
         )
 
-    client, seller = inputs["buyer"], inputs["seller"]
+    client = inputs["buyer"]
 
-    if utils.check_data_exists(inputs["buyer"]):
-        data.update(utils.get_client_data(inputs["buyer"]))
+    if utils.check_data_exists(f"{inputs['seller']}/{inputs['buyer']}"):
+        data.update(utils.get_client_data(f"{inputs['seller']}/{inputs['buyer']}"))
         save_data()
         return data
 
     crew = get_crew(RESEARCH, llm, **crew_config)
     add_pydantic_structure(crew, data)
-    response = await crew.kickoff_async(inputs={**data, 'call_type': CallType.DISCOVERY.value})
+    response = await crew.kickoff_async(
+        inputs={**data, "call_type": CallType.DISCOVERY.value}
+    )
     data.update(process_research_data_output(response))
 
     save_data()
@@ -693,8 +785,8 @@ async def aget_research_data_for_client(inputs: dict, llm: LLM, **crew_config):
 
 async def aget_simulation_data_for_client(inputs: dict, llm: LLM, **crew_config):
     data = copy.deepcopy(inputs)
-    if utils.check_data_exists(inputs["buyer"]):
-        data.update(utils.get_client_data(inputs["buyer"]))
+    if utils.check_data_exists(f"{inputs['seller']}/{inputs['buyer']}"):
+        data.update(utils.get_client_data(f"{inputs['seller']}/{inputs['buyer']}"))
         if "discovery_transcript" in data:
             save_transcript_data(data, CallType.DISCOVERY.value)
             return data
@@ -724,7 +816,9 @@ async def aget_simulation_data_for_client(inputs: dict, llm: LLM, **crew_config)
 
     crew = get_crew(SIMULATION, llm, **crew_config)
     add_pydantic_structure(crew, data)
-    response = await crew.kickoff_async(inputs={**data, 'call_type': CallType.DISCOVERY.value})
+    response = await crew.kickoff_async(
+        inputs={**data, "call_type": CallType.DISCOVERY.value}
+    )
 
     simulation_data = {
         "discovery_transcript": format_response(response.tasks_output[0])
@@ -741,7 +835,7 @@ async def aanalyze_data_for_client(inputs: dict, llm: LLM, **crew_config):
     data = copy.deepcopy(inputs)
 
     def save_data():
-        utils.save_client_data(client, data)
+        utils.save_client_data(f"{seller}/{client}", data)
         print("Adding Analysis Data to Vector Store")
         add_data(
             data=get_analysis_data(data),
@@ -751,8 +845,8 @@ async def aanalyze_data_for_client(inputs: dict, llm: LLM, **crew_config):
         )
 
     client = inputs["buyer"]
-    if utils.check_data_exists(client):
-        data.update(utils.get_client_data(client))
+    if utils.check_data_exists(f"{inputs['seller']}/{inputs['buyer']}"):
+        data.update(utils.get_client_data(f"{inputs['seller']}/{inputs['buyer']}"))
         if "discovery_analysis_buyer_data" in data:
             save_data()
             return data
@@ -786,7 +880,9 @@ async def aanalyze_data_for_client(inputs: dict, llm: LLM, **crew_config):
 
     crew = get_crew(ANALYSIS, llm, **crew_config)
     add_pydantic_structure(crew, data)
-    response = await crew.kickoff_async(inputs={**data, 'call_type': CallType.DISCOVERY.value})
+    response = await crew.kickoff_async(
+        inputs={**data, "call_type": CallType.DISCOVERY.value}
+    )
     data.update(process_analysis_data_output(response))
     save_data()
 
@@ -812,3 +908,10 @@ async def aget_data_for_clients(
     print(f"Getting {task_type} Data")
     data = await aget_clients_call_data(task_fn, clients, inputs, llm, **crew_config)
     return data
+
+
+async def aget_seller_data(inputs: dict, llm: LLM, **crew_config):
+    assert all([k in inputs for k in ["seller", "num_buyers"]]), (
+        "Invalid input data for research"
+    )
+    return await aget_seller_research_data(inputs, llm, **crew_config)
