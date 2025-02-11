@@ -230,6 +230,7 @@ def get_qe_crew(response_format: ResponseFormat = ResponseFormat.MARKDOWN):
             "The sub queries and context will help you to reason about the query and provide the most relevant information."
             "The sub-queries and their context is based on the historical data from past deals is provided below - \n{sub_queries_context}"
             "\n\nNow, given the sub-queries responses as context, "
+            "Buyer research information - {buyer_research_info}"
             "You need to use ONLY this information as context to provide an answer to the query. You cannot use any other information."
             "Answer the following query: {query}"
         ),
@@ -254,7 +255,7 @@ async def aget_qe_crew_response(
     )
     inputs = {
         "query": query,
-        "sub_queries_context": sub_queries_context_str,
+        "sub_queries_context": sub_queries_context_str
     }
     add_pydantic_structure(qe_crew, inputs)
     response = await qe_crew.kickoff_async(inputs=inputs)
