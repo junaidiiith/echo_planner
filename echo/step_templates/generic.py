@@ -268,7 +268,8 @@ async def aget_call_structure(transcripts, llm, inputs_dict: Dict) -> CrewOutput
 
 def save_transcript_data(data, call_type):
     buyer, seller = data["buyer"], data["seller"]
-    save_client_data(buyer, data)
+    save_path = f"{seller}/{buyer}"
+    save_client_data(save_path, data)
     print(f"Adding {call_type} Transcript Data to Vector Store")
     add_data(
         data=json_to_markdown(data[f"{call_type}_transcript"]),
@@ -285,6 +286,7 @@ def save_transcript_data(data, call_type):
 async def aget_clients_call_data(
     task_fn: callable, clients: List[str], inputs: dict, llm: LLM, **crew_config
 ):
+    print("Number of Clients: ", len(clients))
     task_data: Dict[str, Dict] = dict()
     for client in tqdm(clients, desc="Getting Data"):
         print(f"Getting Data for {client}")

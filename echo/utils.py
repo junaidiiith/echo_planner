@@ -3,15 +3,14 @@ import ast
 import json
 import os
 import time
-import appdirs
 from pathlib import Path
 from typing import List, Dict, Union, get_origin, get_args
 from dotenv import load_dotenv
 from pydantic import BaseModel
 from crewai import LLM, Agent, Task, Crew
+from echo.agent import EchoAgent
 from crewai.tasks.task_output import TaskOutput
 from echo.constants import ALLOWED_KEYS, BUYER, SELLER
-from echo.memory import LTMSQLiteStorage, RAGStorage
 from echo.settings import save_dir, buyer_db_name, seller_db_name
 
 
@@ -127,7 +126,7 @@ def get_crew(
             d["context"] = [tasks[i] for i in context]
         tasks[task_name] = Task(**d)
 
-    crew = Crew(agents=list(agents.values()), tasks=list(tasks.values()), **crew_config)
+    crew = EchoAgent(agents=list(agents.values()), tasks=list(tasks.values()), **crew_config)
 
     return crew
 
@@ -142,16 +141,29 @@ def add_pydantic_structure(t_crew: Crew, inputs: dict):
             inputs[pyd[1:-1]] = get_model_code_with_comments(task.output_pydantic)
 
 
+def get_save_path(save_path_str: str):
+    local_dir = f"{os.sep}".join(save_path_str.split(os.sep)[:-1])
+    # print("Saving Path", local_dir)
+    save_pth_dir = os.path.join(save_dir, local_dir)
+    os.makedirs(save_pth_dir, exist_ok=True)
+
+    file_name = save_path_str.split(os.sep)[-1]
+    save_pth = os.path.join(save_pth_dir, file_name) + ".json"
+
+    return save_pth
+
+
 def check_data_exists(client_name):
+    save_path = get_save_path(client_name)
     os.makedirs(save_dir, exist_ok=True)
-    if not os.path.exists(f"{save_dir}/{client_name}.json"):
+    if not os.path.exists(save_path):
         return False
     return True
 
 
 def get_client_data(client_name) -> Dict:
-    os.makedirs(save_dir, exist_ok=True)
-    with open(f"{save_dir}/{client_name}.json") as f:
+    save_path = get_save_path(client_name)
+    with open(save_path) as f:
         return json.load(f)
 
 
@@ -160,19 +172,12 @@ def get_refined_data(client_name):
     return {k: data[k] for k in data if k in ALLOWED_KEYS}
 
 
-def save_client_data(client_name, data):
-    os.makedirs(save_dir, exist_ok=True)
+def save_client_data(client_name: str, data):
+    save_pth = get_save_path(client_name)
     ndata = {k: data[k] for k in data if k in ALLOWED_KEYS}
-    with open(f"{save_dir}/{client_name}.json", "w") as f:
+    with open(save_pth, "w") as f:
         json.dump(ndata, f, indent=2)
 
-
-def save_clients_data(response_data: Dict):
-    client_data = dict()
-    for client_name, client_response in response_data.items():
-        save_client_data(client_name, client_response)
-
-    return client_data
 
 
 def remove_keys(keys: List[str]):
@@ -261,24 +266,6 @@ def get_llm():
     return llm
 
 
-def get_rag_client(db_type, allow_reset=True, embedder_config=None, path=None):
-    rag_storage = RAGStorage(
-        type=db_type,
-        allow_reset=allow_reset,
-        embedder_config=embedder_config,
-        path=path,
-    )
-    return rag_storage
-
-
-def get_sql_client(db_type, reset=False):
-    sql_storage = LTMSQLiteStorage(
-        db_type=db_type,
-        reset=reset,
-    )
-
-    return sql_storage
-
 
 def get_db_type(user_type):
     if user_type == BUYER:
@@ -295,27 +282,22 @@ def get_current_time():
 
 
 def db_storage_path(suffix: str = None):
-    app_name = get_project_directory_name()
-    app_author = os.getenv("ECHO_APP_AUTHOR") or "Echo"
-
-    data_dir = Path(appdirs.user_data_dir(app_name, app_author))
+    data_dir = get_project_directory_name()
     if suffix:
         data_dir = data_dir / suffix
-
     data_dir.mkdir(parents=True, exist_ok=True)
-
     return data_dir
 
 
-def get_project_directory_name():
+def get_project_directory_name() -> Path:
     project_directory_name = os.environ.get("ECHO_STORAGE_DIR")
 
     if project_directory_name:
-        return project_directory_name
+        return Path(project_directory_name)
     else:
         cwd = Path.cwd()
         project_directory_name = cwd.name
-        return project_directory_name
+        return Path(f"{project_directory_name}/.echo_storage")
 
 
 def json_to_markdown(json_obj: Union[Dict, List], bullet_position: int = 0):

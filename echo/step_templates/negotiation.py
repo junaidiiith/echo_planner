@@ -1,5 +1,6 @@
 import copy
-from crewai import Crew, LLM
+from echo.agent import EchoAgent
+from crewai import LLM
 from crewai.crews.crew_output import CrewOutput
 from echo.constants import (
     SIMULATION,
@@ -247,7 +248,7 @@ def get_client_data_to_save(client_name, user_type):
         return utils.get_nested_key_values(seller_keys, data)
 
 
-def get_crew(step: str, llm: LLM, **crew_config) -> Crew:
+def get_crew(step: str, llm: LLM, **crew_config) -> EchoAgent:
     assert step in [SIMULATION, ANALYSIS], (
         f"Invalid step type: {step} Must be one of 'research', 'simulation', 'extraction', 'analysis'"
     )

@@ -172,5 +172,7 @@ cython_debug/
 
 
 runs copy*
+runs/*
+.echo_storage
 
 .vscode/*

@@ -5,3 +5,4 @@ seller_db_name = "seller_data"
 CHUNK_SIZE = 8192
 CHUNK_OVERLAP = 128
 SIMILARITY_TOP_K = 3
+MAX_RETRIES = 3

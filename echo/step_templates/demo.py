@@ -1,5 +1,6 @@
 import copy
-from crewai import Crew, LLM
+from echo.agent import EchoAgent
+from crewai import LLM
 from crewai.crews.crew_output import CrewOutput
 from echo.constants import RESEARCH, SIMULATION, ANALYSIS, BUYER, EXTRACTION
 from pydantic import BaseModel, Field
@@ -395,9 +396,9 @@ def get_research_metadata(data: Dict):
         "seller": data["seller"],
         "buyer": data["buyer"],
         "call_type": CallType.DEMO.value,
-        "company_size": data["seller_research"]["company_size"],
-        "industry": data["seller_research"]["industry"],
-        "description": data["seller_research"]["description"],
+        "company_size": data["buyer_research"]["company_size"],
+        "industry": data["buyer_research"]["industry"],
+        "description": data["buyer_research"]["description"],
     }
 
 
@@ -417,7 +418,7 @@ def get_client_data_to_save(client_name, user_type):
         return utils.get_nested_key_values(seller_keys, data)
 
 
-def get_crew(step: str, llm: LLM, **crew_config) -> Crew:
+def get_crew(step: str, llm: LLM, **crew_config) -> EchoAgent:
     assert step in [RESEARCH, SIMULATION, EXTRACTION, ANALYSIS], (
         f"Invalid step type: {step} Must be one of 'research', 'simulation', 'extraction', 'analysis'"
     )
@@ -445,9 +446,11 @@ def process_analysis_data_output(response: CrewOutput):
 
 async def aget_research_data_for_client(inputs: dict, llm: LLM, **crew_config):
     data = copy.deepcopy(inputs)
-
+    client, seller = inputs["buyer"], inputs["seller"]
+    save_pth = f"{seller}/{client}"
+    
     def save_data():
-        utils.save_client_data(inputs["buyer"], data)
+        utils.save_client_data(save_pth, data)
         print("Adding Research Data to Vector Store")
         add_data(
             data=get_research_data(data),
@@ -475,9 +478,11 @@ async def aget_research_data_for_client(inputs: dict, llm: LLM, **crew_config):
 
 
 async def aget_simulation_data_for_client(inputs: dict, llm: LLM, **crew_config):
+    client, seller = inputs["buyer"], inputs["seller"]
+    save_pth = f"{seller}/{client}"
     data = copy.deepcopy(inputs)
-    if utils.check_data_exists(f"{inputs['seller']}/{inputs['buyer']}"):
-        data.update(utils.get_client_data(f"{inputs['seller']}/{inputs['buyer']}"))
+    if utils.check_data_exists(save_pth):
+        data.update(utils.get_client_data(save_pth))
         if "demo_transcript" in data:
             save_transcript_data(data, CallType.DEMO.value)
             return data

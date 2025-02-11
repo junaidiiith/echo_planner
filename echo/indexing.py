@@ -80,7 +80,7 @@ def get_response(
 
 def get_nodes_from_documents(data: str, metadata: Dict[str, str]):
     splitter = SentenceSplitter(chunk_size=CHUNK_SIZE, chunk_overlap=CHUNK_OVERLAP)
-    print("Splitting text into documents", data)
+    # print("Splitting text into documents", data)
     docs = splitter.split_text(data)
     return [TextNode(text=doc, metadata=metadata) for doc in docs]
 

@@ -24,20 +24,6 @@ from echo.constants import (
 )
 
 
-test_clients = ["Shell", "Schneider electric"]
-
-
-train_clients = [
-    "ICICI bank",
-    "Infosys",
-    "University of Illinois",
-    "Marks and spencer",
-    "Mercedes Benz",
-]
-
-
-inputs = {"call_type": "discovery", "seller": "Whatfix", "n_competitors": 3}
-
 call_fns = {
     DISCOVERY: aget_discovery_data_for_clients,
     DEMO: aget_demo_data_for_clients,

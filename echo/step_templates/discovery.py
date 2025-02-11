@@ -1,6 +1,7 @@
 import copy
 from crewai_tools import SerperDevTool
-from crewai import Crew, LLM
+from echo.agent import EchoAgent
+from crewai import LLM
 from crewai.crews.crew_output import CrewOutput
 from echo.constants import (
     BUYER_RESEARCH,
@@ -128,7 +129,7 @@ class ClientResearchResponse(BaseModel):
     company_size: str = Field(
         ...,
         title="Buyer's Company Size",
-        description="The size of the buyer's company as one of the types - smb, mid-market, enterprise.",
+        description="The size of the buyer's company as one of the types - SMB, Mid-Market, Enterprise.",
     )
     goals: List[str] = Field(
         ..., title="Buyer's Goals", description="The goals of the buyer."
@@ -703,7 +704,7 @@ def process_analysis_data_output(output: CrewOutput):
     }
 
 
-def get_crew(step: str, llm: LLM, **crew_config) -> Crew:
+def get_crew(step: str, llm: LLM, **crew_config) -> EchoAgent:
     assert step in [SELLER_RESEARCH, RESEARCH, SIMULATION, EXTRACTION, ANALYSIS], (
         f"Invalid step type: {step} Must be one of 'research', 'simulation', 'extraction', 'analysis'"
     )
@@ -766,9 +767,9 @@ async def aget_research_data_for_client(inputs: dict, llm: LLM, **crew_config):
         )
 
     client = inputs["buyer"]
-
-    if utils.check_data_exists(f"{inputs['seller']}/{inputs['buyer']}"):
-        data.update(utils.get_client_data(f"{inputs['seller']}/{inputs['buyer']}"))
+    save_pth = f"{inputs['seller']}/{inputs['buyer']}"
+    if utils.check_data_exists(save_pth):
+        data.update(utils.get_client_data(save_pth))
         save_data()
         return data
 
@@ -784,9 +785,10 @@ async def aget_research_data_for_client(inputs: dict, llm: LLM, **crew_config):
 
 
 async def aget_simulation_data_for_client(inputs: dict, llm: LLM, **crew_config):
+    save_pth = f"{inputs['seller']}/{inputs['buyer']}"
     data = copy.deepcopy(inputs)
-    if utils.check_data_exists(f"{inputs['seller']}/{inputs['buyer']}"):
-        data.update(utils.get_client_data(f"{inputs['seller']}/{inputs['buyer']}"))
+    if utils.check_data_exists(save_pth):
+        data.update(utils.get_client_data(save_pth))
         if "discovery_transcript" in data:
             save_transcript_data(data, CallType.DISCOVERY.value)
             return data
@@ -831,11 +833,12 @@ async def aget_simulation_data_for_client(inputs: dict, llm: LLM, **crew_config)
 
 
 async def aanalyze_data_for_client(inputs: dict, llm: LLM, **crew_config):
+    save_pth = f"{inputs['seller']}/{inputs['buyer']}"
     client, seller = inputs["buyer"], inputs["seller"]
     data = copy.deepcopy(inputs)
 
     def save_data():
-        utils.save_client_data(f"{seller}/{client}", data)
+        utils.save_client_data(save_pth, data)
         print("Adding Analysis Data to Vector Store")
         add_data(
             data=get_analysis_data(data),
@@ -845,8 +848,8 @@ async def aanalyze_data_for_client(inputs: dict, llm: LLM, **crew_config):
         )
 
     client = inputs["buyer"]
-    if utils.check_data_exists(f"{inputs['seller']}/{inputs['buyer']}"):
-        data.update(utils.get_client_data(f"{inputs['seller']}/{inputs['buyer']}"))
+    if utils.check_data_exists(save_pth):
+        data.update(utils.get_client_data(save_pth))
         if "discovery_analysis_buyer_data" in data:
             save_data()
             return data
