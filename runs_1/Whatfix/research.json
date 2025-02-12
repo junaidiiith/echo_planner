@@ -1,0 +1,60 @@
+{
+  "seller_research": {
+    "name": "Whatfix",
+    "website": "https://whatfix.com/",
+    "description": "Whatfix is a digital adoption platform that provides enterprises with a no-code editor to create in-app guidance on any application that looks 100% native.",
+    "industry": "SaaS",
+    "products": [
+      "Digital Adoption Platform",
+      "Product Analytics",
+      "In-app Guidance",
+      "User Onboarding",
+      "Performance Support"
+    ],
+    "solutions": [
+      "Accelerate digital transformation",
+      "Drive user adoption",
+      "Maximize technology investments",
+      "Achieve business outcomes"
+    ],
+    "use_cases": [
+      "CRM and Sales Use Cases",
+      "ERP Use Cases",
+      "HCM and HR Use Cases",
+      "QMS Use Cases",
+      "ServiceNow Use Cases"
+    ]
+  },
+  "seller_pricing": {
+    "pricing_models": [
+      {
+        "type": "Flat Fee + User License Fees",
+        "description": "Whatfix pricing is based on two components: a flat per-application fee, plus user license fees.",
+        "price": "Customized, based on application and users",
+        "duration": "Yearly, Monthly"
+      },
+      {
+        "type": "Free Plan",
+        "description": "30 credits, suitable for small-scale use",
+        "price": "Free",
+        "duration": "No time limit"
+      },
+      {
+        "type": "Basic Plan",
+        "description": "Starting at $39 per month, suitable for small-scale use",
+        "price": "$39/month",
+        "duration": "Monthly, Yearly"
+      }
+    ]
+  },
+  "seller_clients": {
+    "clients": [
+      "Cardinal Health",
+      "Marketboomer",
+      "PlayOJO",
+      "Sophos Firewall",
+      "Reed",
+      "Internet Brands"
+    ]
+  }
+}

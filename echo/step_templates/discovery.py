@@ -359,7 +359,7 @@ task_templates = {
             name="Seller Clients Research",
             description=(
                 "You need to find out the buyers of {seller} by conducting in-depth research about {seller} online.\n"
-                "You need to get a list of upto {num_buyers} current clients of {seller}. "
+                "You need to get a list of {num_buyers} current clients of {seller}. "
                 "The buyer of the {seller} MUST BE PRESENT on the website of the {seller} so you should not create your own list of buyers. "
                 "If there are no current buyers, then you should get the list of potential buyers of {seller}."
             ),

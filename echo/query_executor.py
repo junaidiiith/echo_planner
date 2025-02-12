@@ -375,4 +375,5 @@ async def arun_queries(
                 "response": response,
                 "sub_queries_context": sub_queries_context,
             }
-        return responses
+    
+    return responses
