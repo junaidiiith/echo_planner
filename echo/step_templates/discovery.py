@@ -128,8 +128,8 @@ class ClientResearchResponse(BaseModel):
     )
     company_size: str = Field(
         ...,
-        title="Buyer's Company Size",
-        description="The size of the buyer's company as one of the types - SMB, Mid-Market, Enterprise.",
+        title="Buyer's Company Size Type",
+        description="The type of company size as: SMB, Mid-Market, Enterprise.",
     )
     goals: List[str] = Field(
         ..., title="Buyer's Goals", description="The goals of the buyer."
@@ -878,8 +878,6 @@ async def aanalyze_data_for_client(inputs: dict, llm: LLM, **crew_config):
             data, llm, **crew_config
         )
         data.update(simulation_data)
-
-    client, seller = inputs["buyer"], inputs["seller"]
 
     crew = get_crew(ANALYSIS, llm, **crew_config)
     add_pydantic_structure(crew, data)

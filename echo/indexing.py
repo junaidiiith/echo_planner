@@ -58,6 +58,8 @@ def get_vector_index(index_name: str, index_type: str):
 
     return index
 
+def get_metadatas(index: VectorStoreIndex):
+    return index.storage_context.vector_store._collection.get()['metadatas']
 
 def get_response(
     query: str,

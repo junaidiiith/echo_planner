@@ -11,6 +11,7 @@ from llama_index.core.vector_stores import (
     MetadataFilters,
     FilterOperator,
 )
+from tqdm.asyncio import tqdm as async_tqdm
 
 from llama_index.core.schema import NodeWithScore
 from echo.settings import SIMILARITY_TOP_K
@@ -226,11 +227,10 @@ def get_qe_crew(response_format: ResponseFormat = ResponseFormat.MARKDOWN):
         name="Sales Calls Query Engine",
         description=(
             "Provide a clear, helpful answer to below query that the sales agent needs and answer to - \n{query}"
-            "You will be provided with supporting sub-queries and the context relevant to each of those sub-queries."
-            "The sub queries and context will help you to reason about the query and provide the most relevant information."
-            "The sub-queries and their context is based on the historical data from past deals is provided below - \n{sub_queries_context}"
-            "\n\nNow, given the sub-queries responses as context, "
-            "Buyer research information - {buyer_research_info}"
+            "You will be provided with the buyer research information and supporting context relevant to each of those sub-queries that aims to help you answer the query."
+            "The research context, sub queries and their responses will help you to reason about the query and provide the most relevant information."
+            "The buyer research, sub-queries and their context is based on the historical data from past deals is provided below - \n{context}"
+            "\n\nNow, given the research information about the buyer and the relevant sub-queries as context, provide a clear and concise answer to the query."
             "You need to use ONLY this information as context to provide an answer to the query. You cannot use any other information."
             "Answer the following query: {query}"
         ),
@@ -255,11 +255,20 @@ async def aget_qe_crew_response(
     )
     inputs = {
         "query": query,
-        "sub_queries_context": sub_queries_context_str
+        "context": sub_queries_context_str
     }
     add_pydantic_structure(qe_crew, inputs)
     response = await qe_crew.kickoff_async(inputs=inputs)
     return format_response(response.tasks_output[0])
+
+
+def get_buyer_research(index_type: str, seller: str, buyer: str) -> str:
+    metadata_filters = get_metadata_filters(index_type, {"buyer": buyer, "company_size": "Enterprise"})  # noqa: F821
+    vector_index = get_vector_index(seller, index_type)
+    retriever = vector_index.as_retriever(filters=metadata_filters)
+    docs: List[NodeWithScore] = retriever.retrieve("")
+    assert len(docs) > 0, f"No Buyer Research documents found for {buyer}"
+    return docs[0].text
 
 
 def get_sub_queries_context(
@@ -289,8 +298,18 @@ def get_sub_queries_context(
         return "Relevant Context:\n" + str(response)
 
     inputs.update({"seller": query.seller, "call_type": query.call_type})
-
-    sub_queries_context = list()
+    
+    buyer_context = get_buyer_research(
+        IndexType.BUYER_RESEARCH.value, 
+        inputs["seller"], 
+        inputs["buyer"]
+    )
+    
+    sub_queries_context = [{
+        "query": "Buyer Research Information",
+        "context": buyer_context
+    }]
+    
     for sub_query in query.sub_queries:
         print("Running sub query", sub_query.query)
         sub_query_inputs = copy.deepcopy(inputs)
@@ -331,27 +350,29 @@ async def aget_query_response(
     context_extraction_mode: ContextExtractionMode = ContextExtractionMode.QUERY_ENGINE,
     **kwargs,
 ):
-    sub_queries_context = get_sub_queries_context(
+    context = get_sub_queries_context(
         query, inputs, context_extraction_mode, **kwargs
     )
-    response = await aget_qe_crew_response(query.query, sub_queries_context, response_format)
-    return response, sub_queries_context
+    response = await aget_qe_crew_response(query.query, context, response_format)
+    return response, context
 
 
 async def arun_queries(
-    queries: Dict[str, Query],
+    queries: Dict[str, Dict[str, Query]],
     inputs: Dict[str, str],
     response_format=ResponseFormat.MARKDOWN,
     context_extraction_mode: ContextExtractionMode = ContextExtractionMode.QUERY_ENGINE,
     **kwargs,
 ):
     responses = dict()
-    for query_name, query in queries.items():
-        response, sub_queries_context = await aget_query_response(
-            query, inputs, response_format, context_extraction_mode, **kwargs
-        )
-        responses[query_name] = {
-            "response": response,
-            "sub_queries_context": sub_queries_context,
-        }
-    return responses
+    for call_type, call_queries in queries.items():
+        print(f"Running queries for call type {call_type}")
+        for query_name, query in async_tqdm(call_queries.items(), desc="Running Queries"):
+            response, sub_queries_context = await aget_query_response(
+                query, inputs, response_format, context_extraction_mode, **kwargs
+            )
+            responses[query_name] = {
+                "response": response,
+                "sub_queries_context": sub_queries_context,
+            }
+        return responses
