@@ -1,4 +1,7 @@
-save_dir = "runs"
+import os
+
+
+save_dir = os.getenv("RUN_STORAGE_DIR", "runs")
 buyer_db_name = "buyer_data"
 seller_db_name = "seller_data"
 
