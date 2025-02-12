@@ -1,9 +1,9 @@
+import os
+from pathlib import Path
 import re
 import ast
 import json
-import os
 import time
-from pathlib import Path
 from typing import List, Dict, Union, get_origin, get_args
 from dotenv import load_dotenv
 from pydantic import BaseModel
@@ -290,15 +290,14 @@ def db_storage_path(suffix: str = None):
 
 
 def get_project_directory_name() -> Path:
-    project_directory_name = os.environ.get("ECHO_STORAGE_DIR")
-
-    if project_directory_name:
-        return Path(project_directory_name)
+    project_directory = os.environ.get("ECHO_STORAGE_DIR")
+    
+    if project_directory:
+        # Convert the environment variable path to an absolute path
+        return Path(project_directory).resolve()
     else:
-        cwd = Path.cwd()
-        project_directory_name = cwd.name
-        return Path(f"{project_directory_name}/.echo_storage")
-
+        # If ECHO_STORAGE_DIR isn't set, use the current working directory's absolute path
+        return (Path.cwd().resolve() / ".echo_storage")
 
 def json_to_markdown(json_obj: Union[Dict, List], bullet_position: int = 0):
     markdown = ""
