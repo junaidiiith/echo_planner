@@ -176,3 +176,5 @@ runs/*
 .echo_storage
 
 .vscode/*
+
+echo_storage
