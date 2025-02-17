@@ -144,7 +144,7 @@ def add_pydantic_structure(t_crew: Crew, inputs: dict):
 def get_save_path(save_path_str: str):
     local_dir = f"{os.sep}".join(save_path_str.split(os.sep)[:-1])
     # print("Saving Path", local_dir)
-    save_pth_dir = os.path.join(save_dir, local_dir)
+    save_pth_dir = os.path.join(get_project_directory_name(), save_dir, local_dir)
     os.makedirs(save_pth_dir, exist_ok=True)
 
     file_name = save_path_str.split(os.sep)[-1]
@@ -155,7 +155,7 @@ def get_save_path(save_path_str: str):
 
 def check_data_exists(client_name):
     save_path = get_save_path(client_name)
-    os.makedirs(save_dir, exist_ok=True)
+    os.makedirs(os.path.dirname(save_path), exist_ok=True)
     if not os.path.exists(save_path):
         return False
     return True
