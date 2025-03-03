@@ -10,8 +10,21 @@ from pydantic import BaseModel
 from crewai import LLM, Agent, Task, Crew
 from echo.agent import EchoAgent
 from crewai.tasks.task_output import TaskOutput
-from echo.constants import ALLOWED_KEYS, BUYER, SELLER
-from echo.settings import save_dir, buyer_db_name, seller_db_name
+from echo.constants import (
+    ALLOWED_KEYS, 
+    BUYER_RESEARCH_KEYS,
+    SELLER_RESEARCH_KEYS,
+    ANALYSIS_KEYS,
+    SIMULATION_KEYS,
+    BUYER, 
+    SELLER
+)
+from echo.settings import (
+    save_dir, 
+    buyer_db_name, 
+    seller_db_name,
+    db_name
+)
 
 
 load_dotenv()
@@ -111,9 +124,12 @@ def get_model_code_with_comments(model: BaseModel) -> str:
 def get_crew(
     agent_templates: Dict[str, Dict],
     task_templates: Dict[str, Dict],
-    llm: LLM,
+    llm: LLM = None,
     **crew_config,
 ):
+    if llm is None:
+        llm = get_llm()
+        
     agents = {
         agent_name: Agent(llm=llm, **v) for agent_name, v in agent_templates.items()
     }
@@ -141,19 +157,32 @@ def add_pydantic_structure(t_crew: Crew, inputs: dict):
             inputs[pyd[1:-1]] = get_model_code_with_comments(task.output_pydantic)
 
 
-def get_save_path(save_path_str: str):
+def get_save_path(save_path_str: str, extension=".json"):
     local_dir = f"{os.sep}".join(save_path_str.split(os.sep)[:-1])
     # print("Saving Path", local_dir)
     save_pth_dir = os.path.join(get_project_directory_name(), save_dir, local_dir)
     os.makedirs(save_pth_dir, exist_ok=True)
 
     file_name = save_path_str.split(os.sep)[-1]
-    save_pth = os.path.join(save_pth_dir, file_name) + ".json"
+    save_pth = os.path.join(save_pth_dir, file_name) + extension
 
     return save_pth
 
 
-def check_data_exists(client_name):
+def serialize_dict(obj: dict):
+    return {k: json.dumps(v) if isinstance(v, (dict, list)) else v for k, v in obj.items()}
+
+def deserialize_dict(obj: dict):
+    def is_json(v):
+        return isinstance(v, str) and (v.startswith('[') or v.startswith('{'))
+        
+    return {k: json.loads(v) if is_json(v) else v for k, v in obj.items()}
+
+
+def get_db_name():
+    return get_project_directory_name() / db_name
+
+def check_path_exists(client_name):
     save_path = get_save_path(client_name)
     os.makedirs(os.path.dirname(save_path), exist_ok=True)
     if not os.path.exists(save_path):
@@ -161,15 +190,73 @@ def check_data_exists(client_name):
     return True
 
 
+def check_call_exists(client_name, call_type, fields=None):
+    fields = fields or []
+    save_path = get_save_path(client_name)
+    if not os.path.exists(save_path):
+        return False
+    
+    with open(save_path) as f:
+        data = json.load(f)
+        calls = [call for call in data if call["call_type"] == call_type and all(field in call for field in fields)]
+        if calls:
+            return True
+        return False
+
+
+def get_client_stakeholder_calls(client_name, call_type):
+    save_path = get_save_path(client_name)
+    with open(save_path) as f:
+        data = json.load(f)
+        calls = [call for call in data if call["call_type"] == call_type]
+        return calls
+    
+
+def get_latest_client_call_by_call_type(client_name, call_type):
+    save_path = get_save_path(client_name)
+    with open(save_path) as f:
+        data = json.load(f)
+        calls = [call for call in data if call["call_type"] == call_type]
+        assert len(calls) > 0, f"No {call_type} calls found for {client_name}"
+        return calls[-1]
+
+    
 def get_client_data(client_name) -> Dict:
     save_path = get_save_path(client_name)
     with open(save_path) as f:
         return json.load(f)
 
+def get_json_data(client_name):
+    save_path = get_save_path(client_name)
+    with open(save_path) as f:
+        return json.load(f)
+
+def save_json_data(client_name, data):
+    save_path = get_save_path(client_name)
+    with open(save_path, "w") as f:
+        json.dump(data, f, indent=2)
+
 
 def get_refined_data(client_name):
     data = get_client_data(client_name)
     return {k: data[k] for k in data if k in ALLOWED_KEYS}
+
+def get_analysis_data(client_name):
+    data = get_client_data(client_name)
+    return {k: data[k] for k in data if k in ANALYSIS_KEYS}
+
+def get_simulation_data(client_name):
+    data = get_client_data(client_name)
+    return {k: data[k] for k in data if k in SIMULATION_KEYS}
+
+def get_buyer_research_data(client_name):
+    data = get_client_data(client_name)
+    return {k: data[k] for k in data if k in BUYER_RESEARCH_KEYS}
+
+def get_seller_research_data(client_name):
+    data = get_client_data(client_name)
+    return {k: data[k] for k in data if k in SELLER_RESEARCH_KEYS}
+
 
 
 def save_client_data(client_name: str, data):
@@ -178,6 +265,34 @@ def save_client_data(client_name: str, data):
     with open(save_pth, "w") as f:
         json.dump(ndata, f, indent=2)
 
+
+
+def save_analysis_data(client_name: str, data):
+    save_pth = get_save_path(client_name)
+    ndata = {k: data[k] for k in data if k in ANALYSIS_KEYS}
+    with open(save_pth, "w") as f:
+        json.dump(ndata, f, indent=2)
+
+
+def save_simulation_data(client_name: str, data):
+    save_pth = get_save_path(client_name)
+    ndata = {k: data[k] for k in data if k in SIMULATION_KEYS}
+    with open(save_pth, "w") as f:
+        json.dump(ndata, f, indent=2)
+
+
+def save_buyer_research_data(client_name: str, data):
+    save_pth = get_save_path(client_name)
+    ndata = {k: data[k] for k in data if k in BUYER_RESEARCH_KEYS}
+    with open(save_pth, "w") as f:
+        json.dump(ndata, f, indent=2)
+
+
+def save_seller_research_data(client_name: str, data):
+    save_pth = get_save_path(client_name)
+    ndata = {k: data[k] for k in data if k in SELLER_RESEARCH_KEYS}
+    with open(save_pth, "w") as f:
+        json.dump(ndata, f, indent=2)
 
 
 def remove_keys(keys: List[str]):

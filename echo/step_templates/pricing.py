@@ -1,21 +1,23 @@
 import copy
+from echo import sqldb
 from echo.agent import EchoAgent
 from crewai import LLM
 from crewai.crews.crew_output import CrewOutput
 from echo.constants import (
     SIMULATION,
     ANALYSIS,
-    BUYER,
 )
 from pydantic import BaseModel, Field
 from typing import Dict, List
 from echo.indexing import IndexType, add_data
-from echo.utils import add_pydantic_structure, format_response
+from echo.utils import add_pydantic_structure, format_response, json_to_markdown
 from echo.step_templates.generic import (
     CallType,
     Transcript,
+    add_buyer_research,
+    add_previous_call_analysis,
+    add_seller_research,
     aget_clients_call_data,
-    save_transcript_data,
 )
 from echo.utils import get_crew as get_crew_obj
 import echo.utils as utils
@@ -102,38 +104,44 @@ task_templates = {
         "CallSimulationTask": dict(
             name="Simulate Pricing Call",
             description=(
-                "Simulate a very elaborated, detailed pricing call between {buyer} and {seller}. "
-                "Assume multiple stakeholder involved from the {buyer}'s side. "
-                "You are provided with the {buyer}'s and {seller}'s information as well as the discovery call information."
-                "The information from the discovery call will be used to simulate the pricing call."
-                "\n{buyer}'s Data from the analysis of previous discovery call:\n{discovery_analysis_buyer_data}\n"
-                "\n{seller}'s Data from the analysis of previous discovery call:\n{discovery_analysis_seller_data}\n"
-                "\n{buyer}'s Data from the analysis of previous demo call:\n{demo_analysis_buyer_data}\n"
-                "\n{seller}'s Data from the analysis of previous demo call:\n{demo_analysis_seller_data}\n"
-                "You are also provided with pricing models of the buyer - \n{seller_pricing}\n"
-                "In the call, {seller}'s sales person will aim to provide the pricing models of the product or service that was demonstrated during the sales demo."
+                "Simulate a very elaborated, detailed pricing call between a {seller} and {buyer}'s stakeholders: {stakeholders}."
+                "The {buyer}'s team is represented by {stakeholders} as stakeholders during the call.\n"
+                "You need to simulate the call as a conversation between the {seller}'s sales person and ALL the {buyer}'s stakeholders.\n"
+                "You are provided with the {buyer}'s and {seller}'s information from previous calls as well."
+                "The information from the previous calls will be used to simulate the pricing call."
+                
+                "\n{buyer}'s Data from the analysis of previous calls:\n{previous_calls_analysis}\n"
+                "Below is the pricing models of the buyer - \n---Pricing Model---\n{seller_pricing}---End of Pricing Model---\n\n"
+                
+                "In the call, {seller}'s sales person will aim to provide the pricing models for the product or service that was demonstrated during the sales demo."
                 "The {seller}'s team person is supposed to be very confident and knowledgeable about the product or service during the demo."
                 "In order to simulate the pricing call, you need to follow the following steps - "
                 "1. Think about what is the objective of a general pricing sales call after the demo call."
                 "2. Use the context, i.e., {seller}'s pricing model and previous calls analysis summary to simulate the call that fulfills the objectives of a pricing call.\n"
+                
+                "---Pricing Call Objectives---\n"
                 "The simulation MUST cover the following instructions -\n"
                 "1. The {seller}'s pricing models that MUST be clearly presented and explained during the sales pricing call.\n"
-                "2. The {buyer} raises some concerns during the pricing call and they MUST be handled by the {seller}.\n"
-                "3. The {buyer} provides some budget constraints during the pricing call and they MUST be handled by the {seller} by providing a corresponding suitable plan\n"
-                "4. The {buyer} provides some timelines to close during the pricing call and they MUST be acknowledged by the {seller} during the call\n"
-                "5. The {buyer} provides their preferred pricing models and the {seller} should build on it and try to sell it better. \n"
-                "6. The {buyer} provides their Key Performance Indicators (KPIs) to measure success and the {seller} should build on it. \n"
-                "7. The {buyer} provides their company's finanical priorities and the {seller} should build on it. \n"
-                "8. {seller}'s team should clearly present the pricing model and explain it in detail.\n"
-                "9. {seller}'s team should pricing levers to sell value.\n"
-                "10. {seller}'s team should negotiate with a clear pitch.\n"
-                "11. {seller}'s can use several different assets to make their pitch.\n"
-                "12. {seller}'s team MUST take care of their ROI and MUST USE historical case studies to sell their product service\n"
+                "2. {buyer}'s {stakeholders} raises some concerns during the pricing call and they MUST be handled by the {seller}.\n"
+                "3. The {buyer}'s {stakeholders} provide some constraints during the pricing call and they MUST be handled by the {seller} by providing a corresponding suitable plan\n"
+                "4. The {buyer}'s {stakeholders} provide some timelines to close during the pricing call and they MUST be acknowledged by the {seller} during the call\n"
+                "5. The {buyer}'s {stakeholders} provide their preferred pricing models and the {seller} should build on it and try to sell it better. \n"
+                "6. The {buyer}'s {stakeholders} provide their Key Performance Indicators (KPIs) to measure success and the {seller} should build on it. \n"
+                "7. The {buyer}'s {stakeholders} provide their company's finanical priorities and the {seller} should build on it. \n"
+                "8. {seller}'s team should pricing levers to sell value.\n"
+                "9. {seller}'s team should negotiate with a clear pitch.\n"
+                "10. {seller}'s can use several different assets to make their pitch.\n"
+                "11. {seller}'s team MUST take care of their ROI and MUST USE historical case studies to sell their product service\n"
+                "---End of Pricing Call Objectives---\n"
+                
+                
+                "---Call Simulation Guidelines---:\n"
                 "Your goal is to provide a realistic and engaging simulation of a pricing call."
                 "The contents of each message should be as detailed and realistic as possible like a human conversation. "
                 "The call should be structured and flow naturally like a real pricing call. "
                 "The call should have a smooth flow and should be engaging and informative. "
                 "The call should not end abruptly and should have a proper conclusion with next steps according to how the call went. "
+                "---End of Call Simulation Guidelines---"
             ),
             expected_output=(
                 "A realistic simulation of the pricing call between {buyer} and {seller}."
@@ -149,16 +157,16 @@ task_templates = {
         "BuyerAnalysis": dict(
             name="Analyze the Pricing Call and extract Buyer data",
             description=(
-                "Analyze the sales call between {buyer} and {seller} to extract the buyer's data.\n"
-                "You are provided with the transcript of the pricing call between {buyer} and {seller}.\n"
-                "Your goal is to analyze the call and provide insights to the sales team.\n"
+                "Analyze the sales call between {buyer}'s {stakeholder} and {seller} to extract the {buyer}'s {stakeholder} data.\n"
+                "You are provided with the transcript of the pricing call between {seller} and the stakeholders of {buyer} including the {stakeholder}.\n"
+                "Your goal is to analyze the call and provide insights to the sales team specific to the {buyer}'s {stakeholder}\n"
                 "The analysis should include -\n"
-                "1. Concers raised by the buyer during the sales pricing call.\n"
-                "2. The {buyer}'s budget constraints and how they were addressed.\n"
-                "3. The {buyer}'s timelines to close and how they were acknowledged.\n"
-                "4. The {buyer}'s preferred pricing models and how they were handled.\n"
-                "5. The {buyer}'s Key Performance Indicators (KPIs) to measure success and how they were addressed.\n"
-                "6. The {buyer}'s company's financial priorities and how they were addressed.\n"
+                "1. Concers raised by the {buyer}'s {stakeholder} during the sales pricing call.\n"
+                "2. The {buyer}'s {stakeholder} budget constraints and how they were addressed.\n"
+                "3. The {buyer}'s {stakeholder} timelines to close and how they were acknowledged.\n"
+                "4. The {buyer}'s {stakeholder} preferred pricing models and how they were handled.\n"
+                "5. The {buyer}'s {stakeholder} Key Performance Indicators (KPIs) to measure success and how they were addressed.\n"
+                "6. The {buyer}'s {stakeholder} company's financial priorities and how they were addressed.\n"
                 "You are provided with the following context -\n"
                 "{pricing_transcript}\n"
             ),
@@ -175,14 +183,14 @@ task_templates = {
         "SellerAnalysis": dict(
             name="Analyze the Pricing Call and extract Seller data",
             description=(
-                "Analyze the sales call between {buyer} and {seller} to extract the seller's data.\n"
-                "You are provided with the transcript of the pricing call between {buyer} and {seller}.\n"
-                "Your goal is to analyze the call and provide insights to the sales team.\n"
+                "Analyze the sales call between {seller} and {buyer}'s {stakeholder} to extract {seller}'s data.\n"
+                "You are provided with the transcript of the pricing call between {seller} and {buyer}'s stakeholders include {stakeholder}\n"
+                "Your goal is to analyze the call and provide insights to the sales team specifically for {buyer}'s {stakeholder}\n"
                 "The analysis should include -\n"
-                "1. The pricing options presented by the seller during the sales pricing.\n"
-                "2. The pricing levers used by the seller to sell value.\n"
-                "3. The negotiation tactics used by the seller.\n"
-                "4. The assets used by the seller to make their pitch.\n"
+                "1. The pricing options presented by the seller during the sales pricing that appealed the {buyer}'s {stakeholder}\n"
+                "2. The pricing levers used by the seller to sell value that appealed the {buyer}'s {stakeholder}\n"
+                "3. The negotiation tactics used by the seller that appealed the {buyer}'s {stakeholder}\n"
+                "4. The assets used by the seller to make their pitch that appealed the {buyer}'s {stakeholder}\n"
                 "5. The ROI calculators in the call. \n"
                 "6. The historical case studies used by the seller to sell their product or service.\n"
                 "You are provided with the following context -\n"
@@ -203,51 +211,17 @@ task_templates = {
 }
 
 
-buyer_call_format = (
-    "Concerns: {pricing_analysis_buyer_data.concerns}\n"
-    "Budget constraints: {pricing_analysis_buyer_data.budget_constraints}\n"
-    "Timelines to close: {pricing_analysis_buyer_data.timelines_to_close}\n"
-    "Preferred pricing models: {pricing_analysis_buyer_data.preferred_pricing_models}\n"
-    "Success KPIs: {pricing_analysis_buyer_data.KPIs}\n"
-    "Company's Financial Priorities: {pricing_analysis_buyer_data.company_financial_priorities}\n"
-)
-
-seller_call_format = (
-    "Pricing Options: {pricing_analysis_seller_data.pricing_options}\n"
-    "Pricing Levers: {pricing_analysis_seller_data.pricing_levers}\n"
-    "Negotiation Tactics: {pricing_analysis_seller_data.negotiation_tactics}\n"
-    "Assets Used: {pricing_analysis_seller_data.assets_used}\n"
-    "ROI Calculators: {pricing_analysis_seller_data.ROI_calculators}\n"
-    "Historical Case Studies: {pricing_analysis_seller_data.historical_case_studies}\n"
-)
-
-buyer_keys = {
-    "Concerns": "pricing_analysis_buyer_data.concerns",
-    "Budget constraints": "pricing_analysis_buyer_data.budget_constraints",
-    "Timelines to close": "pricing_analysis_buyer_data.timelines_to_close",
-    "Preferred pricing models": "pricing_analysis_buyer_data.preferred_pricing_models",
-    "Success KPIs": "pricing_analysis_buyer_data.KPIs",
-    "Company's Financial Priorities": "pricing_analysis_buyer_data.company_financial_priorities",
-}
-
-seller_keys = {
-    "Pricing Options": "pricing_analysis_seller_data.pricing_options",
-    "Pricing Levers": "pricing_analysis_seller_data.pricing_levers",
-    "Negotiation Tactics": "pricing_analysis_seller_data.negotiation_tactics",
-    "Assets Used": "pricing_analysis_seller_data.assets_used",
-    "ROI Calculators": "pricing_analysis_seller_data.ROI_calculators",
-    "Historical Case Studies": "pricing_analysis_seller_data.historical_case_studies",
-}
-
-
-def get_analysis_data(data: Dict):
+def get_analysis_data(data: Dict, string_format: bool = False):
     analysis_keys = {
         "pricing_analysis_buyer_data": BuyerDataExtracted,
         "pricing_analysis_seller_data": SellerDataExtracted,
     }
 
-    data_str = utils.get_data_str(analysis_keys, data)
-    return data_str
+    if string_format:
+        data_str = utils.get_data_str(analysis_keys, data)
+        return data_str
+    
+    return {k: v for k, v in data.items() if k in analysis_keys}
 
 
 def get_analysis_metadata(data: Dict):
@@ -259,20 +233,6 @@ def get_analysis_metadata(data: Dict):
         "industry": data["buyer_research"]["industry"],
         "description": data["buyer_research"]["description"],
     }
-
-
-def get_client_data_to_embed(client_name, user_type):
-    data = utils.get_client_data(client_name)
-    if user_type == BUYER:
-        return utils.replace_keys_with_values(buyer_call_format, data)
-    return utils.replace_keys_with_values(seller_call_format, data)
-
-
-def get_client_data_to_save(client_name, user_type):
-    data = utils.get_client_data(client_name)
-    if user_type == BUYER:
-        return utils.get_nested_key_values(buyer_keys, data)
-    return utils.get_nested_key_values(seller_keys, data)
 
 
 def get_crew(step: str, llm: LLM, **crew_config) -> EchoAgent:
@@ -297,67 +257,153 @@ def process_analysis_data_output(response: CrewOutput):
 
 
 async def aget_simulation_data_for_client(inputs: dict, llm: LLM, **crew_config):
+    assert "stakeholders" in inputs, "No stakeholders found for simulation"
+    seller, client = inputs["seller"], inputs["buyer"]
+    call_id = inputs["call_id"]
+    
     data = copy.deepcopy(inputs)
-    if utils.check_data_exists(f"{inputs['seller']}/{inputs['buyer']}"):
-        data.update(utils.get_client_data(f"{inputs['seller']}/{inputs['buyer']}"))
-        if "pricing_transcript" in data:
-            save_transcript_data(data, CallType.PRICING.value)
-            return data
-        else:
-            print("Data exists but pricing transcript not found")
-    else:
-        raise Exception("Cannot simulate data without buyer data")
+    add_previous_call_analysis(data)
+    add_seller_research(data)
+    
+    
+    def save_data():
+        metadata = {
+            "seller": seller,
+            "buyer": client,
+            "call_type": CallType.PRICING.value,
+            "call_id": call_id,
+            "transcript": data["pricing_transcript"],
+        }
+
+        sqldb.insert_record(IndexType.CALL_TRANSCRIPTS.value, metadata)
+        print(f"Embedding Simulation Data for Client: {client}")
+        add_data(
+            data=json_to_markdown(data["pricing_transcript"]),
+            metadata=metadata,
+            index_name=seller,
+            index_type=IndexType.CALL_TRANSCRIPTS,
+        )
+
+    if sqldb.check_record_exists(
+        IndexType.CALL_TRANSCRIPTS.value,
+        {
+            "call_id": inputs["call_id"],
+            "buyer": inputs["buyer"],
+            "seller": inputs["seller"],
+        },
+    ):
+        data["pricing_transcript"] = sqldb.get_record(
+            IndexType.CALL_TRANSCRIPTS.value,
+            {
+                "call_id": inputs["call_id"],
+                "buyer": inputs["buyer"],
+                "seller": inputs["seller"],
+            },
+        )["transcript"]
+        save_data()
+        return data
+    
 
     crew = get_crew(SIMULATION, llm, **crew_config)
     add_pydantic_structure(crew, data)
     response = await crew.kickoff_async(
         inputs={**data, "call_type": CallType.PRICING.value}
     )
-    data.update({"pricing_transcript": format_response(response.tasks_output[0])})
-    save_transcript_data(data, CallType.PRICING.value)
 
+    data.update({"pricing_transcript": format_response(response.tasks_output[0])})
+
+    save_data()
     return data
+
 
 
 async def aanalyze_data_for_client(inputs: dict, llm: LLM, **crew_config):
-    data = copy.deepcopy(inputs)
+    assert "stakeholders" in inputs, "No stakeholders found for simulation"
+    stakeholders = inputs["stakeholders"]
     client, seller = inputs["buyer"], inputs["seller"]
+    call_id = inputs["call_id"]
+    data = copy.deepcopy(inputs)
+    data.update(await aget_simulation_data_for_client(copy.deepcopy(inputs), llm, **crew_config))
 
-    def save_data():
-        utils.save_client_data(f"{seller}/{client}", data)
-        print("Adding Analysis Data to Vector Store")
+    add_buyer_research(data)
+
+    def check_stakeholder_analysis_exist(stakeholder):
+        return sqldb.check_record_exists(
+            IndexType.ANALYSIS.value,
+            {
+                "seller": seller,
+                "buyer": client,
+                "call_id": call_id,
+                "stakeholder": stakeholder,
+            },
+        )
+
+    def save_stakeholder_analysis(stakeholder):
+        metadata = get_analysis_metadata(data)
+        metadata.update(
+            {
+                "call_id": call_id,
+                "stakeholder": stakeholder,
+                "transcript": data["pricing_transcript"],
+                "data": get_analysis_data(data["pricing_analysis_data"][stakeholder]),
+            }
+        )
+        sqldb.insert_record(IndexType.ANALYSIS.value, metadata)
+        print(f"Adding Analysis Data for Stakeholder: {stakeholder}")
         add_data(
-            data=get_analysis_data(data),
-            metadata=get_analysis_metadata(data),
+            data=get_analysis_data(data["pricing_analysis_data"][stakeholder], True),
+            metadata=metadata,
             index_name=seller,
-            index_type=IndexType.HISTORICAL,
+            index_type=IndexType.ANALYSIS,
         )
 
-    if utils.check_data_exists(f"{inputs['seller']}/{inputs['buyer']}"):
-        data.update(utils.get_client_data(f"{inputs['seller']}/{inputs['buyer']}"))
-        if "pricing_analysis_buyer_data" in data:
-            save_data()
-            return data
+    if all(
+        check_stakeholder_analysis_exist(stakeholder) for stakeholder in stakeholders
+    ):
+        pricing_analysis_data = dict()
+        for stakeholder in stakeholders:
+            pricing_analysis_data[stakeholder] = sqldb.get_record(
+                IndexType.ANALYSIS.value,
+                {
+                    "seller": seller,
+                    "buyer": client,
+                    "call_id": call_id,
+                    "stakeholder": stakeholder,
+                },
+            )["data"]
 
-    try:
-        assert all([k in data for k in ["pricing_transcript"]]), (
-            "Invalid input data for simulation"
-        )
-    except AssertionError:
-        simulation_data = await aget_simulation_data_for_client(
-            data, llm, **crew_config
-        )
-        data.update(simulation_data)
-
+        data.update({"pricing_analysis_data": pricing_analysis_data})
+        for stakeholder in stakeholders:
+            save_stakeholder_analysis(stakeholder)
+        return data
+    
+    
     crew = get_crew(ANALYSIS, llm, **crew_config)
     add_pydantic_structure(crew, data)
-    response = await crew.kickoff_async(
-        inputs={**data, "call_type": CallType.PRICING.value}
-    )
-    analysis_data = process_analysis_data_output(response)
-    data.update(analysis_data)
-    save_data()
+
+    pricing_analysis_data = dict()
+
+    for stakeholder in stakeholders:
+        print(f"Analyzing pricing data for stakeholder: {stakeholder}")
+
+        response = await crew.kickoff_async(
+            inputs={
+                **data,
+                "call_type": CallType.PRICING.value,
+                "stakeholder": stakeholder,
+            }
+        )
+
+        analysis_data = process_analysis_data_output(response)
+        pricing_analysis_data[stakeholder] = analysis_data
+
+    data.update({"pricing_analysis_data": pricing_analysis_data})
+
+    for stakeholder in stakeholders:
+        save_stakeholder_analysis(stakeholder)
+
     return data
+
 
 
 async def aget_data_for_clients(

@@ -11,11 +11,62 @@ from echo.constants import (
 )
 from tqdm.asyncio import tqdm
 from echo.indexing import IndexType, add_data
-from echo.utils import add_pydantic_structure, get_crew, format_response
 from echo.utils import (
-    save_client_data,
     json_to_markdown,
+    add_pydantic_structure,
+    get_crew,
+    format_response,
 )
+import echo.sqldb as sqldb
+from echo.settings import CALL_HISTORY_LIMIT
+
+
+tables = {
+    IndexType.CALL_TRANSCRIPTS: f'''CREATE TABLE IF NOT EXISTS {IndexType.CALL_TRANSCRIPTS.value} (
+        call_id INTEGER,
+        timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        buyer TEXT,
+        seller TEXT,
+        call_type TEXT,
+        transcript TEXT,
+        PRIMARY KEY (call_id, buyer, seller)
+    );''',
+    
+    IndexType.ANALYSIS: f'''CREATE TABLE IF NOT EXISTS {IndexType.ANALYSIS.value} (
+        call_id INTEGER,
+        timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        buyer TEXT,
+        seller TEXT,
+        call_type TEXT,
+        stakeholder TEXT,
+        company_size TEXT,
+        industry TEXT,
+        description TEXT,
+        transcript TEXT,
+        data TEXT,
+        PRIMARY KEY (call_id, buyer, seller, stakeholder)
+    );''',
+
+    IndexType.BUYER_RESEARCH: f'''CREATE TABLE IF NOT EXISTS {IndexType.BUYER_RESEARCH.value} (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        seller TEXT,
+        buyer TEXT,
+        industry TEXT,
+        company_size TEXT,
+        data TEXT
+    );''',
+
+    IndexType.SELLER_RESEARCH: f'''CREATE TABLE IF NOT EXISTS {IndexType.SELLER_RESEARCH.value} (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        seller TEXT,
+        industry TEXT,
+        data TEXT
+    );'''    
+}
+
+
 
 
 class CallType(enum.Enum):
@@ -192,6 +243,99 @@ Generalized Schema Output:
 """
 
 
+def get_analysis_by_stakeholders(inputs: dict):
+    assert all(
+        key in inputs for key in ["buyer", "seller"]
+    ), "Please provide the required data for the analysis"
+    
+    records = sqldb.query_records(
+        table_name=IndexType.ANALYSIS.value,
+        condition_dict={
+            "buyer": inputs["buyer"],
+            "seller": inputs["seller"],
+        },
+        limit=CALL_HISTORY_LIMIT
+    )
+    stakeholder_records = dict()
+    for record in records:
+        if record["stakeholder"] not in stakeholder_records:
+            stakeholder_records[record["stakeholder"]] = []
+        stakeholder_records[record["stakeholder"]].append(record)
+    return stakeholder_records
+
+
+def get_analysis_by_stakeholder_str(inputs: dict):
+    stakeholder_records = get_analysis_by_stakeholders(inputs)
+    analysis_str = ""
+    
+    for stakeholder_name, records in stakeholder_records.items():
+        analysis_str += f"\n\n{stakeholder_name} Analysis:\n"
+        call_type_records = dict()
+        for call_type in {record["call_type"] for record in records}:
+            call_type_records[call_type] = [record['data'] for record in records if record["call_type"] == call_type]
+        
+        for call_type, records_data in call_type_records.items():
+            analysis_str += f"\n\n{call_type} Analysis:\n"
+            for data in records_data:
+                analysis_str += f"{json_to_markdown(data)}\n"
+        
+    
+    return analysis_str
+
+
+def add_previous_call_analysis(inputs: dict):
+    assert all(
+        key in inputs for key in ["buyer", "seller"]
+    ), "Please provide the required data for the analysis"
+    
+    previous_call_analysis_str = get_analysis_by_stakeholder_str(inputs)
+    inputs['previous_calls_analysis'] = previous_call_analysis_str
+
+
+def add_seller_research(inputs: dict):
+    assert all(
+        key in inputs for key in ["seller"]
+    ), "Please provide the required data for the analysis"
+    
+    record = sqldb.get_record(
+        table_name=IndexType.SELLER_RESEARCH.value,
+        condition_dict={
+            "seller": inputs["seller"],
+        },
+    )
+    inputs.update(record['data'])
+
+
+def add_buyer_research(inputs: dict):
+    assert all(
+        key in inputs for key in ["buyer", "seller"]
+    ), "Please provide the required data for the analysis"
+    
+    record = sqldb.get_record(
+        table_name=IndexType.BUYER_RESEARCH.value,
+        condition_dict={
+            "buyer": inputs["buyer"],
+            "seller": inputs["seller"],
+        },
+    )
+    inputs.update(record['data'])
+
+
+def add_latest_call_id(inputs: dict):
+    assert all(
+        key in inputs for key in ["buyer", "seller"]
+    ), "Please provide the required data for the analysis"
+    
+    record = sqldb.get_latest_record(
+        table_name=IndexType.CALL_TRANSCRIPTS.value,
+        condition_dict={
+            "buyer": inputs["buyer"],
+            "seller": inputs["seller"],
+        },
+    )
+    inputs['call_id'] = record['call_id'] + 1 if record else 1
+    
+
 def get_section_crew(type: str, llm: LLM, **crew_config):
     assert type in [SECTION_EXTRACTION, SECTION_MERGER], (
         f"Invalid Section type: {type}: Must be one of {SECTION_EXTRACTION}, {SECTION_MERGER}"
@@ -266,10 +410,8 @@ async def aget_call_structure(transcripts, llm, inputs_dict: Dict) -> CrewOutput
     return structure
 
 
-def save_transcript_data(data, call_type):
+def save_transcript_data(data, call_type, stakeholder):
     buyer, seller = data["buyer"], data["seller"]
-    save_path = f"{seller}/{buyer}"
-    save_client_data(save_path, data)
     print(f"Adding {call_type} Transcript Data to Vector Store")
     add_data(
         data=json_to_markdown(data[f"{call_type}_transcript"]),
@@ -277,6 +419,7 @@ def save_transcript_data(data, call_type):
             "seller": seller,
             "buyer": buyer,
             "call_type": call_type,
+            "stakeholder": stakeholder,
         },
         index_name=seller,
         index_type=IndexType.TRANSCRIPT,
@@ -297,3 +440,11 @@ async def aget_clients_call_data(
         task_data[client] = data
 
     return task_data
+
+
+def setup_db_tables():
+    from echo.sqldb import create_table
+    for table in tables.values():
+        # print("Creating Table: ", table)
+        create_table(table)
+    print("Tables Created Successfully")

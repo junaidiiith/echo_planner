@@ -18,31 +18,42 @@ from echo.settings import (
     CHUNK_OVERLAP,
 )
 
+from echo.sqldb import get_table_columns
+from echo.constants import (
+    SELLER_RESEARCH_KEYS,
+    BUYER_RESEARCH_KEYS,
+    ANALYSIS_KEYS,
+    SIMULATION_KEYS,    
+)
+
+from echo.utils import (
+    serialize_dict,
+)
 
 class IndexType(enum.Enum):
     HISTORICAL = "historical"
+    ANALYSIS = "analysis"
     BUYER_RESEARCH = "buyer_research"
     SELLER_RESEARCH = "seller_research"
     CURRENT_CALL = "current_call"
-    TRANSCRIPT = "transcripts"
+    CALL_TRANSCRIPTS = "transcripts"
     SALES_PLAYBOOK = "sales_playbook"
 
 
-metadata_keys = {
-    IndexType.HISTORICAL: [
-        "seller",
-        "buyer",
-        "call_type",
-        "company_size",
-        "industry",
-        "description",
-    ],
-    IndexType.BUYER_RESEARCH: ["buyer"],
-    IndexType.SELLER_RESEARCH: ["seller"],
-    IndexType.SALES_PLAYBOOK: [],
-    IndexType.TRANSCRIPT: ["seller", "buyer", "call_type"],
-}
+def get_index_keys(index_type: IndexType):
+    if index_type == IndexType.SELLER_RESEARCH:
+        return SELLER_RESEARCH_KEYS
+    if index_type == IndexType.BUYER_RESEARCH:
+        return BUYER_RESEARCH_KEYS
+    if index_type == IndexType.ANALYSIS:
+        return ANALYSIS_KEYS
+    if index_type == IndexType.CALL_TRANSCRIPTS:
+        return SIMULATION_KEYS
+    return []
 
+def get_filtered_data(data: Dict[str, str], index_type: IndexType):
+    keys = get_index_keys(index_type)
+    return {k: v for k, v in data.items() if k in keys}
 
 def get_vector_index(index_name: str, index_type: str):
     index_type = (
@@ -80,14 +91,21 @@ def get_response(
     return index.as_query_engine(filters=filters).query(query)
 
 
-def get_nodes_from_documents(data: str, metadata: Dict[str, str]):
+def get_nodes_from_documents(
+    data: str, 
+    metadata: Dict[str, str]
+):
     splitter = SentenceSplitter(chunk_size=CHUNK_SIZE, chunk_overlap=CHUNK_OVERLAP)
     # print("Splitting text into documents", data)
     docs = splitter.split_text(data)
     return [TextNode(text=doc, metadata=metadata) for doc in docs]
 
 
-def check_node_exists(data: str, metadata: Dict[str, str], index: VectorStoreIndex):
+def check_node_exists(
+    data: str, 
+    metadata: Dict[str, str], 
+    index: VectorStoreIndex
+):
     filters = MetadataFilters(
         filters=[
             MetadataFilter(
@@ -105,13 +123,18 @@ def check_node_exists(data: str, metadata: Dict[str, str], index: VectorStoreInd
 
 
 def add_data(
-    data: str, metadata: Dict[str, str], index_name: str, index_type: IndexType
+    data: str, 
+    metadata: Dict[str, str], 
+    index_name: str, 
+    index_type: IndexType
 ):
-    assert all([k in metadata for k in metadata_keys[index_type]]), (
-        f"Missing metadata keys for {index_type}. \nRequired keys: {metadata_keys[index_type]}. \nProvided keys: {metadata.keys()}"
+    metadata = serialize_dict(metadata)
+    metadata_columns = get_table_columns(index_type.value)
+    assert all([k in metadata for k in metadata_columns]), (
+        f"Missing metadata keys for {index_type}. \nRequired keys: {metadata_columns}. \nProvided keys: {metadata.keys()}"
     )
     filtered_metadata = {
-        k: v for k, v in metadata.items() if k in metadata_keys[index_type]
+        k: v for k, v in metadata.items() if k in metadata_columns
     }
     # filtered_metadata['data_json'] = data
     index = get_vector_index(index_name, index_type.value)
