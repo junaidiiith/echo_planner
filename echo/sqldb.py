@@ -1,4 +1,5 @@
 import sqlite3
+import os
 from echo.utils import (
     get_db_name, 
     serialize_dict, 
@@ -8,7 +9,9 @@ from echo.utils import (
 
 
 def create_db() -> sqlite3.Connection:
-    conn = sqlite3.connect(get_db_name())
+    db_path = get_db_name()
+    os.makedirs(os.path.dirname(db_path), exist_ok=True)
+    conn = sqlite3.connect(db_path)
     return conn
 
 
