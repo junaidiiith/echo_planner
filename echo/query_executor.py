@@ -1,15 +1,20 @@
 import copy
 import enum
 from crewai import Agent, Task, Crew
-from echo.indexing import get_vector_index, IndexType
+from echo.indexing import (
+    get_query_index_keys,
+    get_vector_index, 
+    IndexType
+)
 from echo.utils import format_response, get_llm
 from pydantic import BaseModel, Field
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Union
 from echo.utils import add_pydantic_structure
 from llama_index.core.vector_stores import (
     MetadataFilter,
     MetadataFilters,
     FilterOperator,
+    FilterCondition
 )
 from tqdm.asyncio import tqdm as async_tqdm
 
@@ -54,7 +59,7 @@ class QueryResponse(BaseModel):
 
 class QueryMetadata(BaseModel):
     key: str = Field(..., title="Key", description="The key for the metadata.")
-    value: str = Field(..., title="Value", description="The value for the metadata.")
+    value: Union[str, List[str]] = Field(..., title="Value", description="The value for the metadata.")
     operator: FilterOperator = Field(
         ..., title="Operator", description="The operator for the metadata."
     )
@@ -94,90 +99,40 @@ class Query(BaseModel):
     )
 
 
-METADATA_KEYS_MAP = {
-    IndexType.HISTORICAL.value: [
-        {
-            "key": "seller",
-            "operator": FilterOperator.EQ,
-        },
-        {
-            "key": "buyer",
-            "operator": FilterOperator.NE,
-        },
-        {
-            "key": "call_type",
-            "operator": FilterOperator.EQ,
-        },
-        {
-            "key": "company_size",
-            "operator": FilterOperator.EQ,
-        },
-    ],
-    IndexType.CURRENT_CALL.value: [
-        {
-            "key": "seller",
-            "operator": FilterOperator.EQ,
-        },
-        {
-            "key": "buyer",
-            "operator": FilterOperator.EQ,
-        },
-        {
-            "key": "call_type",
-            "operator": FilterOperator.EQ,
-        },
-    ],
-    IndexType.BUYER_RESEARCH.value: [
-        {
-            "key": "buyer",
-            "operator": FilterOperator.EQ,
-        }
-    ],
-    IndexType.SELLER_RESEARCH.value: [
-        {
-            "key": "seller",
-            "operator": FilterOperator.EQ,
-        }
-    ],
-    IndexType.SALES_PLAYBOOK.value: [],
-    IndexType.TRANSCRIPT.value: [
-        {
-            "key": "seller",
-            "operator": FilterOperator.EQ,
-        },
-        {
-            "key": "buyer",
-            "operator": FilterOperator.EQ,
-        },
-        {
-            "key": "call_type",
-            "operator": FilterOperator.EQ,
-        },
-    ],
-}
-
-
 def get_llama_metadata_filters(metadata: List[QueryMetadata]):
-    filters = MetadataFilters(
-        filters=[
-            MetadataFilter(key=md.key, value=md.value, operator=md.operator)
-            for md in metadata
-        ],
-    )
-    return filters
+    and_filters, or_filters = list(), list()
+    
+    for md in metadata:
+        if isinstance(md.value, list):
+            filters = [MetadataFilter(key=md.key, value=v, operator=md.operator) for v in md.value]
+            or_filters.append(MetadataFilters(filters=filters, condition=FilterCondition.OR))
+        else:
+            and_filters.append(MetadataFilter(key=md.key, value=md.value, operator=md.operator))
+    
+    and_filters = MetadataFilters(filters=and_filters, condition=FilterCondition.AND)
+    if len(or_filters) == 0:
+        return and_filters
+    final_filters = MetadataFilters(filters=[and_filters] + or_filters, condition=FilterCondition.AND)
+    return final_filters
+
 
 
 def get_metadata_filters(index_type: str, metadata: Dict):
-    index_keys = METADATA_KEYS_MAP[index_type]
-    assert all([item["key"] in metadata for item in index_keys]), (
-        f"Metadata keys missing for index type {index_type}: {[i['key'] for i in index_keys]}"
-    )
+    index_keys = get_query_index_keys(index_type)
+    
+    for item in index_keys:
+        if item['mandatory']:
+            assert item["key"] in metadata, \
+            f"Metadata key missing for index type {index_type}: {item['key']}"
+    
     filters = [
         QueryMetadata(
-            key=item["key"], value=metadata[item["key"]], operator=item["operator"]
+            key=item["key"], 
+            value=metadata[item["key"]], 
+            operator=item["operator"]
         )
         for item in index_keys
-        if metadata[item["key"]]
+        if item["key"] in metadata
     ]
     filters = get_llama_metadata_filters(filters)
     return filters
@@ -262,13 +217,16 @@ async def aget_qe_crew_response(
     return format_response(response.tasks_output[0])
 
 
-def get_buyer_research(index_type: str, seller: str, buyer: str) -> str:
-    metadata_filters = get_metadata_filters(index_type, {"buyer": buyer, "company_size": "Enterprise"})  # noqa: F821
-    vector_index = get_vector_index(seller, index_type)
+def get_buyer_research(metadata: dict) -> str:
+    metadata_filters = get_metadata_filters(
+        IndexType.BUYER_RESEARCH.value, 
+        metadata
+    )  # noqa: F821
+    vector_index = get_vector_index(metadata['seller'], IndexType.BUYER_RESEARCH.value)
     retriever = vector_index.as_retriever(filters=metadata_filters)
     docs: List[NodeWithScore] = retriever.retrieve("")
-    assert len(docs) > 0, f"No Buyer Research documents found for {buyer}"
-    return docs[0].text
+    assert len(docs) > 0, f"No Buyer Research documents found for {metadata['buyer']}"
+    return "\n\n".join([d.text for d in docs])
 
 
 def get_sub_queries_context(
@@ -299,11 +257,7 @@ def get_sub_queries_context(
 
     inputs.update({"seller": query.seller, "call_type": query.call_type})
     
-    buyer_context = get_buyer_research(
-        IndexType.BUYER_RESEARCH.value, 
-        inputs["seller"], 
-        inputs["buyer"]
-    )
+    buyer_context = get_buyer_research(inputs)
     
     sub_queries_context = [{
         "query": "Buyer Research Information",

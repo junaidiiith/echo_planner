@@ -130,6 +130,6 @@ def get_table_columns(table):
     query = f"PRAGMA table_info({table})"
     columns = conn.execute(query).fetchall()
     ### Exclude id and timestamp columns
-    columns = [col[1] for col in columns if col[1] not in ["id", "timestamp"]]
+    columns = [col[1] for col in columns if col[1] not in ["id", "call_id", "timestamp"]]
     conn.close()
     return columns    

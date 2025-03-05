@@ -19,7 +19,8 @@ def get_queries(seller):
         sub_queries=[
             SubQuery(
                 query="What all pieces of information about the buyer are uncovered in discovery calls of successful deals?",
-                index_type=IndexType.HISTORICAL.value,
+                index_type=IndexType.ANALYSIS.value,
+                inputs = {"stakeholder": "CFO"}
             ),
             SubQuery(
                 query="What all piece of information have we learnt about the buyer from discovery till now?",
@@ -54,7 +55,7 @@ def get_queries(seller):
             ),
             SubQuery(
                 query="What are the historical ways to present the product value prop to similar buyers",
-                index_type=IndexType.HISTORICAL.value,
+                index_type=IndexType.ANALYSIS.value,
             ),
         ],
     )
@@ -66,7 +67,7 @@ def get_queries(seller):
         sub_queries=[
             SubQuery(
                 query="What are the top relevant discovery questions that have been successful for similar buyers and the respective stakeholder?",
-                index_type=IndexType.HISTORICAL.value,
+                index_type=IndexType.ANALYSIS.value,
             )
         ],
     )
@@ -82,7 +83,7 @@ def get_queries(seller):
             ),
             SubQuery(
                 query="Who are my top competitors and how do i differentiate ourselves compared to each of them to better solve the buyers issues?",
-                index_type=IndexType.HISTORICAL.value,
+                index_type=IndexType.ANALYSIS.value,
             ),
         ],
     )
@@ -94,7 +95,7 @@ def get_queries(seller):
         sub_queries=[
             SubQuery(
                 query="What all questions and information about the decision making process do i need to gather from the buyer?",
-                index_type=IndexType.HISTORICAL.value,
+                index_type=IndexType.ANALYSIS.value,
             ),
             SubQuery(
                 query="What all pieces of information do i already have about the decision makers and buying committee?",
@@ -114,7 +115,7 @@ def get_queries(seller):
             ),
             SubQuery(
                 query="Based on similar buyers, what kind of talking points about the industry could help build rapport?",
-                index_type=IndexType.HISTORICAL.value,
+                index_type=IndexType.ANALYSIS.value,
             ),
             SubQuery(
                 query="Based on the external research of the buyer, what kind of talking points could help build rapport?",
@@ -130,7 +131,7 @@ def get_queries(seller):
         sub_queries=[
             SubQuery(
                 query="What are some possible objections the prospect could raise regarding our offering based on similar buyers in the past. Also provide how to handle them?",
-                index_type=IndexType.HISTORICAL.value,
+                index_type=IndexType.ANALYSIS.value,
             ),
             SubQuery(
                 query="What are some possible objections the buyer could raise given their details and pains?",
@@ -169,7 +170,7 @@ def get_queries(seller):
             ),
             SubQuery(
                 query="What features best align with the pains identified for similar buyers?",
-                index_type=IndexType.HISTORICAL.value,
+                index_type=IndexType.ANALYSIS.value,
                 context_tasks=[0],
             ),
         ],
@@ -187,14 +188,14 @@ def get_queries(seller):
             ),
             SubQuery(
                 query="What are the top objections that come up in demo calls for similar buyers?",
-                index_type=IndexType.HISTORICAL.value,
+                index_type=IndexType.ANALYSIS.value,
             ),
             SubQuery(
                 query=(
                     "Given objections from current deal and historical deals below, how have these objections been handled successfully before in discovery and demo calls"
                     "Display output in pairs of objection and their successful response "
                 ),
-                index_type=IndexType.HISTORICAL.value,
+                index_type=IndexType.ANALYSIS.value,
                 inputs={"call_type": None},
                 context_tasks=[0, 1],
             ),
@@ -208,16 +209,16 @@ def get_queries(seller):
         sub_queries=[
             SubQuery(
                 query="What all pieces of information regarding pricing needs to be uncovered during pricing calls from similar buyers?",
-                index_type=IndexType.HISTORICAL.value,
+                index_type=IndexType.ANALYSIS.value,
             ),
             SubQuery(
                 query="What all pieces of information regarding pricing needs to be uncovered during discovery calls from similar buyers?",
-                index_type=IndexType.HISTORICAL.value,
+                index_type=IndexType.ANALYSIS.value,
                 inputs={"call_type": CallType.DISCOVERY.value},
             ),
             SubQuery(
                 query="What all pieces of information regarding pricing needs to be uncovered during demo calls from similar buyers?",
-                index_type=IndexType.HISTORICAL.value,
+                index_type=IndexType.ANALYSIS.value,
                 inputs={"call_type": CallType.DEMO.value},
             ),
             SubQuery(
@@ -235,7 +236,7 @@ def get_queries(seller):
         sub_queries=[
             SubQuery(
                 query="What pricing levers have been successful in the past for similar buyers?",
-                index_type=IndexType.HISTORICAL.value,
+                index_type=IndexType.ANALYSIS.value,
             ),
             SubQuery(
                 query="What features and product offerings were received positively in discovery calls?",
@@ -270,7 +271,7 @@ def get_queries(seller):
             ),
             SubQuery(
                 query="What pricing plans are relevant to buyers with pain points and priotities and top concerns around the product?",
-                index_type=IndexType.HISTORICAL.value,
+                index_type=IndexType.ANALYSIS.value,
                 context_tasks=[0, 1],
             ),
             SubQuery(
@@ -316,12 +317,12 @@ def get_queries(seller):
         sub_queries=[
             SubQuery(
                 query="What discounts and concessions can and have been offered during pricing calls?",
-                index_type=IndexType.HISTORICAL.value,
-                inputs={"call_type": CallType.PRICING.value},
+                index_type=IndexType.ANALYSIS.value,
+                inputs={"call_type": CallType.PRICING.value, 'stakeholder': 'CFO'},
             ),
             SubQuery(
                 query="What discounts and concessions can and have been offered during negotiation calls?",
-                index_type=IndexType.HISTORICAL.value,
+                index_type=IndexType.ANALYSIS.value,
                 inputs={"call_type": CallType.NEGOTIATION.value},
             ),
         ],
@@ -334,7 +335,7 @@ def get_queries(seller):
         sub_queries=[
             SubQuery(
                 query="What are the procurement and legal concerns possible?",
-                index_type=IndexType.HISTORICAL.value,
+                index_type=IndexType.ANALYSIS.value,
             )
         ],
     )
@@ -346,7 +347,7 @@ def get_queries(seller):
         sub_queries=[
             SubQuery(
                 query="What are the closing tactics that have been successful in the past?",
-                index_type=IndexType.HISTORICAL.value,
+                index_type=IndexType.ANALYSIS.value,
             )
         ],
     )

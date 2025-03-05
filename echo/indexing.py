@@ -40,6 +40,147 @@ class IndexType(enum.Enum):
     SALES_PLAYBOOK = "sales_playbook"
 
 
+tables = {
+    IndexType.CALL_TRANSCRIPTS: f'''CREATE TABLE IF NOT EXISTS {IndexType.CALL_TRANSCRIPTS.value} (
+        call_id INTEGER,
+        timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        buyer TEXT,
+        seller TEXT,
+        call_type TEXT,
+        transcript TEXT,
+        PRIMARY KEY (call_id, buyer, seller)
+    );''',
+    
+    IndexType.ANALYSIS: f'''CREATE TABLE IF NOT EXISTS {IndexType.ANALYSIS.value} (
+        call_id INTEGER,
+        timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        buyer TEXT,
+        seller TEXT,
+        call_type TEXT,
+        stakeholder TEXT,
+        company_size TEXT,
+        industry TEXT,
+        description TEXT,
+        transcript TEXT,
+        data TEXT,
+        PRIMARY KEY (call_id, buyer, seller, stakeholder)
+    );''',
+
+    IndexType.BUYER_RESEARCH: f'''CREATE TABLE IF NOT EXISTS {IndexType.BUYER_RESEARCH.value} (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        seller TEXT,
+        buyer TEXT,
+        industry TEXT,
+        company_size TEXT,
+        data TEXT
+    );''',
+
+    IndexType.SELLER_RESEARCH: f'''CREATE TABLE IF NOT EXISTS {IndexType.SELLER_RESEARCH.value} (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        seller TEXT,
+        industry TEXT,
+        data TEXT
+    );'''    
+}
+
+
+def get_query_index_keys(index_type: str):
+    index_keys = {
+        IndexType.ANALYSIS.value: [
+            {
+                "key": "seller",
+                "operator": FilterOperator.EQ,
+                "mandatory": True,
+            },
+            {
+                "key": "buyer",
+                "operator": FilterOperator.NE,
+                "mandatory": True,
+            },
+            {
+                "key": "call_type",
+                "operator": FilterOperator.EQ,
+                "mandatory": True,
+            },
+            {
+                "key": "stakeholder",
+                "operator": FilterOperator.EQ,
+                "mandatory": False,
+            },
+        ],
+        IndexType.CURRENT_CALL.value: [
+            {
+                "key": "seller",
+                "operator": FilterOperator.EQ,
+                "mandatory": True,
+            },
+            {
+                "key": "buyer",
+                "operator": FilterOperator.EQ,
+                "mandatory": True,
+            },
+            {
+                "key": "call_type",
+                "operator": FilterOperator.EQ,
+                "mandatory": True,
+            },
+            {
+                "key": "stakeholder",
+                "operator": FilterOperator.EQ,
+                "mandatory": False,
+            }
+        ],
+        IndexType.BUYER_RESEARCH.value: [
+            {
+                "key": "buyer",
+                "operator": FilterOperator.EQ,
+                "mandatory": True,
+            },
+            {
+                "key": "seller",
+                "operator": FilterOperator.EQ,
+                "mandatory": True,
+            },
+            {
+                "key": "industry",
+                "operator": FilterOperator.EQ,
+                "mandatory": False,
+            },
+            {
+                "key": "company_size",
+                "operator": FilterOperator.EQ,
+                "mandatory": False,
+            }
+        ],
+        IndexType.SELLER_RESEARCH.value: [
+            {
+                "key": "seller",
+                "operator": FilterOperator.EQ,
+                "mandatory": True,
+            },
+            {
+                "key": "industry",
+                "operator": FilterOperator.EQ,
+                "mandatory": False,
+            }
+        ],
+        IndexType.SALES_PLAYBOOK.value: []
+    }[index_type]
+    
+    index_db_keys = get_table_columns(
+        index_type if index_type != IndexType.CURRENT_CALL.value else IndexType.ANALYSIS.value
+    )
+    assert all([k["key"] in index_db_keys for k in index_keys]), (
+        f"Missing metadata keys for {index_type}.",
+        f"\nRequired keys: {index_db_keys}. ",
+        f"\nProvided keys: {[k['key'] for k in index_keys]}"
+    )
+    
+    return index_keys
+
+
 def get_index_keys(index_type: IndexType):
     if index_type == IndexType.SELLER_RESEARCH:
         return SELLER_RESEARCH_KEYS
@@ -51,13 +192,15 @@ def get_index_keys(index_type: IndexType):
         return SIMULATION_KEYS
     return []
 
+
 def get_filtered_data(data: Dict[str, str], index_type: IndexType):
     keys = get_index_keys(index_type)
     return {k: v for k, v in data.items() if k in keys}
 
+
 def get_vector_index(index_name: str, index_type: str):
     index_type = (
-        IndexType.HISTORICAL.value
+        IndexType.ANALYSIS.value
         if index_type == IndexType.CURRENT_CALL.value
         else index_type
     )
@@ -69,8 +212,10 @@ def get_vector_index(index_name: str, index_type: str):
 
     return index
 
+
 def get_metadatas(index: VectorStoreIndex):
     return index.storage_context.vector_store._collection.get()['metadatas']
+
 
 def get_response(
     query: str,
@@ -136,10 +281,18 @@ def add_data(
     filtered_metadata = {
         k: v for k, v in metadata.items() if k in metadata_columns
     }
-    # filtered_metadata['data_json'] = data
+
     index = get_vector_index(index_name, index_type.value)
     nodes = get_nodes_from_documents(data, metadata=filtered_metadata)
     filtered_nodes = [
         n for n in nodes if not check_node_exists(n.text, filtered_metadata, index)
     ]
     index.insert_nodes(filtered_nodes)
+    print(f"Added {len(filtered_nodes)} nodes to index: {index_name}")
+
+def setup_db_tables():
+    from echo.sqldb import create_table
+    for table in tables.values():
+        # print("Creating Table: ", table)
+        create_table(table)
+    print("Tables Created Successfully")

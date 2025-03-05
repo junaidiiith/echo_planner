@@ -21,54 +21,6 @@ import echo.sqldb as sqldb
 from echo.settings import CALL_HISTORY_LIMIT
 
 
-tables = {
-    IndexType.CALL_TRANSCRIPTS: f'''CREATE TABLE IF NOT EXISTS {IndexType.CALL_TRANSCRIPTS.value} (
-        call_id INTEGER,
-        timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        buyer TEXT,
-        seller TEXT,
-        call_type TEXT,
-        transcript TEXT,
-        PRIMARY KEY (call_id, buyer, seller)
-    );''',
-    
-    IndexType.ANALYSIS: f'''CREATE TABLE IF NOT EXISTS {IndexType.ANALYSIS.value} (
-        call_id INTEGER,
-        timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        buyer TEXT,
-        seller TEXT,
-        call_type TEXT,
-        stakeholder TEXT,
-        company_size TEXT,
-        industry TEXT,
-        description TEXT,
-        transcript TEXT,
-        data TEXT,
-        PRIMARY KEY (call_id, buyer, seller, stakeholder)
-    );''',
-
-    IndexType.BUYER_RESEARCH: f'''CREATE TABLE IF NOT EXISTS {IndexType.BUYER_RESEARCH.value} (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        seller TEXT,
-        buyer TEXT,
-        industry TEXT,
-        company_size TEXT,
-        data TEXT
-    );''',
-
-    IndexType.SELLER_RESEARCH: f'''CREATE TABLE IF NOT EXISTS {IndexType.SELLER_RESEARCH.value} (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        seller TEXT,
-        industry TEXT,
-        data TEXT
-    );'''    
-}
-
-
-
-
 class CallType(enum.Enum):
     DISCOVERY = "discovery"
     DEMO = "demo"
@@ -440,11 +392,3 @@ async def aget_clients_call_data(
         task_data[client] = data
 
     return task_data
-
-
-def setup_db_tables():
-    from echo.sqldb import create_table
-    for table in tables.values():
-        # print("Creating Table: ", table)
-        create_table(table)
-    print("Tables Created Successfully")
