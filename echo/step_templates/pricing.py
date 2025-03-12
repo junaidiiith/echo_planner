@@ -416,7 +416,7 @@ async def aget_data_for_clients(
     }
     task_fn = task_to_data_extraction_fn[task_type]
 
-    assert all([k in inputs for k in ["seller", "n_competitors"]]), (
+    assert all([k in inputs for k in ["seller"]]), (
         f"Invalid input data for {task_type}"
     )
     print(f"Getting {task_type} Data")

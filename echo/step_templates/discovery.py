@@ -3,19 +3,16 @@ from crewai_tools import SerperDevTool
 from echo.agent import EchoAgent
 from crewai import LLM
 from crewai.crews.crew_output import CrewOutput
-from echo.constants import (
-    SELLER_RESEARCH, 
-    RESEARCH, 
-    SIMULATION, 
-    EXTRACTION, 
-    ANALYSIS
-)
+from echo.constants import SELLER_RESEARCH, RESEARCH, SIMULATION, EXTRACTION, ANALYSIS
 from pydantic import BaseModel, Field
 from typing import Dict, List
+from echo.settings import MAX_TEXT_TOKENS
+from echo.tools.web_scraping import extract_data_from_website
 from echo.utils import (
-    add_pydantic_structure, 
-    format_response, 
-    json_to_markdown
+    add_pydantic_structure,
+    format_response,
+    get_text_upto_tokens,
+    json_to_markdown,
 )
 from echo.step_templates.generic import (
     CallType,
@@ -101,8 +98,21 @@ class SellerPricingModels(BaseModel):
     )
 
 
+class SellerClient(BaseModel):
+    name: str = Field(
+        ...,
+        title="Seller's Client Name",
+        description="The name of the client of the seller.",
+    )
+    website: str = Field(
+        ...,
+        title="Seller's Client Website",
+        description="The website of the client of the seller.",
+    )
+
+
 class SellerClients(BaseModel):
-    clients: List[str] = Field(
+    clients: List[SellerClient] = Field(
         ...,
         title="Seller's Clients",
         description="The clients of the seller.",
@@ -273,7 +283,6 @@ agent_templates = {
                 "You are an expert in generating detailed profile of a sales company, conducting in-depth research on sales companies."
                 "You can also extract out the list of current clients of {seller}"
             ),
-            tools=[tools["search_tool"]],
         )
     },
     RESEARCH: {
@@ -285,7 +294,6 @@ agent_templates = {
                 "You curate detailed information about the buyer, seller, and competitive landscape to prepare for the sales call between a potential buyer and {seller}."
                 "This information is supposed to help the sales team understand the buyer's needs, the {seller}'s offerings, and the competitive landscape."
             ),
-            tools=[tools["search_tool"]],
         ),
         "CallPreparationAgent": dict(
             role="Sales Call Preparation Specialist",
@@ -338,19 +346,13 @@ task_templates = {
         "SellerIndustryResearchTask": dict(
             name="Seller Industry Research",
             description=(
-                "You are providing with the link to the landing page of a seller as - {seller}. "
-                "Conduct in-depth research on {seller} to understand their value propositions."
+                "You are providing with the summarized content of the website of {seller}. "
+                "Using the website content, conduct an in-depth research on {seller} to understand their value propositions."
                 "The value proposition provides information about the product, solution, and use cases of the seller."
-                "You should do the research in the following way - \n"
-                "Think about the following questions -\n"
-                "What kind of a company is {seller}?\n"
-                "Then, search out who are the end users of {seller}?\n"
-                "Then looking at the products and solutions of {seller}, search the value propositions of {seller}.\n"
-                "The value propositions are supposed to be the product, solution, use cases of the seller."
-                "An example of a value proposition is -\n"
-                "Product: Talent Search\n"
-                "Solution: A tool to navigate an ocean of profiles\n"
-                "Use cases: [Helps you locate talent that's a perfect fit]"
+                "Below is the website content of {seller}\n"
+                "---{seller}'s Website Content---\n"
+                "{seller_website_content}\n"
+                "---END of Website Content---\n"
             ),
             expected_output=(
                 "A comprehensive research report on {seller} detailing their value propositions.\n"
@@ -366,7 +368,10 @@ task_templates = {
             name="Seller Pricing Model Research",
             description=(
                 "Conduct in-depth research on {seller} to understand their pricing models."
-                "You may need to explore their website, documentation to find the pricing models."
+                "Below is the website content of {seller}\n"
+                "---{seller}'s Website Content---\n"
+                "{seller_website_content}\n"
+                "---END of Website Content---\n"
                 "Your response should include the pricing models offered by {seller}."
             ),
             expected_output=(
@@ -379,39 +384,45 @@ task_templates = {
             output_pydantic=SellerPricingModels,
             agent="SellerResearchAgent",
         ),
-        "SellerClientsTask": dict(
-            name="Seller Clients Research",
-            description=(
-                "You need to search for the buyers of {seller} by conducting in-depth research about {seller} online.\n"
-                "You need to get a list of {num_buyers} current clients of {seller}. "
-                "The buyer of the {seller} MUST BE PRESENT on the website of the {seller} so you MUST NOT create your own list of buyers. "
-            ),
-            expected_output=(
-                "A list of current or potential buyers of the {seller}.\n"
-                "The response should conform to the provided schema.\n"
-                "You need to extract the following information in the following pydantic structure -\n"
-                "{pydantic_structure}\n"
-                "Make sure there are no comments in the response JSON and it should be a valid JSON."
-            ),
-            output_pydantic=SellerClients,
-            agent="SellerResearchAgent",
-            context=[
-                "SellerIndustryResearchTask",
-                "SellerPricingModelTask",
-            ],
-        ),
+        # "SellerClientsTask": dict(
+        #     name="Seller Clients Research",
+        #     description=(
+        #         "Using the website content, you need to get a list of current clients of {seller}. "
+        #         "The buyer of the {seller} MUST BE PRESENT on the website of the {seller} so you MUST NOT create your own list of buyers. "
+        #         "You need to find the name of the client and infer the website of the client"
+        #         "If the website of the client is not present in the website content, then you should infer the name of the website based on your own knowledge."
+        #         "For example, if the client is 'Google', then you can infer the website as 'google.com'."
+        #         "Below is the website content of {seller}\n"
+        #         "---{seller}'s Website Content---\n"
+        #         "{seller_website_content}\n"
+        #         "---END of Website Content---\n"
+        #     ),
+        #     expected_output=(
+        #         "A list of current or potential buyers of the {seller}.\n"
+        #         "The response should conform to the provided schema.\n"
+        #         "You need to extract the following information in the following pydantic structure -\n"
+        #         "{pydantic_structure}\n"
+        #         "Make sure there are no comments in the response JSON and it should be a valid JSON."
+        #     ),
+        #     output_pydantic=SellerClients,
+        #     agent="SellerResearchAgent",
+        # ),
     },
     RESEARCH: {
         "BuyerResearcher": dict(
             name="Client for {seller}",
             description=(
-                "You need to do a proper research for {buyer} over the internet that is a potential client of {seller}"
-                "You need to search for their website, company size, industry, goals, use cases, challenges, etc."
-                "You need extract a detailed profile including their company size, industry, goals."
+                "You are provided by the website content of {buyer} that is a potential client of {seller}"
+                "You need to extract the company size, industry, goals, use cases, challenges, etc."
                 "You need to extract everything that can be useful for the sales team to understand the client and prepare for a discovery call."
-                "Below is the information regarding {seller}\n"
+                "---{buyer}'s Website Content---\n"
+                "{buyer_website_content}\n"
+                "---END of Website Content---\n"
+                "---{seller}'s Research Information---\n"
+                "You can use the following the information regarding {seller}\n"
                 "{seller}'s research information {seller_research}\n"
                 "{seller}'s pricing model {seller_pricing}\n"
+                "---End of {seller}'s Research Information---\n"
             ),
             expected_output=(
                 "A detailed profile of the {buyer}'s team including their company size, industry, goals.\n"
@@ -426,11 +437,16 @@ task_templates = {
         "CompetitorAnalysisTask": dict(
             name="Competitor Analysis",
             description=(
-                "Search for the top {n_competitors} of {seller}.\n"
-                "Analyze the pros, cons, and differentiators of {seller} compared to their competitors. "
+                "Search for the top competitors of {buyer}.\n"
+                "Analyze the pros, cons, and differentiators of {buyer} compared to their competitors. "
+                "---{buyer}'s Website Content---\n"
+                "{buyer_website_content}\n"
+                "---END of Website Content---\n"
+                "---{seller}'s Research Information---\n"
                 "You can use the following the information regarding {seller}\n"
                 "{seller}'s research information {seller_research}\n"
                 "{seller}'s pricing model {seller_pricing}\n"
+                "---End of {seller}'s Research Information---\n"
             ),
             expected_output=(
                 "A detailed analysis of the competitors of {seller} using their value propositions, and pricing model.\n"
@@ -441,9 +457,6 @@ task_templates = {
                 "Make sure there are no comments in the response JSON and it should be a valid JSON."
             ),
             agent="BuyerResearchAgent",
-            context=[
-                "BuyerResearcher",
-            ],
             output_pydantic=SellerCompetitorAnalysisResponse,
         ),
         "BuyerPainsAndObjectionsDiscoveryTask": dict(
@@ -453,9 +466,11 @@ task_templates = {
                 "You should anticipate the questions, objections, pain points, and challenges (QOPCs) based on the buyer's goals, requirements, and the competitive landscape."
                 "The QOPCs should be categorized as questions, objections, pain points, and challenges."
                 "The anticipated QOPCs are supposed to help the sales team prepare for the discovery call and provide potential resolutions."
+                "---{seller}'s Research Information---\n"
                 "You can use the following the information regarding {seller}\n"
                 "{seller}'s research information {seller_research}\n"
                 "{seller}'s pricing model {seller_pricing}\n"
+                "---End of {seller}'s Research Information---\n"
             ),
             expected_output=(
                 "A list of possible questions, objections, pain points, and challenges for the sales call between {buyer} and {seller}.\n"
@@ -480,7 +495,6 @@ task_templates = {
                 "The {buyer}'s team is represented by {stakeholders} as stakeholders during the call.\n"
                 "You need to simulate the call as a conversation between the {seller}'s sales person and ALL the {buyer}'s stakeholders.\n"
                 "You are provided with the {buyer}'s and {seller}'s information as well as the competitive landscape.\n"
-                
                 "You need to use the following as context -"
                 "\n1.) anticipated Questions, Objections, Pain Points, and Challenges\n"
                 " to simulate the call.\n"
@@ -493,7 +507,6 @@ task_templates = {
                 "All the stakeholders, i.e., {stakeholders} MUST voice their opinions, goals, requirements, pain points, challenges, and objections."
                 "The call should be very detailed. "
                 "Your goal is to provide a realistic and engaging simulation of the call. "
-                
                 "---Call Simulation Guidelines---:\n"
                 "The sales call simuation should be a very realistic simulation of a discovery call. "
                 "The sales call MUST clearly cover the {buyer}'s goals, requirements, pain points and objections. "
@@ -508,23 +521,17 @@ task_templates = {
                 "The call should be structured and flow naturally like a real discovery call. "
                 "The call should have a smooth flow and should be engaging and informative. "
                 "The call should not end abruptly and should have a proper conclusion. "
-                
                 "---Call Simulation Context---:\n"
-                
                 "Previous call analysis details with other stakeholders\n"
                 "---Previous Call Analysis Details---\n"
                 "{previous_calls_analysis}\n"
                 "---Previous Call Analysis Details---\n"
-                
                 "You are provided with the following context -\n"
-                
                 "{seller}'s research information {seller_research}\n"
                 "{seller}'s pricing model {seller_pricing}\n"
                 "\n{buyer}'s research information\n{buyer_research}\n"
                 "\nCompetitive Information:\n{competitive_info}\n"
                 "\nAnticipated questions, objections, pain points and challenges:\n{anticipated_qopcs}\n"
-                
-                
                 "The call should be very detailed. "
             ),
             expected_output=(
@@ -616,7 +623,7 @@ def get_seller_research_data(data: Dict, string_format: bool = False):
     seller_research_keys = {
         "seller_research": SellerResearchResponse,
         "seller_pricing": SellerPricingModels,
-        "seller_clients": SellerClients,
+        # "seller_clients": SellerClients,
     }
 
     if string_format:
@@ -650,12 +657,12 @@ def get_analysis_metadata(data: Dict):
 def process_seller_research_data_output(output: CrewOutput):
     seller_info = format_response(output.tasks_output[0])
     seller_pricing = format_response(output.tasks_output[1])
-    seller_clients = format_response(output.tasks_output[2])
+    # seller_clients = format_response(output.tasks_output[2])
 
     return {
         "seller_research": seller_info,
         "seller_pricing": seller_pricing,
-        "seller_clients": seller_clients,
+        # "seller_clients": seller_clients,
     }
 
 
@@ -698,13 +705,60 @@ async def aget_seller_research_data(inputs: dict, llm: LLM, **crew_config):
     assert "seller" in inputs, "Invalid input data for research"
     data = copy.deepcopy(inputs)
 
+    async def get_website_content():
+        if sqldb.check_record_exists(
+            IndexType.WEBSITE_CONTENT.value, {"name": data["seller"], "type": "seller"}
+        ):
+            record = sqldb.get_record(
+                IndexType.WEBSITE_CONTENT.value,
+                {"name": data["seller"], "type": "seller"},
+            )
+            return record["data"]
+
+        website_content = await extract_data_from_website(seller)
+
+        sqldb.insert_record(
+            IndexType.WEBSITE_CONTENT.value,
+            {
+                "name": data["seller"],
+                "type": "seller",
+                "data": website_content,
+            },
+        )
+
+        return website_content
+
     def save_data():
+        sqldb.insert_record(
+            IndexType.SELLER_RESEARCH.value,
+            {
+                "seller": data["seller"],
+                "industry": data["seller_research"]["industry"],
+                "raw": True,
+                "data": data["seller_website_content"],
+            },
+        )
+
+        print(f"Adding Seller: {seller} Research Data")
+        add_data(
+            data=data["seller_website_content"],
+            metadata={
+                "seller": seller,
+                "industry": data["seller_research"]["industry"],
+            },
+            index_name=seller,
+            index_type=IndexType.SELLER_RESEARCH,
+        )
+
+        print(f"Adding Seller: {seller} Summarized Website Research Data")
         metadata = {
             "seller": seller,
             "industry": data["seller_research"]["industry"],
+            "raw": False,
             "data": get_seller_research_data(data),
         }
         sqldb.insert_record(IndexType.SELLER_RESEARCH.value, metadata)
+
         print(f"Adding Seller: {seller} Research Data")
         add_data(
             data=get_seller_research_data(data, True),
@@ -714,17 +768,29 @@ async def aget_seller_research_data(inputs: dict, llm: LLM, **crew_config):
         )
 
     seller = inputs["seller"]
-    if sqldb.check_record_exists(IndexType.SELLER_RESEARCH.value, {"seller": seller}):
+    if sqldb.check_record_exists(
+        IndexType.SELLER_RESEARCH.value, {"seller": seller, "raw": False}
+    ):
         print("Seller Research Data Found")
+        data["seller_website_content"] = sqldb.get_record(
+            IndexType.SELLER_RESEARCH.value, {"seller": seller, "raw": True}
+        )["data"]
         data.update(
-            sqldb.get_record(IndexType.SELLER_RESEARCH.value, {"seller": seller})[
-                "data"
-            ]
+            sqldb.get_record(
+                IndexType.SELLER_RESEARCH.value, {"seller": seller, "raw": False}
+            )["data"]
         )
         save_data()
         return data
 
     print("Seller Research Data Not Found. Generating Data...")
+    data["seller_website_content"] = await get_website_content()
+    data["seller_website_content"] = get_text_upto_tokens(
+        data["seller_website_content"], MAX_TEXT_TOKENS
+    )
+
+    print("Website Content Extracted")
+
     crew = get_crew(SELLER_RESEARCH, llm, **crew_config)
     add_pydantic_structure(crew, data)
     response = await crew.kickoff_async(
@@ -736,15 +802,66 @@ async def aget_seller_research_data(inputs: dict, llm: LLM, **crew_config):
 
 
 async def aget_research_data_for_client(inputs: dict, llm: LLM, **crew_config):
-    assert all([k in inputs for k in ["seller", "n_competitors", "buyer"]]), (
+    assert all([k in inputs for k in ["seller", "buyer"]]), (
         "Invalid input data for research"
     )
     seller, client = inputs["seller"], inputs["buyer"]
     data = copy.deepcopy(inputs)
-    
+
     data.update(await aget_seller_research_data({"seller": seller}, llm, **crew_config))
 
+    async def get_website_content():
+        if sqldb.check_record_exists(
+            IndexType.WEBSITE_CONTENT.value, {"name": client, "type": "buyer"}
+        ):
+            record = sqldb.get_record(
+                IndexType.WEBSITE_CONTENT.value, {"name": client, "type": "buyer"}
+            )
+
+            print(f"Found Buyer: {client} Website Content")
+            print(record["data"])
+            print("-" * 100)
+
+            return record["data"]
+
+        website_content = await extract_data_from_website(client)
+
+        sqldb.insert_record(
+            IndexType.WEBSITE_CONTENT.value,
+            {
+                "name": client,
+                "type": "buyer",
+                "data": website_content,
+            },
+        )
+
+        return website_content
+
     def save_data():
+        sqldb.insert_record(
+            IndexType.BUYER_RESEARCH.value,
+            {
+                "buyer": client,
+                "seller": seller,
+                "industry": data["buyer_research"]["industry"],
+                "company_size": data["buyer_research"]["company_size"],
+                "raw": True,
+                "data": data["buyer_website_content"],
+            },
+        )
+
+        add_data(
+            data=data["buyer_website_content"],
+            metadata={
+                "buyer": client,
+                "seller": seller,
+                "industry": data["buyer_research"]["industry"],
+                "company_size": data["buyer_research"]["company_size"],
+            },
+            index_name=seller,
+            index_type=IndexType.BUYER_RESEARCH,
+        )
+
         print(f"Adding Buyer: {client} Data")
         metadata = {
             "buyer": client,
@@ -753,8 +870,8 @@ async def aget_research_data_for_client(inputs: dict, llm: LLM, **crew_config):
             "company_size": data["buyer_research"]["company_size"],
             "data": get_buyer_research_data(data),
         }
-        sqldb.insert_record(IndexType.BUYER_RESEARCH.value, metadata)
-        
+        sqldb.insert_record(IndexType.BUYER_RESEARCH.value, {**metadata, "raw": False})
+
         print(f"Adding Buyer: {client} Research Data")
         add_data(
             data=get_buyer_research_data(data, True),
@@ -764,16 +881,31 @@ async def aget_research_data_for_client(inputs: dict, llm: LLM, **crew_config):
         )
 
     if sqldb.check_record_exists(
-        IndexType.BUYER_RESEARCH.value, {"buyer": client, "seller": seller}
+        IndexType.BUYER_RESEARCH.value,
+        {"buyer": client, "seller": seller, "raw": False},
     ):
         print("Buyer Research Data Found")
+        data["buyer_website_content"] = sqldb.get_record(
+            IndexType.BUYER_RESEARCH.value,
+            {"buyer": client, "seller": seller, "raw": True},
+        )["data"]
+
+        # print(data["buyer_website_content"])
+
         data.update(
             sqldb.get_record(
-                IndexType.BUYER_RESEARCH.value, {"buyer": client, "seller": seller}
+                IndexType.BUYER_RESEARCH.value,
+                {"buyer": client, "seller": seller, "raw": False},
             )["data"]
         )
         save_data()
         return data
+
+    data["buyer_website_content"] = await get_website_content()
+    data["buyer_website_content"] = get_text_upto_tokens(
+        data["buyer_website_content"], MAX_TEXT_TOKENS
+    )
+    print("Website Content Extracted")
 
     crew = get_crew(RESEARCH, llm, **crew_config)
     add_pydantic_structure(crew, data)
@@ -789,11 +921,13 @@ async def aget_simulation_data_for_client(inputs: dict, llm: LLM, **crew_config)
     assert "stakeholders" in inputs, "No stakeholders found for simulation"
     seller, client = inputs["seller"], inputs["buyer"]
     call_id = inputs["call_id"]
-    
+
     data = copy.deepcopy(inputs)
-    data.update(await aget_research_data_for_client(copy.deepcopy(inputs), llm, **crew_config))
+    data.update(
+        await aget_research_data_for_client(copy.deepcopy(inputs), llm, **crew_config)
+    )
     add_previous_call_analysis(data)
-    
+
     def save_data():
         metadata = {
             "seller": seller,
@@ -830,7 +964,6 @@ async def aget_simulation_data_for_client(inputs: dict, llm: LLM, **crew_config)
         )["transcript"]
         save_data()
         return data
-    
 
     crew = get_crew(SIMULATION, llm, **crew_config)
     add_pydantic_structure(crew, data)
@@ -850,8 +983,9 @@ async def aanalyze_data_for_client(inputs: dict, llm: LLM, **crew_config):
     client, seller = inputs["buyer"], inputs["seller"]
     call_id = inputs["call_id"]
     data = copy.deepcopy(inputs)
-    data.update(await aget_simulation_data_for_client(copy.deepcopy(inputs), llm, **crew_config))
-
+    data.update(
+        await aget_simulation_data_for_client(copy.deepcopy(inputs), llm, **crew_config)
+    )
 
     def check_stakeholder_analysis_exist(stakeholder):
         return sqldb.check_record_exists(
@@ -902,8 +1036,7 @@ async def aanalyze_data_for_client(inputs: dict, llm: LLM, **crew_config):
         for stakeholder in stakeholders:
             save_stakeholder_analysis(stakeholder)
         return data
-    
-    
+
     crew = get_crew(ANALYSIS, llm, **crew_config)
     add_pydantic_structure(crew, data)
 
@@ -944,16 +1077,12 @@ async def aget_data_for_clients(
     }
     task_fn = task_to_data_extraction_fn[task_type]
 
-    assert all([k in inputs for k in ["seller", "n_competitors"]]), (
-        f"Invalid input data for {task_type}"
-    )
+    assert all([k in inputs for k in ["seller"]]), f"Invalid input data for {task_type}"
     print(f"Getting {task_type} Data")
     data = await aget_clients_call_data(task_fn, clients, inputs, llm, **crew_config)
     return data
 
 
 async def aget_seller_data(inputs: dict, llm: LLM, **crew_config):
-    assert all([k in inputs for k in ["seller", "num_buyers"]]), (
-        "Invalid input data for research"
-    )
+    assert all([k in inputs for k in ["seller"]]), "Invalid input data for research"
     return await aget_seller_research_data(inputs, llm, **crew_config)

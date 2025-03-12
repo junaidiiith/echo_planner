@@ -4,6 +4,7 @@ import re
 import ast
 import json
 import time
+import tiktoken
 from typing import List, Dict, Union, get_origin, get_args
 from dotenv import load_dotenv
 from pydantic import BaseModel
@@ -11,20 +12,15 @@ from crewai import LLM, Agent, Task, Crew
 from echo.agent import EchoAgent
 from crewai.tasks.task_output import TaskOutput
 from echo.constants import (
-    ALLOWED_KEYS, 
+    ALLOWED_KEYS,
     BUYER_RESEARCH_KEYS,
     SELLER_RESEARCH_KEYS,
     ANALYSIS_KEYS,
     SIMULATION_KEYS,
-    BUYER, 
-    SELLER
+    BUYER,
+    SELLER,
 )
-from echo.settings import (
-    save_dir, 
-    buyer_db_name, 
-    seller_db_name,
-    db_name
-)
+from echo.settings import save_dir, buyer_db_name, seller_db_name, db_name
 
 
 load_dotenv()
@@ -129,7 +125,7 @@ def get_crew(
 ):
     if llm is None:
         llm = get_llm()
-        
+
     agents = {
         agent_name: Agent(llm=llm, **v) for agent_name, v in agent_templates.items()
     }
@@ -142,7 +138,9 @@ def get_crew(
             d["context"] = [tasks[i] for i in context]
         tasks[task_name] = Task(**d)
 
-    crew = EchoAgent(agents=list(agents.values()), tasks=list(tasks.values()), **crew_config)
+    crew = EchoAgent(
+        agents=list(agents.values()), tasks=list(tasks.values()), **crew_config
+    )
 
     return crew
 
@@ -170,17 +168,21 @@ def get_save_path(save_path_str: str, extension=".json"):
 
 
 def serialize_dict(obj: dict):
-    return {k: json.dumps(v) if isinstance(v, (dict, list)) else v for k, v in obj.items()}
+    return {
+        k: json.dumps(v) if isinstance(v, (dict, list)) else v for k, v in obj.items()
+    }
+
 
 def deserialize_dict(obj: dict):
     def is_json(v):
-        return isinstance(v, str) and (v.startswith('[') or v.startswith('{'))
-        
+        return isinstance(v, str) and (v.startswith("[") or v.startswith("{"))
+
     return {k: json.loads(v) if is_json(v) else v for k, v in obj.items()}
 
 
 def get_db_name():
     return get_project_directory_name() / db_name
+
 
 def check_path_exists(client_name):
     save_path = get_save_path(client_name)
@@ -195,10 +197,14 @@ def check_call_exists(client_name, call_type, fields=None):
     save_path = get_save_path(client_name)
     if not os.path.exists(save_path):
         return False
-    
+
     with open(save_path) as f:
         data = json.load(f)
-        calls = [call for call in data if call["call_type"] == call_type and all(field in call for field in fields)]
+        calls = [
+            call
+            for call in data
+            if call["call_type"] == call_type and all(field in call for field in fields)
+        ]
         if calls:
             return True
         return False
@@ -210,7 +216,7 @@ def get_client_stakeholder_calls(client_name, call_type):
         data = json.load(f)
         calls = [call for call in data if call["call_type"] == call_type]
         return calls
-    
+
 
 def get_latest_client_call_by_call_type(client_name, call_type):
     save_path = get_save_path(client_name)
@@ -220,16 +226,18 @@ def get_latest_client_call_by_call_type(client_name, call_type):
         assert len(calls) > 0, f"No {call_type} calls found for {client_name}"
         return calls[-1]
 
-    
+
 def get_client_data(client_name) -> Dict:
     save_path = get_save_path(client_name)
     with open(save_path) as f:
         return json.load(f)
 
+
 def get_json_data(client_name):
     save_path = get_save_path(client_name)
     with open(save_path) as f:
         return json.load(f)
+
 
 def save_json_data(client_name, data):
     save_path = get_save_path(client_name)
@@ -241,22 +249,25 @@ def get_refined_data(client_name):
     data = get_client_data(client_name)
     return {k: data[k] for k in data if k in ALLOWED_KEYS}
 
+
 def get_analysis_data(client_name):
     data = get_client_data(client_name)
     return {k: data[k] for k in data if k in ANALYSIS_KEYS}
+
 
 def get_simulation_data(client_name):
     data = get_client_data(client_name)
     return {k: data[k] for k in data if k in SIMULATION_KEYS}
 
+
 def get_buyer_research_data(client_name):
     data = get_client_data(client_name)
     return {k: data[k] for k in data if k in BUYER_RESEARCH_KEYS}
 
+
 def get_seller_research_data(client_name):
     data = get_client_data(client_name)
     return {k: data[k] for k in data if k in SELLER_RESEARCH_KEYS}
-
 
 
 def save_client_data(client_name: str, data):
@@ -264,7 +275,6 @@ def save_client_data(client_name: str, data):
     ndata = {k: data[k] for k in data if k in ALLOWED_KEYS}
     with open(save_pth, "w") as f:
         json.dump(ndata, f, indent=2)
-
 
 
 def save_analysis_data(client_name: str, data):
@@ -381,7 +391,6 @@ def get_llm():
     return llm
 
 
-
 def get_db_type(user_type):
     if user_type == BUYER:
         return buyer_db_name
@@ -406,19 +415,28 @@ def db_storage_path(suffix: str = None):
 
 def get_project_directory_name() -> Path:
     project_directory = os.environ.get("ECHO_STORAGE_DIR")
-    
+
     if project_directory:
         # Convert the environment variable path to an absolute path
         return Path(project_directory).resolve()
     else:
         # If ECHO_STORAGE_DIR isn't set, use the current working directory's absolute path
-        return (Path.cwd().resolve() / ".echo_storage")
+        return Path.cwd().resolve() / ".echo_storage"
+
+
+def split_camel_case(s):
+    return re.sub(r"([a-z])([A-Z])", r"\1 \2", s)
+
+
+def process_text(word: str):
+    return " ".join([t.title() for t in split_camel_case(word).split()])
+
 
 def json_to_markdown(json_obj: Union[Dict, List], bullet_position: int = 0):
     markdown = ""
     if isinstance(json_obj, dict):
         for key, value in json_obj.items():
-            markdown += f"{'#' * (bullet_position + 1)}" + f" {key.title()}\n"
+            markdown += f"{'#' * (bullet_position + 1)}" + f" {process_text(key)}\n"
             markdown += json_to_markdown(value, bullet_position + 1)
     elif isinstance(json_obj, list):
         for item in json_obj:
@@ -443,3 +461,21 @@ def get_data_str(key_items: Dict, data):
         ]
     )
     return data_str
+
+
+def get_text_upto_tokens(text, limit, model="gpt-4o"):
+    # Get the encoding for the specified model
+    encoding = tiktoken.encoding_for_model(model)
+    # Encode the text into tokens
+    tokens = encoding.encode(text)
+    # Return the text upto the specified limit
+    return encoding.decode(tokens[:limit])
+
+
+def get_num_tokens(text, model="gpt-4o"):
+    # Get the encoding for the specified model
+    encoding = tiktoken.encoding_for_model(model)
+    # Encode the text into tokens
+    tokens = encoding.encode(text)
+    # Return the number of tokens
+    return len(tokens)

@@ -10,6 +10,7 @@ from echo.utils import (
 
 def create_db() -> sqlite3.Connection:
     db_path = get_db_name()
+    
     os.makedirs(os.path.dirname(db_path), exist_ok=True)
     conn = sqlite3.connect(db_path)
     return conn
@@ -135,4 +136,14 @@ def get_table_columns(table):
     ### Exclude id and timestamp columns
     columns = [col[1] for col in columns if col[1] not in ["id", "call_id", "timestamp"]]
     conn.close()
-    return columns    
+    return columns
+
+
+def get_table_columns_for_embeddings(table):
+    conn = create_db()
+    query = f"PRAGMA table_info({table})"
+    columns = conn.execute(query).fetchall()
+    ### Exclude id and timestamp columns
+    columns = [col[1] for col in columns if col[1] not in ["id", "call_id", "timestamp", "raw", "data", "transcript"]]
+    conn.close()
+    return columns

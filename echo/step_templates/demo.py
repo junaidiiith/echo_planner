@@ -6,6 +6,7 @@ from echo.constants import RESEARCH, SIMULATION, ANALYSIS, EXTRACTION
 from pydantic import BaseModel, Field
 from typing import Dict, List
 from echo.indexing import IndexType, add_data
+from echo.tools.web_scraping import extract_data_from_website
 from echo.utils import add_pydantic_structure, format_response, json_to_markdown
 from echo.step_templates.generic import (
     CallType,
@@ -19,6 +20,7 @@ from echo.utils import get_crew as get_crew_obj
 import echo.utils as utils
 
 import echo.sqldb as sqldb
+from llm_utils import summarize_text
 
 # ------------------------------------------------------------------------------------------------ #
 ## Seller Data
@@ -210,15 +212,25 @@ task_templates = {
             description=(
                 "Extract the features of the {seller}'s product or service that will be demonstrated during the sales demo for the {buyer}\n"
                 "You are supposed to extract the features from the information provided below.\n"
+                
+                
+                "---Context---:\n"
                 "You are provided with the following context -\n"
-                "{seller}'s research information {seller_research}\n"
-                "{seller}'s pricing model {seller_pricing}\n"
-                "\n{buyer}'s research information\n{buyer_research}\n"
-                "\nCompetitive Information:\n{competitive_info}\n"
+                
+                "---{seller}'s Website Content---\n"
+                "{seller_website_content}\n"
+                "---END of Website Content---\n"
+                
+                
+                "---{buyer}'s Website Content---\n"
+                "{buyer_website_content}\n"
+                "---END of Website Content---\n"
+                
                 "\nContext Data from the analysis of previous calls:\n{previous_calls_analysis}\n"
+                
+                "---End of Context---\n"
             ),
             expected_output=(
-                "A list of features of the {seller}'s product or service that will be demonstrated during the sales demo.\n"
                 "The response should conform to the provided schema.\n"
                 "You need to extract the following information in the following pydantic structure -\n"
                 "{pydantic_structure}\n"
@@ -273,7 +285,7 @@ task_templates = {
             expected_output=(
                 "A realistic simulation of the demo call between {buyer} and {seller}."
                 "You need to extract the following information in the following pydantic structure -\n"
-                "{pydantic_structure}\n"
+                "\n{pydantic_structure}\n"
                 "Make sure there are no comments in the response JSON and it should be a valid JSON."
             ),
             agent="CallSimulationAgent",
@@ -420,14 +432,30 @@ async def aget_research_data_for_client(inputs: dict, llm: LLM, **crew_config):
 
     demo_buyer_record = sqldb.get_record(
         IndexType.BUYER_RESEARCH.value, 
-        {"buyer": client, 'seller': seller}
+        {"buyer": client, 'seller': seller, 'raw': False}
     )
+    
+    buyer_website_content = sqldb.get_record(
+        IndexType.BUYER_RESEARCH.value, 
+        {"buyer": client, 'seller': seller, 'raw': True}
+    )['data']
+    
+    seller_website_content = sqldb.get_record(
+        IndexType.SELLER_RESEARCH.value, 
+        {'seller': seller, 'raw': True}
+    )['data']
+    
+    data['buyer_website_content'] = buyer_website_content if buyer_website_content else extract_data_from_website(client)
+    data['seller_website_content'] = seller_website_content if seller_website_content else extract_data_from_website(seller)
+    
+    data['buyer_website_content'] = summarize_text(data['buyer_website_content'])
+    data['seller_website_content'] = summarize_text(data['seller_website_content'])
     
     def save_data():
         print(f"Adding Buyer: {client} Data")
         buyer_research_data = {
             **get_research_data(data),
-            **demo_buyer_record["data"],    
+            **demo_buyer_record['data'],
         }
         
         condition_attributes = {
@@ -628,7 +656,7 @@ async def aget_data_for_clients(
     }
     task_fn = task_to_data_extraction_fn[task_type]
 
-    assert all([k in inputs for k in ["seller", "n_competitors"]]), (
+    assert all([k in inputs for k in ["seller"]]), (
         f"Invalid input data for {task_type}"
     )
     print(f"Getting {task_type} Data")

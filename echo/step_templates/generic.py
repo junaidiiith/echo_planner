@@ -253,6 +253,7 @@ def add_seller_research(inputs: dict):
         table_name=IndexType.SELLER_RESEARCH.value,
         condition_dict={
             "seller": inputs["seller"],
+            "raw": False,
         },
     )
     inputs.update(record['data'])
@@ -268,25 +269,11 @@ def add_buyer_research(inputs: dict):
         condition_dict={
             "buyer": inputs["buyer"],
             "seller": inputs["seller"],
+            "raw": False,
         },
     )
     inputs.update(record['data'])
 
-
-def add_latest_call_id(inputs: dict):
-    assert all(
-        key in inputs for key in ["buyer", "seller"]
-    ), "Please provide the required data for the analysis"
-    
-    record = sqldb.get_latest_record(
-        table_name=IndexType.CALL_TRANSCRIPTS.value,
-        condition_dict={
-            "buyer": inputs["buyer"],
-            "seller": inputs["seller"],
-        },
-    )
-    inputs['call_id'] = record['call_id'] + 1 if record else 1
-    
 
 def get_section_crew(type: str, llm: LLM, **crew_config):
     assert type in [SECTION_EXTRACTION, SECTION_MERGER], (

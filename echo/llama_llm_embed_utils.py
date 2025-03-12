@@ -2,6 +2,7 @@ from llama_index.llms.fireworks import Fireworks
 from llama_index.llms.openai import OpenAI
 from llama_index.embeddings.fireworks import FireworksEmbedding
 from llama_index.embeddings.openai import OpenAIEmbedding
+from llama_index.embeddings.gemini import GeminiEmbedding
 import os
 from llama_index.core.llms import ChatMessage
 from echo.constants import (
@@ -12,8 +13,11 @@ from echo.constants import (
     FIREWORKS,
     FIREWORKS_LLM,
     FIREWORKS_API_KEY,
+    
+    GOOGLE,
+    GOOGLE_API_KEY,
+    GOOGLE_EMBEDDING_MODEL_NAME,
     EMBED_MODEL_TYPE,
-    EMBED_BATCH_SIZE,    
 )
 
 def get_llm():
@@ -32,16 +36,20 @@ def get_embed_model():
     embed_model_type = os.getenv(EMBED_MODEL_TYPE)
     if embed_model_type == OPENAI:
         return OpenAIEmbedding(
-            api_key=os.getenv(OPENAI_API_KEY),
-            embed_batch_size=os.getenv(EMBED_BATCH_SIZE, 16),
+            api_key=os.getenv(OPENAI_API_KEY)
         )
     elif embed_model_type == FIREWORKS:
         return FireworksEmbedding(
-            api_key=os.getenv(FIREWORKS_API_KEY),
-            embed_batch_size=os.getenv(EMBED_BATCH_SIZE, 16),
+            api_key=os.getenv(FIREWORKS_API_KEY)
         )
-    else:
-        raise ValueError(f"Unknown embedding model type: {embed_model_type}")
+    elif embed_model_type == GOOGLE:
+        return GeminiEmbedding(
+            model_name=os.getenv(GOOGLE_EMBEDDING_MODEL_NAME),
+            api_key=os.getenv(GOOGLE_API_KEY),
+            title='Google Embeddings'
+        )
+    
+    raise ValueError(f"Unknown embedding model type: {embed_model_type}")
 
 
 def get_llm_response(query: str, system_prompt: str = None, llm=None):
