@@ -178,3 +178,5 @@ runs*
 .vscode/*
 
 echo_storage
+
+t.txt
