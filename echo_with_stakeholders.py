@@ -46,12 +46,12 @@ clients = [
 ]
 
 
-discovery_calls_data = asyncio.run(make_call(DISCOVERY, clients[:1], buyer_inputs))
+discovery_calls_data = asyncio.run(make_call(DISCOVERY, clients, buyer_inputs))
 buyer_inputs['call_id'] = 2
-demo_calls_data = asyncio.run(make_call(DEMO, clients[:1], buyer_inputs))
+demo_calls_data = asyncio.run(make_call(DEMO, clients, buyer_inputs))
 
 buyer_inputs['call_id'] = 3
-pricing_calls_data = asyncio.run(make_call(PRICING, clients[:1], buyer_inputs))
+pricing_calls_data = asyncio.run(make_call(PRICING, clients, buyer_inputs))
 
 buyer_inputs['call_id'] = 4
-negotiations_calls_data = asyncio.run(make_call(NEGOTIATION, clients[:1], buyer_inputs))
+negotiations_calls_data = asyncio.run(make_call(NEGOTIATION, clients, buyer_inputs))
