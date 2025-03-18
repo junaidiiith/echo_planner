@@ -462,6 +462,12 @@ def get_data_str(key_items: Dict, data):
     )
     return data_str
 
+def dict_to_markdown(data: Dict):
+    new_dict = dict()
+    for k in data:
+        new_dict[k] = json_to_markdown(data[k]) if isinstance(data[k], (dict, list)) else data[k]
+    return new_dict
+
 
 def get_text_upto_tokens(text, limit, model="gpt-4o"):
     # Get the encoding for the specified model

@@ -10,6 +10,7 @@ from echo.settings import MAX_TEXT_TOKENS
 from echo.tools.web_scraping import extract_data_from_website
 from echo.utils import (
     add_pydantic_structure,
+    dict_to_markdown,
     format_response,
     get_text_upto_tokens,
     json_to_markdown,
@@ -794,7 +795,7 @@ async def aget_seller_research_data(inputs: dict, llm: LLM, **crew_config):
     crew = get_crew(SELLER_RESEARCH, llm, **crew_config)
     add_pydantic_structure(crew, data)
     response = await crew.kickoff_async(
-        inputs={**data, "call_type": CallType.DISCOVERY.value}
+        inputs={**dict_to_markdown(data), "call_type": CallType.DISCOVERY.value}
     )
     data.update(process_seller_research_data_output(response))
     save_data()
@@ -910,7 +911,7 @@ async def aget_research_data_for_client(inputs: dict, llm: LLM, **crew_config):
     crew = get_crew(RESEARCH, llm, **crew_config)
     add_pydantic_structure(crew, data)
     response = await crew.kickoff_async(
-        inputs={**data, "call_type": CallType.DISCOVERY.value}
+        inputs={**dict_to_markdown(data), "call_type": CallType.DISCOVERY.value}
     )
     data.update(process_research_data_output(response))
     save_data()
@@ -968,7 +969,7 @@ async def aget_simulation_data_for_client(inputs: dict, llm: LLM, **crew_config)
     crew = get_crew(SIMULATION, llm, **crew_config)
     add_pydantic_structure(crew, data)
     response = await crew.kickoff_async(
-        inputs={**data, "call_type": CallType.DISCOVERY.value}
+        inputs={**dict_to_markdown(data), "call_type": CallType.DISCOVERY.value}
     )
 
     data.update({"discovery_transcript": format_response(response.tasks_output[0])})
@@ -1047,7 +1048,7 @@ async def aanalyze_data_for_client(inputs: dict, llm: LLM, **crew_config):
 
         response = await crew.kickoff_async(
             inputs={
-                **data,
+                **dict_to_markdown(data),
                 "call_type": CallType.DISCOVERY.value,
                 "stakeholder": stakeholder,
             }

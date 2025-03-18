@@ -10,7 +10,7 @@ from echo.constants import (
 from pydantic import BaseModel, Field
 from typing import Dict, List
 from echo.indexing import IndexType, add_data
-from echo.utils import add_pydantic_structure, format_response, json_to_markdown
+from echo.utils import add_pydantic_structure, dict_to_markdown, format_response, json_to_markdown
 from echo.step_templates.generic import (
     CallType,
     Transcript,
@@ -307,7 +307,7 @@ async def aget_simulation_data_for_client(inputs: dict, llm: LLM, **crew_config)
     crew = get_crew(SIMULATION, llm, **crew_config)
     add_pydantic_structure(crew, data)
     response = await crew.kickoff_async(
-        inputs={**data, "call_type": CallType.PRICING.value}
+        inputs={**dict_to_markdown(data), "call_type": CallType.PRICING.value}
     )
 
     data.update({"pricing_transcript": format_response(response.tasks_output[0])})
@@ -388,7 +388,7 @@ async def aanalyze_data_for_client(inputs: dict, llm: LLM, **crew_config):
 
         response = await crew.kickoff_async(
             inputs={
-                **data,
+                **dict_to_markdown(data),
                 "call_type": CallType.PRICING.value,
                 "stakeholder": stakeholder,
             }

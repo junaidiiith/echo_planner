@@ -31,6 +31,10 @@ def insert_record(
     Checks if the record already exists in the database.
     If it does, then no new record is inserted.
     """
+    
+    if 'raw' in attributes and attributes['raw']:
+        assert isinstance(attributes['data'], str), "data must be a string"
+    
     condition_attributes = {k: v for k, v in attributes.items() if not isinstance(v, (list, dict))}
     attributes = serialize_dict(attributes)
     conn = create_db()

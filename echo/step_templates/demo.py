@@ -7,14 +7,20 @@ from pydantic import BaseModel, Field
 from typing import Dict, List
 from echo.indexing import IndexType, add_data
 from echo.tools.web_scraping import extract_data_from_website
-from echo.utils import add_pydantic_structure, format_response, json_to_markdown
+from echo.utils import (
+    add_pydantic_structure, 
+    dict_to_markdown, 
+    format_response, 
+    get_num_tokens, 
+    json_to_markdown
+)
 from echo.step_templates.generic import (
     CallType,
     Transcript,
     add_previous_call_analysis,
     aget_clients_call_data,
     add_buyer_research,
-    add_seller_research
+    add_seller_research,
 )
 from echo.utils import get_crew as get_crew_obj
 import echo.utils as utils
@@ -212,22 +218,15 @@ task_templates = {
             description=(
                 "Extract the features of the {seller}'s product or service that will be demonstrated during the sales demo for the {buyer}\n"
                 "You are supposed to extract the features from the information provided below.\n"
-                
-                
                 "---Context---:\n"
                 "You are provided with the following context -\n"
-                
                 "---{seller}'s Website Content---\n"
                 "{seller_website_content}\n"
                 "---END of Website Content---\n"
-                
-                
                 "---{buyer}'s Website Content---\n"
                 "{buyer_website_content}\n"
                 "---END of Website Content---\n"
-                
                 "\nContext Data from the analysis of previous calls:\n{previous_calls_analysis}\n"
-                
                 "---End of Context---\n"
             ),
             expected_output=(
@@ -248,14 +247,11 @@ task_templates = {
                 "The {buyer}'s team is represented by {stakeholders} as stakeholders during the call.\n"
                 "You are provided with the {buyer}'s and {seller}'s information as well as the discovery call information."
                 "The information from the discovery call will be used to simulate the demo call."
-
-                
                 "In the call, {seller}'s sales person will aim to provide the features of the product or service that will be demonstrated during the sales demo."
                 "The {seller}'s team person is supposed to be very confident and knowledgeable about the product or service during the demo."
                 "In order to simulate the demo call, you need to follow the following steps - "
                 "1. Think about what is the objective of a general demo sales call after the demo call. "
                 "2. Use the context, i.e., {seller}'s features and buyer's requirements, pain points and their mappings to simulate the call that fulfills the objectives of a demo call.\n"
-                
                 "The simulation MUST cover the following aspects -\n"
                 "1. The {seller}'s product features that MUST be clearly demonstrated during the sales demo.\n"
                 "2. The {buyer} raises some objections during the sales demo and they MUST be handled by the {seller}.\n"
@@ -263,7 +259,6 @@ task_templates = {
                 "4. The {seller} should clarify the used during the demo assets like presentations, videos, or documents during the sales demo.\n"
                 "5. The {seller} MUST offer customizations or personalized features to the buyer based on {buyer}'s objections and pain points which the existing features do not cover.\n"
                 "6. The {seller} MUST engage the buyer with relevant questions. "
-                
                 "---Call Simulation Guidelines---:\n"
                 "The {seller} MUST ADDRESS all the stakeholders in the call. "
                 "All the stakeholders, i.e., {stakeholders} MUST voice their opinions, requirements, pain points and objections."
@@ -274,8 +269,6 @@ task_templates = {
                 "The call should be structured and flow naturally like a real demo call. "
                 "The call should have a smooth flow and should be engaging and informative. "
                 "The call should not end abruptly and should have a proper conclusion with next steps according to how the call went. "
-                
-                
                 "---Call Simulation Context---:\n"
                 "You are provided with the following context -\n"
                 "\nAnalysis Data from the analysis of previous discovery call:\n{previous_calls_analysis}\n"
@@ -347,6 +340,7 @@ task_templates = {
     },
 }
 
+
 def get_analysis_data(data: Dict, string_format=False):
     analysis_keys = {
         "demo_analysis_buyer_data": BuyerDataExtracted,
@@ -356,7 +350,7 @@ def get_analysis_data(data: Dict, string_format=False):
     if string_format:
         data_str = utils.get_data_str(analysis_keys, data)
         return data_str
-    
+
     return {k: v for k, v in data.items() if k in analysis_keys}
 
 
@@ -422,79 +416,97 @@ def process_analysis_data_output(response: CrewOutput):
 async def aget_research_data_for_client(inputs: dict, llm: LLM, **crew_config):
     data = copy.deepcopy(inputs)
     client, seller = inputs["buyer"], inputs["seller"]
-    
+
     assert sqldb.check_record_exists(
-        IndexType.BUYER_RESEARCH.value, 
-        {"buyer": client, 'seller': seller}
-    ), (
-        f"Demo Data for client {client} does not exist."
+        IndexType.BUYER_RESEARCH.value, {"buyer": client, "seller": seller}
+    ), f"Demo Data for client {client} does not exist."
+
+    buyer_demo_record = sqldb.get_record(
+        IndexType.BUYER_RESEARCH.value,
+        {"buyer": client, "seller": seller, "raw": False},
+    )
+    assert buyer_demo_record, f"Discovery Data for client {client} does not exist."
+    data.update(buyer_demo_record["data"])
+
+    buyer_website_content = sqldb.get_record(
+        IndexType.BUYER_RESEARCH.value, {"buyer": client, "seller": seller, "raw": True}
+    )["data"]
+
+    seller_website_content = sqldb.get_record(
+        IndexType.SELLER_RESEARCH.value, {"seller": seller, "raw": True}
+    )["data"]
+
+    data["buyer_website_content"] = (
+        buyer_website_content
+        if buyer_website_content
+        else extract_data_from_website(client)
+    )
+    data["seller_website_content"] = (
+        seller_website_content
+        if seller_website_content
+        else extract_data_from_website(seller)
     )
 
-    demo_buyer_record = sqldb.get_record(
-        IndexType.BUYER_RESEARCH.value, 
-        {"buyer": client, 'seller': seller, 'raw': False}
-    )
+    data["buyer_website_content"] = summarize_text(data["buyer_website_content"]) \
+        if get_num_tokens(data["buyer_website_content"]) > 4000 else data["buyer_website_content"]
     
-    buyer_website_content = sqldb.get_record(
-        IndexType.BUYER_RESEARCH.value, 
-        {"buyer": client, 'seller': seller, 'raw': True}
-    )['data']
-    
-    seller_website_content = sqldb.get_record(
-        IndexType.SELLER_RESEARCH.value, 
-        {'seller': seller, 'raw': True}
-    )['data']
-    
-    data['buyer_website_content'] = buyer_website_content if buyer_website_content else extract_data_from_website(client)
-    data['seller_website_content'] = seller_website_content if seller_website_content else extract_data_from_website(seller)
-    
-    data['buyer_website_content'] = summarize_text(data['buyer_website_content'])
-    data['seller_website_content'] = summarize_text(data['seller_website_content'])
-    
+    data["seller_website_content"] = summarize_text(data["seller_website_content"]) \
+        if get_num_tokens(data["seller_website_content"]) > 4000 else data["seller_website_content"]
+
     def save_data():
         print(f"Adding Buyer: {client} Data")
         buyer_research_data = {
             **get_research_data(data),
-            **demo_buyer_record['data'],
+            **buyer_demo_record["data"],
         }
-        
+
         condition_attributes = {
             "buyer": client,
             "seller": seller,
-            "industry": demo_buyer_record["industry"],
-            "company_size": demo_buyer_record["company_size"]
+            "industry": buyer_demo_record["industry"],
+            "company_size": buyer_demo_record["company_size"],
         }
-        
+
         update_dict = {
             "data": buyer_research_data,
         }
-        
+
         sqldb.update_record(
             IndexType.BUYER_RESEARCH.value, 
-            condition_attributes, 
+            {**condition_attributes, "raw": False}, 
             update_dict
         )
         
+        existing_raw_record_data = sqldb.get_record(
+            IndexType.BUYER_RESEARCH.value, 
+            {**condition_attributes, "raw": True}
+        )['data']
+        
+        sqldb.update_record(
+            IndexType.BUYER_RESEARCH.value, 
+            {**condition_attributes, "raw": True}, 
+            {"data": existing_raw_record_data + "\n\n" + get_research_data(data, True)}
+        )
+
         add_data(
             data=get_research_data(data, True),
             metadata={**condition_attributes, **update_dict},
             index_name=seller,
             index_type=IndexType.BUYER_RESEARCH,
         )
+
     add_previous_call_analysis(data)
     add_seller_research(data)
     add_buyer_research(data)
-    
-    if "demo_features" in demo_buyer_record['data']:
-        data.update(demo_buyer_record['data'])
+
+    if "demo_features" in buyer_demo_record["data"]:
         save_data()
         return data
-
 
     crew = get_crew(RESEARCH, llm, **crew_config)
     add_pydantic_structure(crew, data)
     response = await crew.kickoff_async(
-        inputs={**data, "call_type": CallType.DEMO.value}
+        inputs={**dict_to_markdown(data), "call_type": CallType.DEMO.value}
     )
     data.update(process_research_data_output(response))
     save_data()
@@ -503,51 +515,55 @@ async def aget_research_data_for_client(inputs: dict, llm: LLM, **crew_config):
 
 async def aget_simulation_data_for_client(inputs: dict, llm: LLM, **crew_config):
     assert "stakeholders" in inputs, "No stakeholders found for simulation"
-    
 
     seller, client = inputs["seller"], inputs["buyer"]
     call_id = inputs["call_id"]
     data = copy.deepcopy(inputs)
-    data.update(await aget_research_data_for_client(copy.deepcopy(inputs), llm, **crew_config))
-    
+    data.update(
+        await aget_research_data_for_client(copy.deepcopy(inputs), llm, **crew_config)
+    )
+
     def save_data():
         metadata = {
             "seller": seller,
             "buyer": client,
             "call_type": CallType.DEMO.value,
             "call_id": call_id,
-            "transcript": data['demo_transcript'],
+            "transcript": data["demo_transcript"],
         }
-        
-        sqldb.insert_record(
-            IndexType.CALL_TRANSCRIPTS.value,
-            metadata
-        )
+
+        sqldb.insert_record(IndexType.CALL_TRANSCRIPTS.value, metadata)
         print(f"Embedding Simulation Data for Client: {client}")
         add_data(
-            data=json_to_markdown(data['demo_transcript']),
+            data=json_to_markdown(data["demo_transcript"]),
             metadata=metadata,
             index_name=seller,
             index_type=IndexType.CALL_TRANSCRIPTS,
         )
-            
-    
+
     if sqldb.check_record_exists(
-        IndexType.CALL_TRANSCRIPTS.value, 
-        {"call_id": inputs['call_id'], "buyer": inputs["buyer"], "seller": inputs["seller"]}
+        IndexType.CALL_TRANSCRIPTS.value,
+        {
+            "call_id": inputs["call_id"],
+            "buyer": inputs["buyer"],
+            "seller": inputs["seller"],
+        },
     ):
-        data['demo_transcript'] = sqldb.get_record(
+        data["demo_transcript"] = sqldb.get_record(
             IndexType.CALL_TRANSCRIPTS.value,
-            {"call_id": inputs['call_id'], "buyer": inputs["buyer"], "seller": inputs["seller"]}
-        )['transcript']
+            {
+                "call_id": inputs["call_id"],
+                "buyer": inputs["buyer"],
+                "seller": inputs["seller"],
+            },
+        )["transcript"]
         save_data()
         return data
-    
 
     crew = get_crew(SIMULATION, llm, **crew_config)
     add_pydantic_structure(crew, data)
     response = await crew.kickoff_async(
-        inputs={**data, "call_type": CallType.DEMO.value}
+        inputs={**dict_to_markdown(data), "call_type": CallType.DEMO.value}
     )
     response_data = {"demo_transcript": format_response(response.tasks_output[0])}
     data.update(response_data)
@@ -563,7 +579,6 @@ async def aanalyze_data_for_client(inputs: dict, llm: LLM, **crew_config):
     data = copy.deepcopy(inputs)
     data.update(await aget_simulation_data_for_client(inputs, llm, **crew_config))
 
-
     def check_stakeholder_analysis_exist(stakeholder):
         return sqldb.check_record_exists(
             IndexType.ANALYSIS.value,
@@ -571,34 +586,31 @@ async def aanalyze_data_for_client(inputs: dict, llm: LLM, **crew_config):
                 "seller": seller,
                 "buyer": client,
                 "call_id": call_id,
-                "stakeholder": stakeholder
-            }
+                "stakeholder": stakeholder,
+            },
         )
-    
+
     def save_stakeholder_analysis(stakeholder):
         metadata = get_analysis_metadata(data)
-        metadata.update({
-            "call_id": call_id,
-            "stakeholder": stakeholder,
-            "transcript": data['demo_transcript'],
-            "data": get_analysis_data(data['demo_analysis_data'][stakeholder])
-        })
-        sqldb.insert_record(
-            IndexType.ANALYSIS.value,
-            metadata
+        metadata.update(
+            {
+                "call_id": call_id,
+                "stakeholder": stakeholder,
+                "transcript": data["demo_transcript"],
+                "data": get_analysis_data(data["demo_analysis_data"][stakeholder]),
+            }
         )
+        sqldb.insert_record(IndexType.ANALYSIS.value, metadata)
         print(f"Adding Analysis Data for Stakeholder: {stakeholder}")
         add_data(
-            data=get_analysis_data(data['demo_analysis_data'][stakeholder], True),
+            data=get_analysis_data(data["demo_analysis_data"][stakeholder], True),
             metadata=metadata,
             index_name=seller,
             index_type=IndexType.ANALYSIS,
         )
-    
 
     if all(
-        check_stakeholder_analysis_exist(stakeholder) 
-        for stakeholder in stakeholders
+        check_stakeholder_analysis_exist(stakeholder) for stakeholder in stakeholders
     ):
         demo_analysis_data = dict()
         for stakeholder in stakeholders:
@@ -608,35 +620,38 @@ async def aanalyze_data_for_client(inputs: dict, llm: LLM, **crew_config):
                     "seller": seller,
                     "buyer": client,
                     "call_id": call_id,
-                    "stakeholder": stakeholder
-                }
-            )['data']
-        
+                    "stakeholder": stakeholder,
+                },
+            )["data"]
+
         data.update({"demo_analysis_data": demo_analysis_data})
-        
+
         for stakeholder in stakeholders:
             save_stakeholder_analysis(stakeholder)
-        
+
         return data
-    
 
     crew = get_crew(ANALYSIS, llm, **crew_config)
     add_pydantic_structure(crew, data)
-    
+
     demo_analysis_data = dict()
-    
+
     for stakeholder in stakeholders:
         print(f"Analyzing demo data for stakeholder: {stakeholder}")
-        
+
         response = await crew.kickoff_async(
-            inputs={**data, "call_type": CallType.DEMO.value, "stakeholder": stakeholder}
+            inputs={
+                **dict_to_markdown(data),
+                "call_type": CallType.DEMO.value,
+                "stakeholder": stakeholder,
+            }
         )
-        
+
         analysis_data = process_analysis_data_output(response)
         demo_analysis_data[stakeholder] = analysis_data
-        
+
     data.update({"demo_analysis_data": demo_analysis_data})
-    
+
     for stakeholder in stakeholders:
         save_stakeholder_analysis(stakeholder)
 
@@ -656,9 +671,7 @@ async def aget_data_for_clients(
     }
     task_fn = task_to_data_extraction_fn[task_type]
 
-    assert all([k in inputs for k in ["seller"]]), (
-        f"Invalid input data for {task_type}"
-    )
+    assert all([k in inputs for k in ["seller"]]), f"Invalid input data for {task_type}"
     print(f"Getting {task_type} Data")
     data = await aget_clients_call_data(task_fn, clients, inputs, llm, **crew_config)
     return data
