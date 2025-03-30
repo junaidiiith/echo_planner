@@ -80,16 +80,32 @@ Below are the extracted contents from the webpages -
 """
 
 
-def extract_text_from_url(url):
+def extract_text_from_url(url, timeout=30):
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
     }
-    response = requests.get(url, headers=headers)
+    
+    try:
+        response = requests.get(url, headers=headers, timeout=timeout)  # Set timeout to 30 seconds
+    except requests.exceptions.Timeout:
+        print("Request timed out after 30 seconds.")
+        return None
+    except requests.exceptions.RequestException as e:
+        print(f"Request failed: {e}")
+        return None
+    
     if response.status_code == 200:
+        content_type = response.headers.get("Content-Type", "").lower()
+        if "html" not in content_type:
+            print(f"Warning: Content type is not HTML: {content_type}")
+            return None
+        
         soup = BeautifulSoup(response.text, "html.parser")
         return soup.get_text(separator="\n", strip=True)
     else:
-        return f"Failed to fetch page, status code: {response.status_code}"
+        print(f"Failed to fetch page, status code: {response.status_code}")
+    
+    return None
 
 
 async def extract_nav_links(url, num_links=15):
@@ -173,45 +189,60 @@ async def extract_nav_links(url, num_links=15):
     final_links = [link["url"] for link in navbar_links["nav_links"]]
 
     print("Final Links:", final_links)
-    return final_links[:num_links]
+    return [link if link.startswith("http") else f"{url}{link}" for link in final_links[:num_links]]
 
 
-def extract_data_from_webpage(webpage: str, content: str):
+def extract_data_from_webpage(
+    content: str, 
+    system_prompt: str = DATA_EXTRACTION_SYS_PROMPT
+):
     response = get_response(
         [
-            {"role": "user", "content": DATA_EXTRACTION_SYS_PROMPT},
+            {"role": "system", "content": system_prompt},
             {
                 "role": "user",
-                "content": DATA_EXTRACTION_PROMPT.format(
-                    webpage=webpage, content=content
-                ),
+                "content": content,
             },
         ]
     )
     return response
 
 
-def get_data_from_webpage(link: str, base_url: str):
-    url_link = link if link.startswith("http") else f"{base_url}{link}"
-    extracted_text = extract_text_from_url(url_link)
-    extracted_data = extract_data_from_webpage(url_link, extracted_text)
-    return extracted_data
-
-
 async def extract_data_from_website(url: str):
+    
     navbar_links = await extract_nav_links(url)
-    extracted_results = []
+    extracted_results = extract_data_from_links(navbar_links)
 
+    website_content = "\n\n".join(
+        [f"Link: {r['link']}\nData: {r['data']}" for r in extracted_results]
+    )
+
+    if get_num_tokens(website_content) > MAX_TEXT_TOKENS:
+        website_content = get_text_upto_tokens(website_content, MAX_TEXT_TOKENS)
+
+    return website_content
+
+
+def extract_data_from_links(
+    links: List[str], 
+    user_prompt: str = DATA_EXTRACTION_PROMPT,
+    system_prompt: str = DATA_EXTRACTION_SYS_PROMPT
+):
+    extracted_results = []
     def process_link(link: str):
+        print("Processing link:", link)
         try:
             # Construct the full URL if necessary.
-            url_link = link if link.startswith("http") else f"{url}{link}"
-            print("Processing link:", url_link)
             # Extract the text from the URL (assumes extract_text_from_url is defined elsewhere)
-            extracted_text = extract_text_from_url(url_link)
+            extracted_text = extract_text_from_url(link)
+            if not extracted_text:
+                print(f"Failed to extract text from {link}")
+                return None
             # Use the extracted text to get client-focused data
-            extracted_data = extract_data_from_webpage(url_link, extracted_text)
-            return {"link": url_link, "data": extracted_data}
+            extraction_prompt = user_prompt.format(webpage=link, content=extracted_text)
+            extracted_data = extract_data_from_webpage(extraction_prompt, system_prompt=system_prompt)
+            print(f"Extracted data from {link}")
+            return {"link": link, "data": extracted_data}
         except Exception as e:
             print(f"Error processing link {link}: {e}")
             return None
@@ -222,7 +253,7 @@ async def extract_data_from_website(url: str):
     ) as executor:
         # Submit all tasks and store futures in a dictionary.
         futures = {
-            executor.submit(process_link, link): link for link in set(navbar_links)
+            executor.submit(process_link, link): link for link in set(links)
         }
         for future in tqdm(
             concurrent.futures.as_completed(futures),
@@ -232,15 +263,11 @@ async def extract_data_from_website(url: str):
             result = future.result()
             if result is not None:
                 extracted_results.append(result)
-
-    website_content = "\n\n".join(
-        [f"Link: {r['link']}\nData: {r['data']}" for r in extracted_results]
-    )
-
-    if get_num_tokens(website_content) > MAX_TEXT_TOKENS:
-        website_content = get_text_upto_tokens(website_content, MAX_TEXT_TOKENS)
-
-    return website_content
+    
+    # Filter out None results
+    extracted_results = [result for result in extracted_results if result is not None]
+    return extracted_results
+    
 
 
 def summarize_website_content(website_content: str):

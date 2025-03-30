@@ -11,6 +11,21 @@ import os
 load_dotenv()
 
 
+llm_configs = {
+    "fireworks": {
+        "model": "fireworks:accounts/fireworks/models/deepseek-v3",
+        "base_url": "https://api.fireworks.ai/inference/v1"
+    },
+    "openai": {
+        "model": "openai:gpt-4o"
+    },
+    "together": {
+        "model": "togetherlabs/gpt-3.5-turbo",
+        "base_url": "https://api.together.xyz/v1"
+    }
+}
+
+
 DATA_SUMMARIZATION_SYS_PROMPT = \
 """
 You are an expert in sales such that you can summarize the content extracted from a website of a company that would be relevant to a potential client of that company.
@@ -30,6 +45,12 @@ Below are the extracted contents from the webpages -
 {content}
 """
 
+def get_llm_name():
+    llm_type = os.getenv("LLM_TYPE")
+    llm_config = llm_configs[llm_type]
+    model = llm_config['model']
+    return model
+
 
 def get_response(messages: List[str], num_retries = 3):
     
@@ -44,7 +65,7 @@ def get_response(messages: List[str], num_retries = 3):
         try:
             return get_resp()
         except Exception as e:
-            print(f"Error: {e}")
+            raise e
             tries += 1
     return None
     

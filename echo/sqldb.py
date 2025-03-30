@@ -23,6 +23,14 @@ def create_table(query: str) -> None:
     conn.close()
 
 
+def delete_table(table_name: str) -> None:
+    conn = create_db()
+    query = f"DROP TABLE IF EXISTS {table_name}"
+    conn.execute(query)
+    conn.commit()
+    conn.close()
+
+
 def insert_record(
     table_name: str,
     attributes: dict,
