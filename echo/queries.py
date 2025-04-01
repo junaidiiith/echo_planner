@@ -5,6 +5,7 @@ from echo.query_executor import (
 
 from echo.indexing import IndexType
 from echo.step_templates.generic import CallType
+from echo.tools.perplexity_search import QueryTypes
 
 
 def get_queries(seller):
@@ -351,6 +352,34 @@ def get_queries(seller):
             )
         ],
     )
+    
+    account_plan = Query(
+        query="What are the top 3 priorities to do for this account in the next quarter?",
+        seller=seller,
+        call_type=CallType.PREDISCOVERY.value,
+        sub_queries=[
+            SubQuery(
+                query="What are the top 3 financial priorities for the account to solve for?",
+                index_type=IndexType.BUYER_FOUNDATIONAL_PLAN.value,
+                inputs={"query_type": QueryTypes.FMOD.value},
+            ),
+            SubQuery(
+                query="What are the top 3 competitors for the account that that client needs to consider?",
+                index_type=IndexType.BUYER_FOUNDATIONAL_PLAN.value,
+                inputs={"query_type": QueryTypes.COMPANALYSIS.value},
+            ),
+            SubQuery(
+                query="What is the most relevant news for the account?",
+                index_type=IndexType.BUYER_FOUNDATIONAL_PLAN.value,
+                inputs={"query_type": QueryTypes.RECENTNEWS.value},
+            ),
+            SubQuery(
+                query="What are the top 3 strategic priorities for the account to solve for?",
+                index_type=IndexType.BUYER_FOUNDATIONAL_PLAN.value,
+                inputs={"query_type": QueryTypes.STRATEGY.value},
+            )
+        ],
+    )
 
     queries = {
         CallType.DISCOVERY.value: {
@@ -380,5 +409,8 @@ def get_queries(seller):
             "Possible Legal Concerns": possible_legal_concerns,
             "Closing Tactics": closing_tactics,
         },
+        "Account Plan": {
+            "Buyer Account Plan": account_plan,
+        }
     }
     return queries

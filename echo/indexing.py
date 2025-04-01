@@ -103,6 +103,7 @@ tables = {
     IndexType.BUYER_FOUNDATIONAL_PLAN: f'''CREATE TABLE IF NOT EXISTS {IndexType.BUYER_FOUNDATIONAL_PLAN.value} (
         seller TEXT,
         buyer TEXT,
+        call_type TEXT,
         query_type TEXT,
         query TEXT,
         message TEXT,
@@ -146,6 +147,7 @@ table_to_metadata_columns_map = {
         "seller",
         "buyer",
         "query_type",
+        "call_type",
     ]
 }
 
@@ -231,6 +233,28 @@ def get_query_index_keys(index_type: str):
             },
         ],
         IndexType.SALES_PLAYBOOK.value: [],
+        IndexType.BUYER_FOUNDATIONAL_PLAN.value: [
+            {
+                "key": "buyer",
+                "operator": FilterOperator.EQ,
+                "mandatory": True,
+            },
+            {
+                "key": "call_type",
+                "operator": FilterOperator.EQ,
+                "mandatory": True,
+            },
+            {
+                "key": "query_type",
+                "operator": FilterOperator.EQ,
+                "mandatory": False,
+            },
+            {
+                "key": "seller",
+                "operator": FilterOperator.EQ,
+                "mandatory": True,
+            }
+        ]
     }[index_type]
 
     index_db_keys = get_table_columns_for_embeddings(

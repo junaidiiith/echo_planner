@@ -22,6 +22,7 @@ from echo.settings import CALL_HISTORY_LIMIT
 
 
 class CallType(enum.Enum):
+    PREDISCOVERY = "prediscovery"
     DISCOVERY = "discovery"
     DEMO = "demo"
     PRICING = "pricing"
