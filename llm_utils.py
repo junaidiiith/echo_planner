@@ -1,4 +1,5 @@
 import aisuite as ai
+from echo.settings import MAX_CONTEXT_LENGTH
 from echo.utils import (
     get_num_tokens, 
     get_text_upto_tokens
@@ -84,13 +85,17 @@ def summarize_text(text, split_count=5):
         ])
     
     tokens = get_num_tokens(text)
-    split_size = tokens // split_count
-    min_tokens = int(0.2*split_size)
-    max_tokens = int(0.4*split_size)
-    print("Splitting text into {} parts".format(split_count))
-    print(f"Split size: {split_size}, Min tokens: {min_tokens}, Max tokens: {max_tokens}")
-    summaries = [
-        summarize(get_text_upto_tokens(text, split_size * i))
-        for i in range(1, split_count)
-    ]
-    return "\n\n".join(summary for summary in summaries if summary)
+    
+    if tokens < MAX_CONTEXT_LENGTH:
+        return summarize(text)
+    else:
+        split_size = tokens // split_count
+        min_tokens = int(0.2*split_size)
+        max_tokens = int(0.4*split_size)
+        print("Splitting text into {} parts".format(split_count))
+        print(f"Split size: {split_size}, Min tokens: {min_tokens}, Max tokens: {max_tokens}")
+        summaries = [
+            summarize(get_text_upto_tokens(text, split_size * i))
+            for i in range(1, split_count)
+        ]
+        return "\n\n".join(summary for summary in summaries if summary)

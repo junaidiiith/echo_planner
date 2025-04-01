@@ -151,11 +151,11 @@ def get_table_columns(table):
     return columns
 
 
-def get_table_columns_for_embeddings(table):
+def get_table_columns_for_embeddings(table, columns):
     conn = create_db()
     query = f"PRAGMA table_info({table})"
     columns = conn.execute(query).fetchall()
     ### Exclude id and timestamp columns
-    columns = [col[1] for col in columns if col[1] not in ["id", "call_id", "timestamp", "raw", "data", "transcript"]]
+    columns = [col[1] for col in columns if col[1] in columns]
     conn.close()
     return columns

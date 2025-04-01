@@ -1,11 +1,7 @@
 import copy
 import enum
 from crewai import Agent, Task, Crew
-from echo.indexing import (
-    get_query_index_keys,
-    get_vector_index, 
-    IndexType
-)
+from echo.indexing import get_query_index_keys, get_vector_index, IndexType
 from echo.utils import format_response, get_llm
 from pydantic import BaseModel, Field
 from typing import Dict, List, Optional, Union
@@ -14,12 +10,13 @@ from llama_index.core.vector_stores import (
     MetadataFilter,
     MetadataFilters,
     FilterOperator,
-    FilterCondition
+    FilterCondition,
 )
 from tqdm.asyncio import tqdm as async_tqdm
 
 from llama_index.core.schema import NodeWithScore
 from echo.settings import SIMILARITY_TOP_K
+from llm_utils import summarize_text
 
 
 class ContextExtractionMode(enum.Enum):
@@ -51,15 +48,32 @@ class FilledSection(BaseModel):
     )
 
 
-class QueryResponse(BaseModel):
+class QEResponse(BaseModel):
     sections: List[FilledSection] = Field(
         ..., title="Sections", description="The filled sections of the call transcript."
     )
 
+class SingleQueryResponse(BaseModel):
+    response: str = Field(
+        ..., title="Response", description="The response to the query."
+    )
+    sub_queries_context: List[Dict] = Field(
+        ..., title="Sub Queries Context", description="The context for the sub queries."
+    )
+    
+class QueryResponse(BaseModel):
+    summary: str = Field(
+        ..., title="Summary", description="The summary of the responses."
+    )
+    responses: Dict[str, SingleQueryResponse] = Field(
+        ..., title="Responses", description="The responses to the queries."
+    )
 
 class QueryMetadata(BaseModel):
     key: str = Field(..., title="Key", description="The key for the metadata.")
-    value: Union[str, List[str]] = Field(..., title="Value", description="The value for the metadata.")
+    value: Union[str, List[str]] = Field(
+        ..., title="Value", description="The value for the metadata."
+    )
     operator: FilterOperator = Field(
         ..., title="Operator", description="The operator for the metadata."
     )
@@ -101,35 +115,42 @@ class Query(BaseModel):
 
 def get_llama_metadata_filters(metadata: List[QueryMetadata]):
     and_filters, or_filters = list(), list()
-    
+
     for md in metadata:
         if isinstance(md.value, list):
-            filters = [MetadataFilter(key=md.key, value=v, operator=md.operator) for v in md.value]
-            or_filters.append(MetadataFilters(filters=filters, condition=FilterCondition.OR))
+            filters = [
+                MetadataFilter(key=md.key, value=v, operator=md.operator)
+                for v in md.value
+            ]
+            or_filters.append(
+                MetadataFilters(filters=filters, condition=FilterCondition.OR)
+            )
         else:
-            and_filters.append(MetadataFilter(key=md.key, value=md.value, operator=md.operator))
-    
+            and_filters.append(
+                MetadataFilter(key=md.key, value=md.value, operator=md.operator)
+            )
+
     and_filters = MetadataFilters(filters=and_filters, condition=FilterCondition.AND)
     if len(or_filters) == 0:
         return and_filters
-    final_filters = MetadataFilters(filters=[and_filters] + or_filters, condition=FilterCondition.AND)
+    final_filters = MetadataFilters(
+        filters=[and_filters] + or_filters, condition=FilterCondition.AND
+    )
     return final_filters
-
 
 
 def get_metadata_filters(index_type: str, metadata: Dict):
     index_keys = get_query_index_keys(index_type)
-    
+
     for item in index_keys:
-        if item['mandatory']:
-            assert item["key"] in metadata, \
-            f"Metadata key missing for index type {index_type}: {item['key']}"
-    
+        if item["mandatory"]:
+            assert item["key"] in metadata, (
+                f"Metadata key missing for index type {index_type}: {item['key']}"
+            )
+
     filters = [
         QueryMetadata(
-            key=item["key"], 
-            value=metadata[item["key"]], 
-            operator=item["operator"]
+            key=item["key"], value=metadata[item["key"]], operator=item["operator"]
         )
         for item in index_keys
         if item["key"] in metadata
@@ -160,7 +181,7 @@ def get_qe_crew(response_format: ResponseFormat = ResponseFormat.MARKDOWN):
         if response_format == ResponseFormat.JSON:
             return {
                 "expected_output": json_response_format,
-                "output_pydantic": QueryResponse,
+                "output_pydantic": QEResponse,
             }
         return {"expected_output": markdown_response_format}
 
@@ -208,25 +229,29 @@ async def aget_qe_crew_response(
     sub_queries_context_str = "\n".join(
         [f"{sq['query']}\n{sq['context']}" for sq in sub_queries_context]
     )
-    inputs = {
-        "query": query,
-        "context": sub_queries_context_str
-    }
+    inputs = {"query": query, "context": sub_queries_context_str}
     add_pydantic_structure(qe_crew, inputs)
     response = await qe_crew.kickoff_async(inputs=inputs)
     return format_response(response.tasks_output[0])
 
 
 def get_buyer_research(metadata: dict) -> str:
-    metadata_filters = get_metadata_filters(
-        IndexType.BUYER_RESEARCH.value, 
-        metadata
-    )  # noqa: F821
-    vector_index = get_vector_index(metadata['seller'], IndexType.BUYER_RESEARCH.value)
+    metadata_filters = get_metadata_filters(IndexType.BUYER_RESEARCH.value, metadata)  # noqa: F821
+    vector_index = get_vector_index(metadata["seller"], IndexType.BUYER_RESEARCH.value)
     retriever = vector_index.as_retriever(filters=metadata_filters)
     docs: List[NodeWithScore] = retriever.retrieve("")
     assert len(docs) > 0, f"No Buyer Research documents found for {metadata['buyer']}"
     return "\n\n".join([d.text for d in docs])
+
+
+def get_buyer_foundation_plan(metadata: dict) -> str:
+    metadata_filters = get_metadata_filters(IndexType.BUYER_FOUNDATIONAL_PLAN.value, metadata)  # noqa: F821
+    vector_index = get_vector_index(metadata["seller"], IndexType.BUYER_FOUNDATIONAL_PLAN.value)
+    retriever = vector_index.as_retriever(filters=metadata_filters)
+    docs: List[NodeWithScore] = retriever.retrieve("")
+    assert len(docs) > 0, f"No Buyer Research documents found for {metadata['buyer']}"
+    return "\n\n".join([d.text for d in docs])
+
 
 
 def get_sub_queries_context(
@@ -238,8 +263,7 @@ def get_sub_queries_context(
 ) -> List[Dict]:
     def doc_data(doc):
         lambda doc: f"Document Text: {doc.text}\n"
-        + f"Document Metadata: {doc.metadata}"
-    
+        +f"Document Metadata: {doc.metadata}"
 
     def retrieve_content(query: str, filters: MetadataFilters):
         docs: List[NodeWithScore] = vector_index.as_retriever(
@@ -256,14 +280,17 @@ def get_sub_queries_context(
         return "Relevant Context:\n" + str(response)
 
     inputs.update({"seller": query.seller, "call_type": query.call_type})
-    
+
     buyer_context = get_buyer_research(inputs)
-    
-    sub_queries_context = [{
-        "query": "Buyer Research Information",
-        "context": buyer_context
-    }]
-    
+    buyer_foundational_plan = get_buyer_foundation_plan(inputs)
+
+    sub_queries_context = [
+        {
+            "query": "Buyer Research Information", 
+            "context": f"{buyer_context}\n\nFoundational Plan: {buyer_foundational_plan}"
+        }
+    ]
+
     for sub_query in query.sub_queries:
         print("Running sub query", sub_query.query)
         sub_query_inputs = copy.deepcopy(inputs)
@@ -304,9 +331,7 @@ async def aget_query_response(
     context_extraction_mode: ContextExtractionMode = ContextExtractionMode.QUERY_ENGINE,
     **kwargs,
 ):
-    context = get_sub_queries_context(
-        query, inputs, context_extraction_mode, **kwargs
-    )
+    context = get_sub_queries_context(query, inputs, context_extraction_mode, **kwargs)
     response = await aget_qe_crew_response(query.query, context, response_format)
     return response, context
 
@@ -317,11 +342,13 @@ async def arun_queries(
     response_format=ResponseFormat.MARKDOWN,
     context_extraction_mode: ContextExtractionMode = ContextExtractionMode.QUERY_ENGINE,
     **kwargs,
-):
+) -> QueryResponse:
     responses = dict()
     for call_type, call_queries in queries.items():
         print(f"Running queries for call type {call_type}")
-        for query_name, query in async_tqdm(call_queries.items(), desc="Running Queries"):
+        for query_name, query in async_tqdm(
+            call_queries.items(), desc="Running Queries"
+        ):
             response, sub_queries_context = await aget_query_response(
                 query, inputs, response_format, context_extraction_mode, **kwargs
             )
@@ -329,5 +356,25 @@ async def arun_queries(
                 "response": response,
                 "sub_queries_context": sub_queries_context,
             }
+
+    summary = summarize_text(
+        "\n\n".join(
+            [
+                f"{query_name}: {responses[query_name]['response']}"
+                for query_name in responses
+            ]
+        )
+    )
+    responses["summary"] = summary
+    responses = QueryResponse(
+        summary=summary,
+        responses={
+            query_name: SingleQueryResponse(
+                response=responses[query_name]["response"],
+                sub_queries_context=responses[query_name]["sub_queries_context"],
+            )
+            for query_name in responses
+        },
+    )
     
     return responses

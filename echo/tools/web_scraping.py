@@ -53,7 +53,7 @@ You need to analyze the webpage content and extract information that would be mo
 Focus on key offerings, unique selling points, pricing (if available), case studies, testimonials, competitive advantages, and any value propositions that differentiate this company from its competitors. 
 Remove any fluff, internal jargon, or non-client-relevant details. The final output should be clear, concise, and sales-oriented.
 You should provide a title of the page that is representative of the content extracted and then provide a summary of the content extracted from the webpage.
-THE SUMMARY SHOULD BE UNDER 300 WORDS.
+THE SUMMARY SHOULD BE UNDER 1000 WORDS.
 ---
 
 Here is the content extracted from the webpage - 
@@ -270,19 +270,13 @@ def extract_data_from_links(
     
 
 
-def summarize_website_content(website_content: str):
+def summarize_website_content(
+    content: str, 
+    summarization_prompt: str = DATA_SUMMARIZATION_PROMPT,
+    system_prompt: str = DATA_SUMMARIZATION_SYS_PROMPT
+):
     splitter = SentenceSplitter(chunk_size=CHUNK_SIZE, chunk_overlap=CHUNK_OVERLAP)
-    docs = splitter.split_text(website_content)
-
-    system_prompt = "You are an expert in sales such that you can summarize the content extracted from a website of a company that would be relevant to a potential client of that company."
-    summarization_prompt = (
-        "Summarize the text below. The summary should cover all the key information. \n"
-        "The summary should be clear, concise and should be sales-oriented\n"
-        "The summary should be under 2000 words.\n"
-        "---Below is the extracted content---\n"
-        "{content}\n"
-        "---End of Extracted Content---\n"
-    )
+    docs = splitter.split_text(content)
 
     summaries = [
         get_response(

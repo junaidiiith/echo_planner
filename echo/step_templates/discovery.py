@@ -130,12 +130,6 @@ class SellerResearchResponse(BaseModel):
         description="The pricing models offered by the seller.",
     )
 
-    clients: SellerClients = Field(
-        ...,
-        title="Seller's Clients",
-        description="The clients of the seller.",
-    )
-
 
 class ClientResearchResponse(BaseModel):
     name: str = Field(..., title="Buyer's Name", description="The name of the client.")
@@ -384,30 +378,7 @@ task_templates = {
             ),
             output_pydantic=SellerPricingModels,
             agent="SellerResearchAgent",
-        ),
-        # "SellerClientsTask": dict(
-        #     name="Seller Clients Research",
-        #     description=(
-        #         "Using the website content, you need to get a list of current clients of {seller}. "
-        #         "The buyer of the {seller} MUST BE PRESENT on the website of the {seller} so you MUST NOT create your own list of buyers. "
-        #         "You need to find the name of the client and infer the website of the client"
-        #         "If the website of the client is not present in the website content, then you should infer the name of the website based on your own knowledge."
-        #         "For example, if the client is 'Google', then you can infer the website as 'google.com'."
-        #         "Below is the website content of {seller}\n"
-        #         "---{seller}'s Website Content---\n"
-        #         "{seller_website_content}\n"
-        #         "---END of Website Content---\n"
-        #     ),
-        #     expected_output=(
-        #         "A list of current or potential buyers of the {seller}.\n"
-        #         "The response should conform to the provided schema.\n"
-        #         "You need to extract the following information in the following pydantic structure -\n"
-        #         "{pydantic_structure}\n"
-        #         "Make sure there are no comments in the response JSON and it should be a valid JSON."
-        #     ),
-        #     output_pydantic=SellerClients,
-        #     agent="SellerResearchAgent",
-        # ),
+        )
     },
     RESEARCH: {
         "BuyerResearcher": dict(
