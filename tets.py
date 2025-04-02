@@ -1,3 +1,114 @@
+"""
+from echo.tools.web_scraping import extract_data_from_website
+import asyncio
+
+website_content = asyncio.run(extract_data_from_website(url='https://foundit.in'))
+print(website_content)
+"""
+
+from echo import setup_db_tables
+import nest_asyncio
+from dotenv import load_dotenv
+import asyncio
+from echo.constants import (
+    DISCOVERY,
+    DEMO,
+    PRICING,
+    NEGOTIATION
+)
+from echo.runner import create_or_get_seller
+from echo.query_executor import QueryResponse
+nest_asyncio.apply()
+
+load_dotenv()
+
+
+setup_db_tables()
+
+NUM_BUYERS = 10
+
+inputs = {
+    "seller": "https://whatfix.com",
+    "num_buyers": NUM_BUYERS,
+}
+
+seller_data = asyncio.run(create_or_get_seller(inputs))
+
+
+
+
+
+
+#2
+
+from echo.runner import make_call
+
+
+buyer_inputs = {
+    **inputs,
+    **seller_data,
+    'call_id': 1,
+    'stakeholders': [
+        "Product Manager",
+        "CFO",
+        "VP of Product",
+        "VP of Sales"
+    ]
+}
+
+clients = [
+    # "https://www.synechron.com/",
+    #"https://services.harman.com/",
+    #"https://www.capgemini.com/",
+    #"https://www.cognizant.com/us/en"
+    "https://www.manpowergroup.com/en"
+]
+
+
+
+#3
+import re
+
+
+def split_camel_case(s):
+    return re.sub(r"([a-z])([A-Z])", r"\1 \2", s)
+
+
+def process_text(word: str):
+    return " ".join([t.title() for t in split_camel_case(word).split()])
+
+
+process_text("ProductManager")
+
+
+
+#4
+
+from echo import sqldb
+from echo.indexing import IndexType
+
+#sqldb.query_records(IndexType.BUYER_RESEARCH.value)[7]
+
+
+
+#5
+
+discovery_calls_data = asyncio.run(make_call(DISCOVERY, clients, buyer_inputs))
+
+
+# buyer_inputs['call_id'] = 2
+# demo_calls_data = asyncio.run(make_call(DEMO, clients, buyer_inputs))
+
+# buyer_inputs['call_id'] = 3
+# pricing_calls_data = asyncio.run(make_call(PRICING, clients[:5], buyer_inputs))
+# buyer_inputs['call_id'] = 4
+# negotiations_calls_data = asyncio.run(make_call(NEGOTIATION, clients[:5], buyer_inputs))
+
+
+
+
+
+# new account plan code
 import enum
 from pydantic import BaseModel
 import requests
@@ -8,7 +119,6 @@ from echo.settings import MAX_RETRIES
 from echo.tools.web_scraping import extract_data_from_links
 from echo import sqldb
 from echo.indexing import add_data, IndexType
-from echo.step_templates.generic import CallType
 
 
 # Replace with your actual port if different from 3000
@@ -190,7 +300,6 @@ def curate_buyer_index_data_from_search_response(search_response: SearchResponse
         "buyer": search_response.buyer,
         "query_type": search_response.query_type,
         "query": search_response.query,
-        "call_type": CallType.PREDISCOVERY.value,
         "sources": [{
             "title": source.metadata.title,
             "url": source.metadata.url
@@ -207,7 +316,6 @@ def curate_buyer_index_sources_data_from_search_response(search_response: Search
         "buyer": search_response.buyer,
         "query_type": search_response.query_type,
         "query": search_response.query,
-        "call_type":CallType.PREDISCOVERY.value,
         "sources": [{
             "title": source.metadata.title,
             "url": source.metadata.url
@@ -255,6 +363,9 @@ def search_query(seller, buyer, query_type, history=None) -> SearchResponse:
     }
     
     response = requests.post(API_URL, headers=headers, data=json.dumps(payload)).json()
+    
+    #print("response = ")
+    #print(response)
     response_obj = SearchResponse(**{
         **response,
         "buyer": buyer,
@@ -290,8 +401,10 @@ def search_query(seller, buyer, query_type, history=None) -> SearchResponse:
 
 
 def get_cited_sources(source):
+    print(source)
     pattern = r'\[([^\]]+)\]'
     matches: List[str] = re.findall(pattern, source)
+    print("matches = ", matches)
     return list(set([int(i) for i in matches if i.isnumeric()]))
 
 
@@ -328,9 +441,10 @@ def extract_data_from_sources(search_response: SearchResponse) -> SearchResponse
     def make_search_call():
         print("Record does not exist, making API call...")
         citations = get_cited_sources(search_response.message)
+        print("Citations = ", citations)
         if not citations:
-            return []
-            #data = []
+            data = []
+            extracted_cited_sources= ExtractedCitedSource(CitedSource)
         else:
             cited_sources = get_cited_content(search_response.sources, citations)
             print("cited sources", cited_sources)
@@ -384,8 +498,60 @@ def extract_data_from_sources(search_response: SearchResponse) -> SearchResponse
     return search_response.model_copy(update={"source_extracted_data": extracted_cited_sources})
 
 
-def create_account_plan(seller: str, buyer: str):
-    for query_type in QueryTypes:
-        search_response = search_query(seller=seller, buyer=buyer, query_type=query_type.value)
-        extract_data_from_sources(search_response)
+buyer = "https://www.manpowergroup.com/en"
+seller = "https://whatfix.com"
+
+
+
+
+from echo.tools.perplexity_search import create_account_plan
+from echo.indexing import setup_db_tables
+
+buyer = "https://www.manpowergroup.com/en"
+seller = "https://whatfix.com"
+
+setup_db_tables()
+create_account_plan(seller=seller, buyer=buyer)
+
+
+# query part
+
+from echo.queries import get_queries
+queries = get_queries(seller=seller)
+print(queries)
+
+#account_plan_query = queries['prediscovery']
+from echo.query_executor import arun_queries
+from echo.query_executor import ResponseFormat
+from echo.query_executor import ContextExtractionMode
+import nest_asyncio
+import asyncio
+
+nest_asyncio.apply()
+
+
+inputs = {"buyer": buyer, "company_size": "Enterprise"}
+
+# single query endpoint
+# same runs for multiple queries too
+responses = asyncio.run(
+    arun_queries(
+        queries=queries,
+        inputs=inputs,
+        response_format=ResponseFormat.MARKDOWN,
+        context_extraction_mode=ContextExtractionMode.QUERY_ENGINE,
+    )
+)
+print(responses)
+print(type(responses))
+print("\n\n\n")
+
+# summary endpoint for email
+import json
+email_summary = {}
+for query in responses.responses:
+    email_summary[query] = { "response":responses.responses[query].response,"sub_queries_context":responses.responses[query].sub_queries_context,"summary":responses.responses[query].summary}
     
+email_summary=json.dumps(email_summary, indent=4)
+print(email_summary)
+print(type(email_summary))

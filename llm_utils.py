@@ -85,13 +85,14 @@ def summarize_text(text, split_count=5):
         ])
     
     tokens = get_num_tokens(text)
+    split_size = tokens // split_count
+    min_tokens = int(0.2*split_size)
+    max_tokens = int(0.4*split_size)
     
     if tokens < MAX_CONTEXT_LENGTH:
         return summarize(text)
     else:
-        split_size = tokens // split_count
-        min_tokens = int(0.2*split_size)
-        max_tokens = int(0.4*split_size)
+        
         print("Splitting text into {} parts".format(split_count))
         print(f"Split size: {split_size}, Min tokens: {min_tokens}, Max tokens: {max_tokens}")
         summaries = [

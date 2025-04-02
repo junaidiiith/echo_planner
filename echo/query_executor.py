@@ -60,6 +60,9 @@ class SingleQueryResponse(BaseModel):
     sub_queries_context: List[Dict] = Field(
         ..., title="Sub Queries Context", description="The context for the sub queries."
     )
+    summary: str = Field(
+        ..., title="Summary", description="The summary of the response."
+    )
     
 class QueryResponse(BaseModel):
     summary: str = Field(
@@ -354,24 +357,32 @@ async def arun_queries(
             )
             responses[query_name] = {
                 "response": response,
-                "sub_queries_context": sub_queries_context,
+                "sub_queries_context": sub_queries_context
             }
 
+    # added per query summarization func
+    summary_per_query = dict()
+    for query in call_queries.items():
+        summary_per_query[query[0]] = summarize_text(
+            str(responses[query[0]]['response'])
+        )
+    
     summary = summarize_text(
-        "\n\n".join(
+    "\n\n".join(
             [
                 f"{query_name}: {responses[query_name]['response']}"
                 for query_name in responses
             ]
         )
     )
-    responses["summary"] = summary
+    #responses["summary"] = summary
     responses = QueryResponse(
         summary=summary,
         responses={
             query_name: SingleQueryResponse(
                 response=responses[query_name]["response"],
                 sub_queries_context=responses[query_name]["sub_queries_context"],
+                summary=summary_per_query.get(query_name, "")
             )
             for query_name in responses
         },

@@ -257,11 +257,18 @@ def get_query_index_keys(index_type: str):
         ]
     }[index_type]
 
+    
+
     index_db_keys = get_table_columns_for_embeddings(
         index_type
         if index_type != IndexType.CURRENT_CALL.value
-        else IndexType.ANALYSIS.value
+        else IndexType.ANALYSIS.value, table_to_metadata_columns_map[IndexType(index_type)]
     )
+
+    print(index_db_keys)
+    print("\n\n")
+    print(index_keys)
+    print("\n\n")
     assert all([k["key"] in index_db_keys for k in index_keys]), (
         f"Missing metadata keys for {index_type}.",
         f"\nRequired keys: {index_db_keys}. ",

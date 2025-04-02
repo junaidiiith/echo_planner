@@ -381,7 +381,15 @@ def get_queries(seller):
         ],
     )
 
+
     queries = {
+        CallType.PREDISCOVERY.value: {
+            "Buyer Account Plan": account_plan,
+        }
+    }
+    """
+    queries = {
+        
         CallType.DISCOVERY.value: {
             "Info To Cover": discovery_info_to_cover,
             "Stakeholder Priorities": stakeholder_priorities,
@@ -413,4 +421,5 @@ def get_queries(seller):
             "Buyer Account Plan": account_plan,
         }
     }
+    """
     return queries
