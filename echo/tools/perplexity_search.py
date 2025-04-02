@@ -7,7 +7,7 @@ from typing import Dict, List, Optional, Tuple
 from echo.settings import MAX_RETRIES
 from echo.tools.web_scraping import extract_data_from_links
 from echo import sqldb
-from echo.indexing import add_data, IndexType
+from echo.indexing import add_data, setup_db_tables, IndexType
 
 
 # Replace with your actual port if different from 3000
@@ -213,22 +213,7 @@ def curate_buyer_index_sources_data_from_search_response(search_response: Search
     return data, metadata
 
 
-def search_query(seller, buyer, query_type, history=None) -> SearchResponse:
-    
-    condition_dict = {
-        "seller": seller, 
-        "buyer": buyer, 
-        "query_type": query_type
-    }
-    print("Checking if record exists in the database...")
-    if sqldb.check_record_exists(IndexType.BUYER_FOUNDATIONAL_PLAN.value, condition_dict):
-        print("Record exists, fetching from the database...")
-        return SearchResponse(**sqldb.get_record(IndexType.BUYER_FOUNDATIONAL_PLAN.value, condition_dict))
-    
-    print("Record does not exist, making API call...")
-    
-    query = query_type_prompts[query_type]['search'].format(buyer=buyer)
-    
+def call_perplexity(query: str, history: Optional[List[Dict]] = None):
     if history is None:
         history = [
             ["human", "Hi, how are you?"],
@@ -252,6 +237,26 @@ def search_query(seller, buyer, query_type, history=None) -> SearchResponse:
     }
     
     response = requests.post(API_URL, headers=headers, data=json.dumps(payload)).json()
+    return response
+
+
+def search_query(seller, buyer, query_type, history=None) -> SearchResponse:
+    
+    condition_dict = {
+        "seller": seller, 
+        "buyer": buyer, 
+        "query_type": query_type
+    }
+    print("Checking if record exists in the database...")
+    if sqldb.check_record_exists(IndexType.BUYER_FOUNDATIONAL_PLAN.value, condition_dict):
+        print("Record exists, fetching from the database...")
+        return SearchResponse(**sqldb.get_record(IndexType.BUYER_FOUNDATIONAL_PLAN.value, condition_dict))
+    
+    print("Record does not exist, making API call...")
+    
+    query = query_type_prompts[query_type]['search'].format(buyer=buyer)
+    
+    response = call_perplexity(query=query, history=history)
     response_obj = SearchResponse(**{
         **response,
         "buyer": buyer,
@@ -381,7 +386,8 @@ def extract_data_from_sources(search_response: SearchResponse) -> SearchResponse
 
 
 def create_account_plan(seller: str, buyer: str):
+    setup_db_tables()
     for query_type in QueryTypes:
         search_response = search_query(seller=seller, buyer=buyer, query_type=query_type.value)
         extract_data_from_sources(search_response)
-    
+        
