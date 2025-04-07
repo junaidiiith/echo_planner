@@ -1,5 +1,3 @@
-from echo import setup_db_tables
-from dotenv import load_dotenv
 import asyncio
 from echo.constants import (
     DISCOVERY,
@@ -11,10 +9,6 @@ from echo.runner import (
     create_or_get_seller, 
     make_call
 )
-
-
-load_dotenv()
-setup_db_tables()
 
 
 NUM_BUYERS = 10

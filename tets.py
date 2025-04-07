@@ -8,7 +8,6 @@ print(website_content)
 
 from echo import setup_db_tables
 import nest_asyncio
-from dotenv import load_dotenv
 import asyncio
 from echo.constants import (
     DISCOVERY,
@@ -20,7 +19,6 @@ from echo.runner import create_or_get_seller
 from echo.query_executor import QueryResponse
 nest_asyncio.apply()
 
-load_dotenv()
 
 
 setup_db_tables()

@@ -4,12 +4,9 @@ from echo.utils import (
     get_num_tokens, 
     get_text_upto_tokens
 )
-from dotenv import load_dotenv
 from typing import List
 import os
 
-
-load_dotenv()
 
 
 llm_configs = {
@@ -100,3 +97,4 @@ def summarize_text(text, split_count=5):
             for i in range(1, split_count)
         ]
         return "\n\n".join(summary for summary in summaries if summary)
+    

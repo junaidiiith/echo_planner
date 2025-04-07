@@ -1,24 +1,14 @@
-import os
 from echo.indexing import IndexType, get_vector_index
 from crewai.tools.structured_tool import CrewStructuredTool
 from pydantic import BaseModel, Field
 
-from crewai import Crew, Task, Agent, LLM
+from crewai import Crew, Task, Agent
 
 from llama_index.core.vector_stores import MetadataFilter, MetadataFilters
 
 from echo.settings import SIMILARITY_TOP_K
 from echo.step_templates.generic import FilledSections
-from echo.utils import add_pydantic_structure
-
-
-def get_llm():
-    llm = LLM(
-        model=os.getenv("FIREWORKS_MODEL_NAME"),
-        base_url="https://api.fireworks.ai/inference/v1",
-        api_key=os.getenv("FIREWORKS_API_KEY"),
-    )
-    return llm
+from echo.utils import add_pydantic_structure, get_crew_llm
 
 
 def take_input(label: str) -> str:
@@ -287,7 +277,7 @@ agent = Agent(
         "Each deal involves different types of calls like discovery, demo, pricing and procurement. "
         "You have been tasked with preparing for a call with a buyer. "
     ),
-    llm=get_llm(),
+    llm=get_crew_llm(),
     tools=[
         historical_call_index_tool,
         current_call_info_retriver_tool,

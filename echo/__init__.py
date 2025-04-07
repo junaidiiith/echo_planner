@@ -1,3 +1,5 @@
-from echo.indexing import setup_db_tables
+from dotenv import load_dotenv
+# from echo.utils import redirect_print_to_logger
 
-__all__ = ["setup_db_tables"]
+load_dotenv()
+# redirect_print_to_logger()

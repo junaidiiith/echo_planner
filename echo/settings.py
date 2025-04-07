@@ -1,6 +1,7 @@
 import os
 
 
+
 save_dir = os.getenv("RUN_STORAGE_DIR", "runs")
 buyer_db_name = "buyer_data"
 seller_db_name = "seller_data"
@@ -15,4 +16,7 @@ CALL_HISTORY_LIMIT = 4
 MAX_TEXT_TOKENS = 6000
 MAX_CONTEXT_LENGTH = 8000
 
-debug = os.getenv("DEBUG", False)
+N_COMPETITORS = 3
+
+debug = int(os.getenv("DEBUG", 0))
+

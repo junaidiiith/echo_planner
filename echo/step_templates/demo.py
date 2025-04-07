@@ -1,18 +1,16 @@
 import copy
-from echo.agent import EchoAgent
 from crewai import LLM
-from crewai.crews.crew_output import CrewOutput
-from echo.constants import RESEARCH, SIMULATION, ANALYSIS, EXTRACTION
+from crewai.crews import CrewOutput
 from pydantic import BaseModel, Field
 from typing import Dict, List
-from echo.indexing import IndexType, add_data
+from echo.data.indexes import IndexDataType
+from echo.indexing import IndexType, add_data, check_metadata_exists, get_data_from_index
 from echo.tools.web_scraping import extract_data_from_website
 from echo.utils import (
-    add_pydantic_structure, 
     dict_to_markdown, 
-    format_response, 
     get_num_tokens, 
-    json_to_markdown
+    json_to_markdown,
+    format_response
 )
 from echo.step_templates.generic import (
     CallType,
@@ -22,11 +20,18 @@ from echo.step_templates.generic import (
     add_buyer_research,
     add_seller_research,
 )
-from echo.utils import get_crew as get_crew_obj
-import echo.utils as utils
-
-import echo.sqldb as sqldb
-from llm_utils import summarize_text
+from echo.echo_agent import (
+    get_crew as get_crew_obj,
+    get_data_str,
+    EchoAgent
+)
+from echo.llm_utils import summarize_text
+from echo.constants import (
+    RESEARCH, 
+    SIMULATION, 
+    ANALYSIS, 
+    EXTRACTION
+)
 
 # ------------------------------------------------------------------------------------------------ #
 ## Seller Data
@@ -348,7 +353,7 @@ def get_analysis_data(data: Dict, string_format=False):
     }
 
     if string_format:
-        data_str = utils.get_data_str(analysis_keys, data)
+        data_str = get_data_str(analysis_keys, data)
         return data_str
 
     return {k: v for k, v in data.items() if k in analysis_keys}
@@ -371,14 +376,13 @@ def get_research_data(data: Dict, string_format=False):
     }
 
     if string_format:
-        data_str = utils.get_data_str(research_keys, data)
+        data_str = get_data_str(research_keys, data)
         return data_str
     return {k: v for k, v in data.items() if k in research_keys}
 
 
 def get_research_metadata(data: Dict):
     return {
-        "seller": data["seller"],
         "buyer": data["buyer"],
         "call_type": CallType.DEMO.value,
         "company_size": data["buyer_research"]["company_size"],
@@ -417,23 +421,30 @@ async def aget_research_data_for_client(inputs: dict, llm: LLM, **crew_config):
     data = copy.deepcopy(inputs)
     client, seller = inputs["buyer"], inputs["seller"]
 
-    assert sqldb.check_record_exists(
-        IndexType.BUYER_RESEARCH.value, {"buyer": client, "seller": seller}
+    assert check_metadata_exists(
+        index_name=seller,
+        index_type=IndexType.BUYER_RESEARCH,
+        metadata={"buyer": client}
     ), f"Demo Data for client {client} does not exist."
 
-    buyer_demo_record = sqldb.get_record(
-        IndexType.BUYER_RESEARCH.value,
-        {"buyer": client, "seller": seller, "raw": False},
+    buyer_demo_record = get_data_from_index(
+        index_name=seller,
+        index_type=IndexType.BUYER_RESEARCH,
+        metadata={"buyer": client, "data_type": IndexDataType.BUYER_RESEARCH_DATA.value},
     )
     assert buyer_demo_record, f"Discovery Data for client {client} does not exist."
     data.update(buyer_demo_record["data"])
 
-    buyer_website_content = sqldb.get_record(
-        IndexType.BUYER_RESEARCH.value, {"buyer": client, "seller": seller, "raw": True}
+    buyer_website_content = get_data_from_index(
+        index_name=seller,
+        index_type=IndexType.BUYER_RESEARCH, 
+        metadata={"buyer": client, "data_type": IndexDataType.BUYER_WEBSITE_DATA.value}
     )["data"]
 
-    seller_website_content = sqldb.get_record(
-        IndexType.SELLER_RESEARCH.value, {"seller": seller, "raw": True}
+    seller_website_content = get_data_from_index(
+        index_name=seller,
+        index_type=IndexType.SELLER_RESEARCH,
+        metadata={"data_type": IndexDataType.SELLER_WEBSITE_DATA.value}
     )["data"]
 
     data["buyer_website_content"] = (
@@ -465,28 +476,13 @@ async def aget_research_data_for_client(inputs: dict, llm: LLM, **crew_config):
             "seller": seller,
             "industry": buyer_demo_record["industry"],
             "company_size": buyer_demo_record["company_size"],
+            "data_type": IndexDataType.BUYER_DEMO_RESEARCH_DATA.value,
         }
 
         update_dict = {
             "data": buyer_research_data,
         }
 
-        sqldb.update_record(
-            IndexType.BUYER_RESEARCH.value, 
-            {**condition_attributes, "raw": False}, 
-            update_dict
-        )
-        
-        existing_raw_record_data = sqldb.get_record(
-            IndexType.BUYER_RESEARCH.value, 
-            {**condition_attributes, "raw": True}
-        )['data']
-        
-        sqldb.update_record(
-            IndexType.BUYER_RESEARCH.value, 
-            {**condition_attributes, "raw": True}, 
-            {"data": existing_raw_record_data + "\n\n" + get_research_data(data, True)}
-        )
 
         add_data(
             data=get_research_data(data, True),
@@ -504,7 +500,6 @@ async def aget_research_data_for_client(inputs: dict, llm: LLM, **crew_config):
         return data
 
     crew = get_crew(RESEARCH, llm, **crew_config)
-    add_pydantic_structure(crew, data)
     response = await crew.kickoff_async(
         inputs={**dict_to_markdown(data), "call_type": CallType.DEMO.value}
     )
@@ -532,7 +527,6 @@ async def aget_simulation_data_for_client(inputs: dict, llm: LLM, **crew_config)
             "transcript": data["demo_transcript"],
         }
 
-        sqldb.insert_record(IndexType.CALL_TRANSCRIPTS.value, metadata)
         print(f"Embedding Simulation Data for Client: {client}")
         add_data(
             data=json_to_markdown(data["demo_transcript"]),
@@ -541,27 +535,27 @@ async def aget_simulation_data_for_client(inputs: dict, llm: LLM, **crew_config)
             index_type=IndexType.CALL_TRANSCRIPTS,
         )
 
-    if sqldb.check_record_exists(
-        IndexType.CALL_TRANSCRIPTS.value,
-        {
+    if check_metadata_exists(
+        index_name=seller,
+        index_type=IndexType.CALL_TRANSCRIPTS,
+        metadata={
             "call_id": inputs["call_id"],
             "buyer": inputs["buyer"],
-            "seller": inputs["seller"],
-        },
+            "call_type": CallType.DEMO.value,
+        }
     ):
-        data["demo_transcript"] = sqldb.get_record(
-            IndexType.CALL_TRANSCRIPTS.value,
-            {
+        data["demo_transcript"] = get_data_from_index(
+            index_name=seller,
+            index_type=IndexType.CALL_TRANSCRIPTS,
+            metadata={
                 "call_id": inputs["call_id"],
                 "buyer": inputs["buyer"],
-                "seller": inputs["seller"],
+                "call_type": CallType.DEMO.value,
             },
         )["transcript"]
-        save_data()
         return data
 
     crew = get_crew(SIMULATION, llm, **crew_config)
-    add_pydantic_structure(crew, data)
     response = await crew.kickoff_async(
         inputs={**dict_to_markdown(data), "call_type": CallType.DEMO.value}
     )
@@ -580,14 +574,15 @@ async def aanalyze_data_for_client(inputs: dict, llm: LLM, **crew_config):
     data.update(await aget_simulation_data_for_client(inputs, llm, **crew_config))
 
     def check_stakeholder_analysis_exist(stakeholder):
-        return sqldb.check_record_exists(
-            IndexType.ANALYSIS.value,
-            {
-                "seller": seller,
+        return check_metadata_exists(
+            index_name=seller,
+            index_type=IndexType.ANALYSIS,
+            metadata={
                 "buyer": client,
                 "call_id": call_id,
+                "call_type": CallType.DEMO.value,
                 "stakeholder": stakeholder,
-            },
+            }
         )
 
     def save_stakeholder_analysis(stakeholder):
@@ -600,7 +595,6 @@ async def aanalyze_data_for_client(inputs: dict, llm: LLM, **crew_config):
                 "data": get_analysis_data(data["demo_analysis_data"][stakeholder]),
             }
         )
-        sqldb.insert_record(IndexType.ANALYSIS.value, metadata)
         print(f"Adding Analysis Data for Stakeholder: {stakeholder}")
         add_data(
             data=get_analysis_data(data["demo_analysis_data"][stakeholder], True),
@@ -610,18 +604,20 @@ async def aanalyze_data_for_client(inputs: dict, llm: LLM, **crew_config):
         )
 
     if all(
-        check_stakeholder_analysis_exist(stakeholder) for stakeholder in stakeholders
+        check_stakeholder_analysis_exist(stakeholder) 
+        for stakeholder in stakeholders
     ):
         demo_analysis_data = dict()
         for stakeholder in stakeholders:
-            demo_analysis_data[stakeholder] = sqldb.get_record(
-                IndexType.ANALYSIS.value,
-                {
-                    "seller": seller,
+            demo_analysis_data[stakeholder] = get_data_from_index(
+                index_name=seller,
+                index_type=IndexType.ANALYSIS,
+                metadata={
                     "buyer": client,
                     "call_id": call_id,
+                    "call_type": CallType.DEMO.value,
                     "stakeholder": stakeholder,
-                },
+                }
             )["data"]
 
         data.update({"demo_analysis_data": demo_analysis_data})
@@ -632,7 +628,6 @@ async def aanalyze_data_for_client(inputs: dict, llm: LLM, **crew_config):
         return data
 
     crew = get_crew(ANALYSIS, llm, **crew_config)
-    add_pydantic_structure(crew, data)
 
     demo_analysis_data = dict()
 

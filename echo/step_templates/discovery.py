@@ -1,15 +1,14 @@
 import copy
-from crewai_tools import SerperDevTool
-from echo.agent import EchoAgent
 from crewai import LLM
-from crewai.crews.crew_output import CrewOutput
-from echo.constants import SELLER_RESEARCH, RESEARCH, SIMULATION, EXTRACTION, ANALYSIS
+from crewai.crews import CrewOutput
 from pydantic import BaseModel, Field
 from typing import Dict, List
+from echo.data.indexes import IndexDataType
 from echo.settings import MAX_TEXT_TOKENS
+from echo.step_templates.utilities.competitor_analysis import agent_competitor_info
+from echo.step_templates.utilities.account_plan_creation import create_account_plan
 from echo.tools.web_scraping import extract_data_from_website
 from echo.utils import (
-    add_pydantic_structure,
     dict_to_markdown,
     format_response,
     get_text_upto_tokens,
@@ -21,12 +20,22 @@ from echo.step_templates.generic import (
     add_previous_call_analysis,
     aget_clients_call_data,
 )
-from echo.utils import get_crew as get_crew_obj
-import echo.utils as utils
-import echo.sqldb as sqldb
+from echo.echo_agent import (
+    EchoAgent,
+    get_crew as get_crew_obj,
+    get_data_str
+)
+from tqdm.auto import tqdm
+from echo.indexing import IndexType, add_data, check_metadata_exists, get_data_from_index
 
-
-from echo.indexing import IndexType, add_data
+from echo.constants import (
+    COMPETITOR_EXTRACTION,
+    SELLER_RESEARCH, 
+    RESEARCH, 
+    SIMULATION, 
+    EXTRACTION, 
+    ANALYSIS
+)
 
 
 class ValueProposition(BaseModel):
@@ -165,6 +174,16 @@ class ClientResearchResponse(BaseModel):
     )
 
 
+class Competitor(BaseModel):
+    name: str
+    description: str
+    url: str
+    rationale: str
+
+class CompetitorsExtractionResponse(BaseModel):
+    competitors: list[Competitor]
+
+
 class CompetitorComparison(BaseModel):
     name: str = Field(
         ..., title="Competitor's Name", description="The name of the competitor."
@@ -264,8 +283,6 @@ class SellerDataExtracted(BaseModel):
     )
 
 
-tools = {"search_tool": SerperDevTool()}
-
 agent_templates = {
     SELLER_RESEARCH: {
         "SellerResearchAgent": dict(
@@ -334,6 +351,18 @@ agent_templates = {
             ),
         )
     },
+    COMPETITOR_EXTRACTION: dict(
+        role="Competitor Research Agent",
+        goal=(
+            "You are an expert in extracting out the list of competitors of a sales company."
+        ),
+        backstory=(
+            "A sales company is trying to sell its product to a customer."
+            "The customer is asking for a list of competitors of the sales company."
+            "You are an expert in extracting out the list of competitors of a sales company."
+        ),
+    )
+    
 }
 
 task_templates = {
@@ -575,6 +604,24 @@ task_templates = {
             output_pydantic=SellerDataExtracted,
         ),
     },
+    COMPETITOR_EXTRACTION: dict(
+        name='Competitors Extraction',
+        description=(
+            "Given the following result from a search engine, extract the competitors of the company."
+            "Make sure to include the competitors landing page URL, and the description of the company and why it is a competitor."
+            "Below is the search engine result -\n"
+            "{search_engine_result}\n"
+        ),
+        expected_output=(
+            "A list of .\n"
+            "The response should conform to the provided schema.\n"
+            "You need to extract the following information in the following pydantic structure -\n"
+            "{pydantic_structure}\n"
+            "Make sure there are no comments in the response JSON and it should be a valid JSON."
+        ),
+        output_pydantic=CompetitorsExtractionResponse,
+        agent="CompetitorExtractionAgent",
+    )   
 }
 
 
@@ -585,9 +632,8 @@ def get_buyer_research_data(data: Dict, string_format: bool = False):
         "anticipated_qopcs": AnticipatedPainsAndObjections,
     }
 
-    data_str = utils.get_data_str(buyer_research_keys, data)
     if string_format:
-        return data_str
+        return get_data_str(buyer_research_keys, data)
     return {k: data[k] for k in buyer_research_keys.keys()}
 
 
@@ -595,11 +641,10 @@ def get_seller_research_data(data: Dict, string_format: bool = False):
     seller_research_keys = {
         "seller_research": SellerResearchResponse,
         "seller_pricing": SellerPricingModels,
-        # "seller_clients": SellerClients,
     }
 
     if string_format:
-        return utils.get_data_str(seller_research_keys, data)
+        return get_data_str(seller_research_keys, data)
     return {k: data[k] for k in seller_research_keys.keys()}
 
 
@@ -609,15 +654,13 @@ def get_analysis_data(data: Dict, string_format: bool = False):
         "discovery_analysis_seller_data": SellerDataExtracted,
     }
 
-    data_str = utils.get_data_str(analysis_keys, data)
     if string_format:
-        return data_str
+        return get_data_str(analysis_keys, data)
     return {k: data[k] for k in analysis_keys.keys()}
 
 
 def get_analysis_metadata(data: Dict):
     return {
-        "seller": data["seller"],
         "buyer": data["buyer"],
         "call_type": CallType.DISCOVERY.value,
         "company_size": data["buyer_research"]["company_size"],
@@ -629,12 +672,10 @@ def get_analysis_metadata(data: Dict):
 def process_seller_research_data_output(output: CrewOutput):
     seller_info = format_response(output.tasks_output[0])
     seller_pricing = format_response(output.tasks_output[1])
-    # seller_clients = format_response(output.tasks_output[2])
 
     return {
         "seller_research": seller_info,
         "seller_pricing": seller_pricing,
-        # "seller_clients": seller_clients,
     }
 
 
@@ -675,61 +716,44 @@ def get_crew(step: str, llm: LLM, **crew_config) -> EchoAgent:
 
 async def aget_seller_research_data(inputs: dict, llm: LLM, **crew_config):
     assert "seller" in inputs, "Invalid input data for research"
+    seller = inputs["seller"]
     data = copy.deepcopy(inputs)
 
-    async def get_website_content():
-        if sqldb.check_record_exists(
-            IndexType.WEBSITE_CONTENT.value, {"name": data["seller"], "type": "seller"}
+    async def get_seller_website_content():
+        metadata = {"data_type": IndexDataType.SELLER_WEBSITE_DATA.value}
+        if check_metadata_exists(
+            index_name=seller,
+            index_type=IndexType.SELLER_RESEARCH, 
+            metadata=metadata
         ):
-            record = sqldb.get_record(
-                IndexType.WEBSITE_CONTENT.value,
-                {"name": data["seller"], "type": "seller"},
+            record = get_data_from_index(
+                index_name=seller,
+                index_type=IndexType.SELLER_RESEARCH,
+                metadata=metadata
             )
-            return record["data"]
+            return record['data']
 
         website_content = await extract_data_from_website(seller)
 
-        sqldb.insert_record(
-            IndexType.WEBSITE_CONTENT.value,
-            {
-                "name": data["seller"],
-                "type": "seller",
-                "data": website_content,
-            },
-        )
-
-        return website_content
-
-    def save_data():
-        sqldb.insert_record(
-            IndexType.SELLER_RESEARCH.value,
-            {
-                "seller": data["seller"],
-                "industry": data["seller_research"]["industry"],
-                "raw": True,
-                "data": data["seller_website_content"],
-            },
-        )
-
-        print(f"Adding Seller: {seller} Research Data")
         add_data(
-            data=data["seller_website_content"],
+            data=website_content,
             metadata={
-                "seller": seller,
-                "industry": data["seller_research"]["industry"],
+                **metadata,
+                'data': website_content
             },
             index_name=seller,
             index_type=IndexType.SELLER_RESEARCH,
         )
 
+        return website_content
+
+    def save_research_data():
         print(f"Adding Seller: {seller} Summarized Website Research Data")
         metadata = {
-            "seller": seller,
+            "data_type": IndexDataType.SELLER_RESEARCH_DATA.value, 
             "industry": data["seller_research"]["industry"],
-            "raw": False,
             "data": get_seller_research_data(data),
         }
-        sqldb.insert_record(IndexType.SELLER_RESEARCH.value, metadata)
 
         print(f"Adding Seller: {seller} Research Data")
         add_data(
@@ -739,38 +763,43 @@ async def aget_seller_research_data(inputs: dict, llm: LLM, **crew_config):
             index_type=IndexType.SELLER_RESEARCH,
         )
 
-    seller = inputs["seller"]
-    if sqldb.check_record_exists(
-        IndexType.SELLER_RESEARCH.value, {"seller": seller, "raw": False}
+    if check_metadata_exists(
+        index_name=seller,
+        index_type=IndexType.SELLER_RESEARCH,
+        metadata={"data_type": IndexDataType.SELLER_RESEARCH_DATA.value}
     ):
         print("Seller Research Data Found")
-        data["seller_website_content"] = sqldb.get_record(
-            IndexType.SELLER_RESEARCH.value, {"seller": seller, "raw": True}
-        )["data"]
-        data.update(
-            sqldb.get_record(
-                IndexType.SELLER_RESEARCH.value, {"seller": seller, "raw": False}
-            )["data"]
+        data["seller_website_content"] = await get_seller_website_content()
+        record = get_data_from_index(
+            index_name=seller,
+            index_type=IndexType.SELLER_RESEARCH,
+            metadata={"data_type": IndexDataType.SELLER_RESEARCH_DATA.value}
         )
-        save_data()
+        data.update(record['data'])
         return data
 
     print("Seller Research Data Not Found. Generating Data...")
-    data["seller_website_content"] = await get_website_content()
+    data["seller_website_content"] = await get_seller_website_content()
     data["seller_website_content"] = get_text_upto_tokens(
-        data["seller_website_content"], MAX_TEXT_TOKENS
+        data["seller_website_content"], 
+        MAX_TEXT_TOKENS
     )
-
     print("Website Content Extracted")
+    
+    print("Extracting Competitor Information")
+    await agent_competitor_info(data)
+    print("Competitor Information Extracted")
+    
 
     crew = get_crew(SELLER_RESEARCH, llm, **crew_config)
-    add_pydantic_structure(crew, data)
+    
     response = await crew.kickoff_async(
         inputs={**dict_to_markdown(data), "call_type": CallType.DISCOVERY.value}
     )
     data.update(process_seller_research_data_output(response))
-    save_data()
+    save_research_data()
     return data
+
 
 
 async def aget_research_data_for_client(inputs: dict, llm: LLM, **crew_config):
@@ -783,66 +812,43 @@ async def aget_research_data_for_client(inputs: dict, llm: LLM, **crew_config):
     data.update(await aget_seller_research_data({"seller": seller}, llm, **crew_config))
 
     async def get_website_content():
-        if sqldb.check_record_exists(
-            IndexType.WEBSITE_CONTENT.value, {"name": client, "type": "buyer"}
+        metadata = {"buyer": client, "data_type": IndexDataType.BUYER_WEBSITE_DATA.value}
+        if check_metadata_exists(
+            index_name=seller,
+            index_type=IndexType.BUYER_RESEARCH,
+            metadata=metadata
         ):
-            record = sqldb.get_record(
-                IndexType.WEBSITE_CONTENT.value, {"name": client, "type": "buyer"}
+            record = get_data_from_index(
+                index_name=seller,
+                index_type=IndexType.BUYER_RESEARCH,
+                metadata=metadata
             )
 
             print(f"Found Buyer: {client} Website Content")
-            print(record["data"])
-            print("-" * 100)
-
             return record["data"]
 
         website_content = await extract_data_from_website(client)
 
-        sqldb.insert_record(
-            IndexType.WEBSITE_CONTENT.value,
-            {
-                "name": client,
-                "type": "buyer",
-                "data": website_content,
-            },
-        )
-
-        return website_content
-
-    def save_data():
-        sqldb.insert_record(
-            IndexType.BUYER_RESEARCH.value,
-            {
-                "buyer": client,
-                "seller": seller,
-                "industry": data["buyer_research"]["industry"],
-                "company_size": data["buyer_research"]["company_size"],
-                "raw": True,
-                "data": data["buyer_website_content"],
-            },
-        )
-
         add_data(
-            data=data["buyer_website_content"],
+            data=website_content,
             metadata={
-                "buyer": client,
-                "seller": seller,
-                "industry": data["buyer_research"]["industry"],
-                "company_size": data["buyer_research"]["company_size"],
+                **metadata,
+                "data": website_content,
             },
             index_name=seller,
             index_type=IndexType.BUYER_RESEARCH,
         )
+        
+        return website_content
 
-        print(f"Adding Buyer: {client} Data")
+    def save_data():
         metadata = {
             "buyer": client,
-            "seller": seller,
             "industry": data["buyer_research"]["industry"],
             "company_size": data["buyer_research"]["company_size"],
+            "data_type": IndexDataType.BUYER_RESEARCH_DATA.value,
             "data": get_buyer_research_data(data),
         }
-        sqldb.insert_record(IndexType.BUYER_RESEARCH.value, {**metadata, "raw": False})
 
         print(f"Adding Buyer: {client} Research Data")
         add_data(
@@ -852,35 +858,31 @@ async def aget_research_data_for_client(inputs: dict, llm: LLM, **crew_config):
             index_type=IndexType.BUYER_RESEARCH,
         )
 
-    if sqldb.check_record_exists(
-        IndexType.BUYER_RESEARCH.value,
-        {"buyer": client, "seller": seller, "raw": False},
+    if check_metadata_exists(
+        index_name=seller,
+        index_type=IndexType.BUYER_RESEARCH,
+        metadata={"buyer": client, "data_type": IndexDataType.BUYER_RESEARCH_DATA.value}
     ):
         print("Buyer Research Data Found")
-        data["buyer_website_content"] = sqldb.get_record(
-            IndexType.BUYER_RESEARCH.value,
-            {"buyer": client, "seller": seller, "raw": True},
-        )["data"]
-
-        # print(data["buyer_website_content"])
-
-        data.update(
-            sqldb.get_record(
-                IndexType.BUYER_RESEARCH.value,
-                {"buyer": client, "seller": seller, "raw": False},
-            )["data"]
+        record = get_data_from_index(
+            index_name=seller,
+            index_type=IndexType.BUYER_RESEARCH,
+            metadata={"buyer": client, "data_type": IndexDataType.BUYER_RESEARCH_DATA.value}
         )
-        save_data()
+        data.update(record['data'])
         return data
 
     data["buyer_website_content"] = await get_website_content()
     data["buyer_website_content"] = get_text_upto_tokens(
-        data["buyer_website_content"], MAX_TEXT_TOKENS
+        data["buyer_website_content"], 
+        MAX_TEXT_TOKENS
     )
     print("Website Content Extracted")
+    
+    create_account_plan(seller=seller, buyer=client)
 
     crew = get_crew(RESEARCH, llm, **crew_config)
-    add_pydantic_structure(crew, data)
+    
     response = await crew.kickoff_async(
         inputs={**dict_to_markdown(data), "call_type": CallType.DISCOVERY.value}
     )
@@ -893,6 +895,11 @@ async def aget_simulation_data_for_client(inputs: dict, llm: LLM, **crew_config)
     assert "stakeholders" in inputs, "No stakeholders found for simulation"
     seller, client = inputs["seller"], inputs["buyer"]
     call_id = inputs["call_id"]
+    metadata = {
+        "buyer": client,
+        "call_type": CallType.DISCOVERY.value,
+        "call_id": call_id,
+    }
 
     data = copy.deepcopy(inputs)
     data.update(
@@ -901,50 +908,46 @@ async def aget_simulation_data_for_client(inputs: dict, llm: LLM, **crew_config)
     add_previous_call_analysis(data)
 
     def save_data():
-        metadata = {
-            "seller": seller,
-            "buyer": client,
-            "call_type": CallType.DISCOVERY.value,
-            "call_id": call_id,
-            "transcript": data["discovery_transcript"],
-        }
-
-        sqldb.insert_record(IndexType.CALL_TRANSCRIPTS.value, metadata)
         print(f"Embedding Simulation Data for Client: {client}")
         add_data(
             data=json_to_markdown(data["discovery_transcript"]),
-            metadata=metadata,
+            metadata={
+                **metadata,
+                "transcript": data["discovery_transcript"]
+            },
             index_name=seller,
             index_type=IndexType.CALL_TRANSCRIPTS,
         )
 
-    if sqldb.check_record_exists(
-        IndexType.CALL_TRANSCRIPTS.value,
-        {
-            "call_id": inputs["call_id"],
-            "buyer": inputs["buyer"],
-            "seller": inputs["seller"],
+    if check_metadata_exists(
+        index_name=seller,
+        index_type=IndexType.CALL_TRANSCRIPTS,
+        metadata={
+            "call_type": CallType.DISCOVERY.value,
+            "buyer": client,
+            "call_id": call_id
         },
     ):
-        data["discovery_transcript"] = sqldb.get_record(
-            IndexType.CALL_TRANSCRIPTS.value,
-            {
-                "call_id": inputs["call_id"],
-                "buyer": inputs["buyer"],
-                "seller": inputs["seller"],
+        record = get_data_from_index(
+            index_name=seller,
+            index_type=IndexType.CALL_TRANSCRIPTS,
+            metadata={
+                "call_type": CallType.DISCOVERY.value,
+                "buyer": client,
+                "call_id": call_id
             },
-        )["transcript"]
-        save_data()
+        )
+        
+        data["discovery_transcript"] = record["transcript"]
         return data
 
     crew = get_crew(SIMULATION, llm, **crew_config)
-    add_pydantic_structure(crew, data)
+    
     response = await crew.kickoff_async(
         inputs={**dict_to_markdown(data), "call_type": CallType.DISCOVERY.value}
     )
 
     data.update({"discovery_transcript": format_response(response.tasks_output[0])})
-
     save_data()
     return data
 
@@ -960,14 +963,15 @@ async def aanalyze_data_for_client(inputs: dict, llm: LLM, **crew_config):
     )
 
     def check_stakeholder_analysis_exist(stakeholder):
-        return sqldb.check_record_exists(
-            IndexType.ANALYSIS.value,
-            {
-                "seller": seller,
+        return check_metadata_exists(
+            index_name=seller,
+            index_type=IndexType.ANALYSIS,
+            metadata={
+                "call_type": CallType.DISCOVERY.value,
                 "buyer": client,
                 "call_id": call_id,
                 "stakeholder": stakeholder,
-            },
+            }
         )
 
     def save_stakeholder_analysis(stakeholder):
@@ -980,8 +984,6 @@ async def aanalyze_data_for_client(inputs: dict, llm: LLM, **crew_config):
                 "data": get_analysis_data(data["discovery_analysis_data"][stakeholder]),
             }
         )
-        sqldb.insert_record(IndexType.ANALYSIS.value, metadata)
-        print(f"Adding Analysis Data for Stakeholder: {stakeholder}")
         add_data(
             data=get_analysis_data(data["discovery_analysis_data"][stakeholder], True),
             metadata=metadata,
@@ -989,32 +991,32 @@ async def aanalyze_data_for_client(inputs: dict, llm: LLM, **crew_config):
             index_type=IndexType.ANALYSIS,
         )
 
-    if all(
-        check_stakeholder_analysis_exist(stakeholder) for stakeholder in stakeholders
+    if all(check_stakeholder_analysis_exist(stakeholder)
+        for stakeholder in stakeholders
     ):
         discovery_analysis_data = dict()
         for stakeholder in stakeholders:
-            discovery_analysis_data[stakeholder] = sqldb.get_record(
-                IndexType.ANALYSIS.value,
-                {
-                    "seller": seller,
+            record = get_data_from_index(
+                index_name=seller,
+                index_type=IndexType.ANALYSIS,
+                metadata={
+                    "call_type": CallType.DISCOVERY.value,
                     "buyer": client,
                     "call_id": call_id,
                     "stakeholder": stakeholder,
-                },
-            )["data"]
-
+                }
+            )
+            discovery_analysis_data[stakeholder] = record["data"]
+        
         data.update({"discovery_analysis_data": discovery_analysis_data})
-        for stakeholder in stakeholders:
-            save_stakeholder_analysis(stakeholder)
         return data
+    print("No analysis data found for the stakeholders. Generating data...")
 
     crew = get_crew(ANALYSIS, llm, **crew_config)
-    add_pydantic_structure(crew, data)
 
     discovery_analysis_data = dict()
 
-    for stakeholder in stakeholders:
+    for stakeholder in tqdm(stakeholders):
         print(f"Analyzing discovery data for stakeholder: {stakeholder}")
 
         response = await crew.kickoff_async(
@@ -1053,6 +1055,7 @@ async def aget_data_for_clients(
     print(f"Getting {task_type} Data")
     data = await aget_clients_call_data(task_fn, clients, inputs, llm, **crew_config)
     return data
+
 
 
 async def aget_seller_data(inputs: dict, llm: LLM, **crew_config):

@@ -1,29 +1,22 @@
+import ast
+import sys
+import logging
 import os
 from pathlib import Path
 import re
-import ast
 import json
 import time
 import tiktoken
-from typing import List, Dict, Union, get_origin, get_args
-from dotenv import load_dotenv
-from pydantic import BaseModel
-from crewai import LLM, Agent, Task, Crew
-from echo.agent import EchoAgent
-from crewai.tasks.task_output import TaskOutput
-from echo.constants import (
-    ALLOWED_KEYS,
-    BUYER_RESEARCH_KEYS,
-    SELLER_RESEARCH_KEYS,
-    ANALYSIS_KEYS,
-    SIMULATION_KEYS,
-    BUYER,
-    SELLER,
+from typing import (
+    List, 
+    Dict,
+    Union, 
 )
-from echo.settings import save_dir, buyer_db_name, seller_db_name, db_name
-
-
-load_dotenv()
+from crewai import LLM
+from crewai.tasks import TaskOutput
+from echo.settings import (
+    db_name
+)
 
 
 def format_response(x: TaskOutput):
@@ -38,133 +31,13 @@ def format_response(x: TaskOutput):
         return x.raw
 
 
-# format_response = lambda x: x.pydantic.model_dump_json(indent=2) if x.pydantic else x.raw
-
-
-def get_model_code_with_comments(model: BaseModel) -> str:
-    def resolve_type(annotation):
-        """
-        Resolves the type of an attribute, handling primitive types, composite types,
-        and nested models.
-        """
-        origin = get_origin(annotation)
-        args = get_args(annotation)
-
-        # If the type is a Pydantic model
-        if isinstance(annotation, type) and issubclass(annotation, BaseModel):
-            return resolve_model(annotation)
-
-        # If the type is a List, Dict, etc., resolve its arguments
-        elif origin in [list, List]:
-            inner_type = resolve_type(args[0]) if args else "Any"
-            return f"List[{inner_type}]"
-        elif origin in [dict, Dict]:
-            key_type = resolve_type(args[0]) if len(args) > 0 else "Any"
-            value_type = resolve_type(args[1]) if len(args) > 1 else "Any"
-            return f"Dict[{key_type}, {value_type}]"
-
-        # If it's a primitive type
-        elif origin is None:
-            return annotation.__name__
-
-        # Default to string representation
-        return str(annotation)
-
-    def resolve_model(model):
-        """
-        Resolves a Pydantic model's attributes into a formatted representation with comments.
-        """
-        fields = model.__annotations__
-        resolved_fields = []
-        for field, field_type in fields.items():
-            comment = (
-                model.model_fields[field].description
-                if field in model.model_fields
-                else ""
-            )
-            comment_str = f" # {comment}" if comment else ""
-            resolved_fields.append(
-                f"\t\t{field}: {resolve_type(field_type)}{comment_str}"
-            )
-        return "{\n" + "\n".join(resolved_fields) + "\n\t}"
-
-    # Resolve attributes from the base class(es) first
-    base_classes = [
-        base
-        for base in model.__bases__
-        if issubclass(base, BaseModel) and base is not BaseModel
-    ]
-    resolved_base_classes = [
-        get_model_code_with_comments(base) for base in base_classes
-    ]
-
-    # Top-level model resolution
-    fields = model.__annotations__
-    resolved_fields = []
-    for field, field_type in fields.items():
-        comment = (
-            model.model_fields[field].description if field in model.model_fields else ""
-        )
-        comment_str = f" # {comment}" if comment else ""
-        resolved_fields.append(f"\t{field}: {resolve_type(field_type)}{comment_str}")
-
-    return (
-        f"class {model.__name__}(BaseModel):\n"
-        + "\n".join(resolved_base_classes)
-        + "\n"
-        + "\n".join(resolved_fields)
-        + "\n"
+def get_crew_llm():
+    llm = LLM(
+        model=os.getenv("FIREWORKS_MODEL_NAME"),
+        base_url="https://api.fireworks.ai/inference/v1",
+        api_key=os.getenv("FIREWORKS_API_KEY"),
     )
-
-
-def get_crew(
-    agent_templates: Dict[str, Dict],
-    task_templates: Dict[str, Dict],
-    llm: LLM = None,
-    **crew_config,
-):
-    if llm is None:
-        llm = get_llm()
-
-    agents = {
-        agent_name: Agent(llm=llm, **v) for agent_name, v in agent_templates.items()
-    }
-    tasks = dict()
-    for task_name, v in task_templates.items():
-        d = v.copy()
-        d["agent"] = agents[v["agent"]]
-        context = v.get("context", [])
-        if context:
-            d["context"] = [tasks[i] for i in context]
-        tasks[task_name] = Task(**d)
-
-    crew = EchoAgent(
-        agents=list(agents.values()), tasks=list(tasks.values()), **crew_config
-    )
-
-    return crew
-
-
-def add_pydantic_structure(t_crew: Crew, inputs: dict):
-    for i, task in enumerate(t_crew.tasks):
-        if "{pydantic_structure}" in task.expected_output:
-            pyd = "{pydantic_structure" + f"_{i}" + "}"
-            task.expected_output = task.expected_output.replace(
-                "{pydantic_structure}", pyd
-            )
-            inputs[pyd[1:-1]] = get_model_code_with_comments(task.output_pydantic)
-
-
-def get_save_path(save_path_str: str, extension=".json"):
-    local_dir = f"{os.sep}".join(save_path_str.split(os.sep)[:-1])
-    # print("Saving Path", local_dir)
-    save_pth_dir = os.path.join(get_project_directory_name(), save_dir, local_dir)
-    os.makedirs(save_pth_dir, exist_ok=True)
-
-    file_name = save_path_str.split(os.sep)[-1]
-    save_pth = os.path.join(save_pth_dir, file_name) + extension
-
-    return save_pth
+    return llm
 
 
 def serialize_dict(obj: dict):
@@ -182,222 +55,6 @@ def deserialize_dict(obj: dict):
 
 def get_db_name():
     return get_project_directory_name() / db_name
-
-
-def check_path_exists(client_name):
-    save_path = get_save_path(client_name)
-    os.makedirs(os.path.dirname(save_path), exist_ok=True)
-    if not os.path.exists(save_path):
-        return False
-    return True
-
-
-def check_call_exists(client_name, call_type, fields=None):
-    fields = fields or []
-    save_path = get_save_path(client_name)
-    if not os.path.exists(save_path):
-        return False
-
-    with open(save_path) as f:
-        data = json.load(f)
-        calls = [
-            call
-            for call in data
-            if call["call_type"] == call_type and all(field in call for field in fields)
-        ]
-        if calls:
-            return True
-        return False
-
-
-def get_client_stakeholder_calls(client_name, call_type):
-    save_path = get_save_path(client_name)
-    with open(save_path) as f:
-        data = json.load(f)
-        calls = [call for call in data if call["call_type"] == call_type]
-        return calls
-
-
-def get_latest_client_call_by_call_type(client_name, call_type):
-    save_path = get_save_path(client_name)
-    with open(save_path) as f:
-        data = json.load(f)
-        calls = [call for call in data if call["call_type"] == call_type]
-        assert len(calls) > 0, f"No {call_type} calls found for {client_name}"
-        return calls[-1]
-
-
-def get_client_data(client_name) -> Dict:
-    save_path = get_save_path(client_name)
-    with open(save_path) as f:
-        return json.load(f)
-
-
-def get_json_data(client_name):
-    save_path = get_save_path(client_name)
-    with open(save_path) as f:
-        return json.load(f)
-
-
-def save_json_data(client_name, data):
-    save_path = get_save_path(client_name)
-    with open(save_path, "w") as f:
-        json.dump(data, f, indent=2)
-
-
-def get_refined_data(client_name):
-    data = get_client_data(client_name)
-    return {k: data[k] for k in data if k in ALLOWED_KEYS}
-
-
-def get_analysis_data(client_name):
-    data = get_client_data(client_name)
-    return {k: data[k] for k in data if k in ANALYSIS_KEYS}
-
-
-def get_simulation_data(client_name):
-    data = get_client_data(client_name)
-    return {k: data[k] for k in data if k in SIMULATION_KEYS}
-
-
-def get_buyer_research_data(client_name):
-    data = get_client_data(client_name)
-    return {k: data[k] for k in data if k in BUYER_RESEARCH_KEYS}
-
-
-def get_seller_research_data(client_name):
-    data = get_client_data(client_name)
-    return {k: data[k] for k in data if k in SELLER_RESEARCH_KEYS}
-
-
-def save_client_data(client_name: str, data):
-    save_pth = get_save_path(client_name)
-    ndata = {k: data[k] for k in data if k in ALLOWED_KEYS}
-    with open(save_pth, "w") as f:
-        json.dump(ndata, f, indent=2)
-
-
-def save_analysis_data(client_name: str, data):
-    save_pth = get_save_path(client_name)
-    ndata = {k: data[k] for k in data if k in ANALYSIS_KEYS}
-    with open(save_pth, "w") as f:
-        json.dump(ndata, f, indent=2)
-
-
-def save_simulation_data(client_name: str, data):
-    save_pth = get_save_path(client_name)
-    ndata = {k: data[k] for k in data if k in SIMULATION_KEYS}
-    with open(save_pth, "w") as f:
-        json.dump(ndata, f, indent=2)
-
-
-def save_buyer_research_data(client_name: str, data):
-    save_pth = get_save_path(client_name)
-    ndata = {k: data[k] for k in data if k in BUYER_RESEARCH_KEYS}
-    with open(save_pth, "w") as f:
-        json.dump(ndata, f, indent=2)
-
-
-def save_seller_research_data(client_name: str, data):
-    save_pth = get_save_path(client_name)
-    ndata = {k: data[k] for k in data if k in SELLER_RESEARCH_KEYS}
-    with open(save_pth, "w") as f:
-        json.dump(ndata, f, indent=2)
-
-
-def remove_keys(keys: List[str]):
-    for file in os.listdir(save_dir):
-        with open(f"{save_dir}/{file}") as f:
-            data = json.load(f)
-        for key in keys:
-            if key in data:
-                del data[key]
-        with open(f"{save_dir}/{file}", "w") as f:
-            json.dump(data, f, indent=2)
-
-
-def get_nested_value(key, nested_dict):
-    def get_structured_value(value):
-        if isinstance(value, str):
-            try:
-                value = json.loads(value)
-            except Exception:
-                pass
-        return value
-
-    """Extract value from nested dictionary using dot-separated keys."""
-    keys = key.split(".")
-    value: Dict = (
-        json.loads(nested_dict) if isinstance(nested_dict, str) else nested_dict
-    )
-    for k in keys:
-        if isinstance(value, str):
-            try:
-                value = json.loads(value)
-            except json.JSONDecodeError:
-                try:
-                    value = json.loads(json.dumps(ast.literal_eval(value)))
-                except json.JSONDecodeError as e:
-                    raise json.JSONDecodeError(
-                        f"Could not decode the value: {value} with error: {e}"
-                    )
-
-        if k in value:
-            value = value[k]
-        else:
-            raise KeyError(
-                f"Key '{key}' not found in the dictionary with keys: {value.keys()}"
-            )
-    return get_structured_value(value)
-
-
-def replace_keys_with_values(string, dictionary):
-    def get_printable_value(value):
-        if isinstance(value, list):
-            return "\n\t" + "\n\t".join(
-                [f"{i + 1}. {get_printable_value(v)}" for i, v in enumerate(value)]
-            )
-        if isinstance(value, dict):
-            return ",\n".join([f"{k} - {get_printable_value(value[k])}" for k in value])
-        return value
-
-    # Regex to find keys enclosed in curly braces
-    pattern = r"\{([^{}]+)\}"
-
-    # Replace keys with their corresponding values
-    def replacer(match):
-        key = match.group(1)  # Extract the key inside curly braces
-        try:
-            value = get_nested_value(key, dictionary)
-            value = get_printable_value(value)
-            return value
-        except KeyError:
-            print(f"Key '{key}' not found in the dictionary")
-            return match.group(0)  # If key is not found, keep it as is
-
-    return re.sub(pattern, replacer, string)
-
-
-def get_nested_key_values(key_location_dict: Dict, dictionary: Dict):
-    return {k: get_nested_value(v, dictionary) for k, v in key_location_dict.items()}
-
-
-def get_llm():
-    llm = LLM(
-        model=os.getenv("FIREWORKS_MODEL_NAME"),
-        base_url="https://api.fireworks.ai/inference/v1",
-        api_key=os.getenv("FIREWORKS_API_KEY"),
-    )
-    return llm
-
-
-def get_db_type(user_type):
-    if user_type == BUYER:
-        return buyer_db_name
-    elif user_type == SELLER:
-        return seller_db_name
-    else:
-        raise ValueError("User type must be one of 'buyer' or 'seller'")
 
 
 def get_current_time():
@@ -453,19 +110,12 @@ def snake_to_camel(snake_str: str):
     return " ".join(x.title() for x in components)
 
 
-def get_data_str(key_items: Dict, data):
-    data_str = "\n".join(
-        [
-            f"{snake_to_camel(k)} Fields Description: {get_model_code_with_comments(v)}\n{json_to_markdown(data[k])}"
-            for k, v in key_items.items()
-        ]
-    )
-    return data_str
-
 def dict_to_markdown(data: Dict):
     new_dict = dict()
     for k in data:
-        new_dict[k] = json_to_markdown(data[k]) if isinstance(data[k], (dict, list)) else data[k]
+        new_dict[k] = (
+            json_to_markdown(data[k]) if isinstance(data[k], (dict, list)) else data[k]
+        )
     return new_dict
 
 
@@ -485,3 +135,49 @@ def get_num_tokens(text, model="gpt-4o"):
     tokens = encoding.encode(text)
     # Return the number of tokens
     return len(tokens)
+
+
+def redirect_print_to_logger():
+    
+    current_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+    logs_dir = os.getenv("LOGS_DIR", "logs")
+    os.makedirs(logs_dir, exist_ok=True)
+    log_file_path = os.path.join(logs_dir, f"{current_time}.log")
+
+    class LoggerWriter:
+        def __init__(self, logger: logging.Logger, level):
+            self.logger = logger
+            self.level = level
+
+        def write(self, message: str):
+            message = message.strip()
+            if message:
+                self.logger.log(self.level, message)
+
+        def flush(self):
+            pass
+
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s [%(levelname)s] %(message)s",
+        handlers=[
+            logging.FileHandler(log_file_path),
+            logging.StreamHandler(sys.__stdout__)
+        ]
+    )
+
+    logger = logging.getLogger("PrintLogger")
+    sys.stdout = LoggerWriter(logger, logging.INFO)
+    sys.stderr = LoggerWriter(logger, logging.ERROR)
+
+
+def get_variables_from_prompt(prompt: str):
+    """
+    Extracts variable names from the prompt string.
+    """
+    # Regular expression to match variable names (e.g., {variable_name})
+    pattern = r"\{(\w+)\}"
+    matches = re.findall(pattern, prompt)
+    
+    # Return the list of variable names
+    return matches

@@ -1,11 +1,11 @@
 import copy
 import enum
 from crewai import Agent, Task, Crew
-from echo.indexing import get_query_index_keys, get_vector_index, IndexType
-from echo.utils import format_response, get_llm
+from echo.data.indexes import get_echo_index
+from echo.indexing import get_vector_index, IndexType
+from echo.utils import format_response, get_crew_llm
 from pydantic import BaseModel, Field
 from typing import Dict, List, Optional, Union
-from echo.utils import add_pydantic_structure
 from llama_index.core.vector_stores import (
     MetadataFilter,
     MetadataFilters,
@@ -16,7 +16,7 @@ from tqdm.asyncio import tqdm as async_tqdm
 
 from llama_index.core.schema import NodeWithScore
 from echo.settings import SIMILARITY_TOP_K
-from llm_utils import summarize_text
+from echo.llm_utils import summarize_text
 
 
 class ContextExtractionMode(enum.Enum):
@@ -53,6 +53,7 @@ class QEResponse(BaseModel):
         ..., title="Sections", description="The filled sections of the call transcript."
     )
 
+
 class SingleQueryResponse(BaseModel):
     response: str = Field(
         ..., title="Response", description="The response to the query."
@@ -63,7 +64,8 @@ class SingleQueryResponse(BaseModel):
     summary: str = Field(
         ..., title="Summary", description="The summary of the response."
     )
-    
+
+
 class QueryResponse(BaseModel):
     summary: str = Field(
         ..., title="Summary", description="The summary of the responses."
@@ -71,6 +73,7 @@ class QueryResponse(BaseModel):
     responses: Dict[str, SingleQueryResponse] = Field(
         ..., title="Responses", description="The responses to the queries."
     )
+
 
 class QueryMetadata(BaseModel):
     key: str = Field(..., title="Key", description="The key for the metadata.")
@@ -143,20 +146,22 @@ def get_llama_metadata_filters(metadata: List[QueryMetadata]):
 
 
 def get_metadata_filters(index_type: str, metadata: Dict):
-    index_keys = get_query_index_keys(index_type)
+    echo_index = get_echo_index(metadata["seller"], index_type)
 
-    for item in index_keys:
-        if item["mandatory"]:
-            assert item["key"] in metadata, (
-                f"Metadata key missing for index type {index_type}: {item['key']}"
+    for item in echo_index.metadata_columns:
+        if item.mandatory:
+            assert item.key in metadata, (
+                f"Metadata key missing for index type {index_type}: {item.key}"
             )
 
     filters = [
         QueryMetadata(
-            key=item["key"], value=metadata[item["key"]], operator=item["operator"]
+            key=item.key, 
+            value=metadata[item.key], 
+            operator=item.operator
         )
-        for item in index_keys
-        if item["key"] in metadata
+        for item in echo_index.metadata_columns
+        if item.key in metadata
     ]
     filters = get_llama_metadata_filters(filters)
     return filters
@@ -199,7 +204,7 @@ def get_qe_crew(response_format: ResponseFormat = ResponseFormat.MARKDOWN):
             "MOST IMPORTANTLY: YOU NEED TO USE THE INFORMATION ONLY PROVIDED HERE AND NOT ANY PRIOR KNOWLEDGE."
         ),
         goal="You need to provide the sales agent with the most relevant information that helps them to understand the needs of the client and successfully close the deal.",
-        llm=get_llm(),
+        llm=get_crew_llm(),
     )
 
     task = Task(
@@ -233,7 +238,6 @@ async def aget_qe_crew_response(
         [f"{sq['query']}\n{sq['context']}" for sq in sub_queries_context]
     )
     inputs = {"query": query, "context": sub_queries_context_str}
-    add_pydantic_structure(qe_crew, inputs)
     response = await qe_crew.kickoff_async(inputs=inputs)
     return format_response(response.tasks_output[0])
 
@@ -248,13 +252,16 @@ def get_buyer_research(metadata: dict) -> str:
 
 
 def get_buyer_foundation_plan(metadata: dict) -> str:
-    metadata_filters = get_metadata_filters(IndexType.BUYER_FOUNDATIONAL_PLAN.value, metadata)  # noqa: F821
-    vector_index = get_vector_index(metadata["seller"], IndexType.BUYER_FOUNDATIONAL_PLAN.value)
+    metadata_filters = get_metadata_filters(
+        IndexType.BUYER_FOUNDATIONAL_PLAN.value, metadata
+    )  # noqa: F821
+    vector_index = get_vector_index(
+        metadata["seller"], IndexType.BUYER_FOUNDATIONAL_PLAN.value
+    )
     retriever = vector_index.as_retriever(filters=metadata_filters)
     docs: List[NodeWithScore] = retriever.retrieve("")
     assert len(docs) > 0, f"No Buyer Research documents found for {metadata['buyer']}"
     return "\n\n".join([d.text for d in docs])
-
 
 
 def get_sub_queries_context(
@@ -289,8 +296,8 @@ def get_sub_queries_context(
 
     sub_queries_context = [
         {
-            "query": "Buyer Research Information", 
-            "context": f"{buyer_context}\n\nFoundational Plan: {buyer_foundational_plan}"
+            "query": "Buyer Research Information",
+            "context": f"{buyer_context}\n\nFoundational Plan: {buyer_foundational_plan}",
         }
     ]
 
@@ -357,35 +364,35 @@ async def arun_queries(
             )
             responses[query_name] = {
                 "response": response,
-                "sub_queries_context": sub_queries_context
+                "sub_queries_context": sub_queries_context,
             }
 
     # added per query summarization func
     summary_per_query = dict()
     for query in call_queries.items():
         summary_per_query[query[0]] = summarize_text(
-            str(responses[query[0]]['response'])
+            str(responses[query[0]]["response"])
         )
-    
+
     summary = summarize_text(
-    "\n\n".join(
+        "\n\n".join(
             [
                 f"{query_name}: {responses[query_name]['response']}"
                 for query_name in responses
             ]
         )
     )
-    #responses["summary"] = summary
+    # responses["summary"] = summary
     responses = QueryResponse(
         summary=summary,
         responses={
             query_name: SingleQueryResponse(
                 response=responses[query_name]["response"],
                 sub_queries_context=responses[query_name]["sub_queries_context"],
-                summary=summary_per_query.get(query_name, "")
+                summary=summary_per_query.get(query_name, ""),
             )
             for query_name in responses
         },
     )
-    
+
     return responses

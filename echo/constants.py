@@ -4,6 +4,8 @@ RESEARCH = "research"
 SIMULATION = "simulation"
 EXTRACTION = "extraction"
 ANALYSIS = "analysis"
+COMPETITOR_EXTRACTION = "competitor_extraction"
+
 SAVE_DATA = "save_data"
 EMBED_DATA = "embed_data"
 

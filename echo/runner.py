@@ -1,10 +1,11 @@
 from crewai import LLM
-from echo.utils import get_llm
+from echo.utils import get_crew_llm
 
 
 from echo.step_templates.discovery import (
     aget_data_for_clients as aget_discovery_data_for_clients,
     aget_seller_data,
+    aget_competitor_data,
 )
 from echo.step_templates.demo import aget_data_for_clients as aget_demo_data_for_clients
 from echo.step_templates.pricing import (
@@ -37,7 +38,7 @@ async def simulate_calls(call_type, clients, inputs, llm: LLM = None, **crew_con
         f"call_type must be one of {DISCOVERY}, {DEMO}, {PRICING}, {NEGOTIATION}"
     )
     if llm is None:
-        llm = get_llm()
+        llm = get_crew_llm()
 
     simulated_call_data = await call_fns[call_type](
         SIMULATION, clients, inputs, llm, **crew_config
@@ -50,7 +51,7 @@ async def get_analysis(call_type, clients, inputs, llm: LLM = None, **crew_confi
         f"call_type must be one of {DISCOVERY}, {DEMO}, {PRICING}, {NEGOTIATION}"
     )
     if llm is None:
-        llm = get_llm()
+        llm = get_crew_llm()
 
     analysed_call_data = await call_fns[call_type](
         ANALYSIS, clients, inputs, llm, **crew_config
@@ -63,7 +64,7 @@ async def make_call(call_type, clients, inputs, llm: LLM = None, **crew_config):
         f"call_type must be one of {DISCOVERY}, {DEMO}, {PRICING}, {NEGOTIATION}"
     )
     if llm is None:
-        llm = get_llm()
+        llm = get_crew_llm()
 
     print(f"Making {call_type} call for {clients}")
     analysed_call_data = await call_fns[call_type](
@@ -74,10 +75,18 @@ async def make_call(call_type, clients, inputs, llm: LLM = None, **crew_config):
 
 async def create_or_get_seller(inputs, llm: LLM = None, **crew_config):
     if llm is None:
-        llm = get_llm()
+        llm = get_crew_llm()
 
     print(f"Creating seller for {inputs['seller']}")
-    seller_data = await aget_seller_data(
-        inputs, llm, **crew_config
-    )
+    seller_data = await aget_seller_data(inputs, llm, **crew_config)
+    return seller_data
+
+
+# for competitor agent
+async def create_or_get_competitor(inputs, llm: LLM = None, **crew_config):
+    if llm is None:
+        llm = get_crew_llm()
+
+    print(f"Creating seller for {inputs['seller']}")
+    seller_data = await aget_competitor_data(inputs, llm, **crew_config)
     return seller_data
