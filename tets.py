@@ -10,14 +10,10 @@ from echo import setup_db_tables
 import nest_asyncio
 from dotenv import load_dotenv
 import asyncio
-from echo.constants import (
-    DISCOVERY,
-    DEMO,
-    PRICING,
-    NEGOTIATION
-)
+from echo.constants import DISCOVERY, DEMO, PRICING, NEGOTIATION
 from echo.runner import create_or_get_seller
 from echo.query_executor import QueryResponse
+
 nest_asyncio.apply()
 
 load_dotenv()
@@ -35,11 +31,7 @@ inputs = {
 seller_data = asyncio.run(create_or_get_seller(inputs))
 
 
-
-
-
-
-#2
+# 2
 
 from echo.runner import make_call
 
@@ -47,26 +39,21 @@ from echo.runner import make_call
 buyer_inputs = {
     **inputs,
     **seller_data,
-    'call_id': 1,
-    'stakeholders': [
-        "Product Manager",
-        "CFO",
-        "VP of Product",
-        "VP of Sales"
-    ]
+    "call_id": 1,
+    "stakeholders": ["Product Manager", "CFO", "VP of Product", "VP of Sales"],
 }
 
 clients = [
     # "https://www.synechron.com/",
-    #"https://services.harman.com/",
-    #"https://www.capgemini.com/",
-    #"https://www.cognizant.com/us/en"
-    "https://www.manpowergroup.com/en"
+    # "https://services.harman.com/",
+    # "https://www.capgemini.com/",
+    # "https://www.cognizant.com/us/en"
+    "https://www.coca-cola.com/in/en",
+    "https://www.manpowergroup.com/en",
 ]
 
 
-
-#3
+# 3
 import re
 
 
@@ -81,17 +68,15 @@ def process_text(word: str):
 process_text("ProductManager")
 
 
-
-#4
+# 4
 
 from echo import sqldb
 from echo.indexing import IndexType
 
-#sqldb.query_records(IndexType.BUYER_RESEARCH.value)[7]
+# sqldb.query_records(IndexType.BUYER_RESEARCH.value)[7]
 
 
-
-#5
+# 5
 
 discovery_calls_data = asyncio.run(make_call(DISCOVERY, clients, buyer_inputs))
 
@@ -103,9 +88,6 @@ discovery_calls_data = asyncio.run(make_call(DISCOVERY, clients, buyer_inputs))
 # pricing_calls_data = asyncio.run(make_call(PRICING, clients[:5], buyer_inputs))
 # buyer_inputs['call_id'] = 4
 # negotiations_calls_data = asyncio.run(make_call(NEGOTIATION, clients[:5], buyer_inputs))
-
-
-
 
 
 # new account plan code
@@ -125,10 +107,10 @@ from echo.indexing import add_data, IndexType
 API_URL = "http://localhost:3000/api/search"
 
 
-
 class Metadata(BaseModel):
     title: str
     url: str
+
 
 class Source(BaseModel):
     pageContent: str
@@ -145,11 +127,11 @@ class CitedSource(BaseModel):
     title: str
     content: str
     url: str
-    
+
 
 class ExtractedCitedSource(CitedSource):
     data: Optional[str] = None
-    
+
 
 class SearchResponse(BaseModel):
     message: str
@@ -165,7 +147,6 @@ class SearchResponse(BaseModel):
 class SearchResult(BaseModel):
     message: str
     cited_content: List[str]
-    
 
 
 class QueryTypes(enum.Enum):
@@ -195,7 +176,7 @@ query_type_prompts = {
             "\n---CONTENT---\n{content}\n"
             "\n---END CONTENT---\n"
             "Extract the financial information like revenue, growth plan, profit about the company."
-        )
+        ),
     },
     QueryTypes.STRATEGY.value: {
         "description": (
@@ -220,18 +201,16 @@ query_type_prompts = {
         ),
         "user": (
             "Below is the information about {buyer}:\n{company_info} "
-            
             "You are provided with content of the webpage: {webpage}. "
             "\n---CONTENT---\n{content}\n"
             "\n---END CONTENT---\n"
-            
             "Identify the company's key business priorities and strategic initiatives for the company - {buyer}. "
             "Analyze 10-K reports and financial statements. "
             "Gain insights into the company's operations, products, services, and market position. "
             "Assess the company's revenue, profitability, and overall financial stability to gauge its potential as a client."
             "Understand the company's future plans and priorities. "
             "Identify challenges the company faces, enabling you to position your product or service as a solution to mitigate these risks. "
-        )
+        ),
     },
     QueryTypes.RECENTNEWS.value: {
         "description": (
@@ -255,11 +234,10 @@ query_type_prompts = {
             "You are provided with content of the webpage: {webpage}. "
             "\n---CONTENT---\n{content}\n"
             "\n---END CONTENT---\n"
-            
             "Gather recent news and events about the company - {buyer}. "
             "Identify any recent developments, announcements, or changes that may impact the company's operations or strategy. "
             "This information is crucial for understanding the company's current position and future outlook."
-        )    
+        ),
     },
     QueryTypes.COMPANALYSIS.value: {
         "description": (
@@ -284,98 +262,96 @@ query_type_prompts = {
             "You are provided with content of the webpage: {webpage}. "
             "\n---CONTENT---\n{content}\n"
             "\n---END CONTENT---\n"
-            
             "Gather information about the competitors of the company - {buyer}. "
             "Identify key players in the industry and their market positions. "
             "Analyze their strengths, weaknesses, and strategies to understand the competitive landscape."
-        )
-    }
+        ),
+    },
 }
 
 
-def curate_buyer_index_data_from_search_response(search_response: SearchResponse) -> Tuple[str, Dict]:
+def curate_buyer_index_data_from_search_response(
+    search_response: SearchResponse,
+) -> Tuple[str, Dict]:
     data = []
     metadata = {
         "seller": search_response.seller,
         "buyer": search_response.buyer,
         "query_type": search_response.query_type,
         "query": search_response.query,
-        "sources": [{
-            "title": source.metadata.title,
-            "url": source.metadata.url
-        } for source in search_response.sources]
+        "sources": [
+            {"title": source.metadata.title, "url": source.metadata.url}
+            for source in search_response.sources
+        ],
     }
     data = search_response.message
     return data, metadata
 
 
-def curate_buyer_index_sources_data_from_search_response(search_response: SearchResponse) -> Tuple[str, Dict]:
+def curate_buyer_index_sources_data_from_search_response(
+    search_response: SearchResponse,
+) -> Tuple[str, Dict]:
     data = "\n\n".join([source.pageContent for source in search_response.sources])
     metadata = {
         "seller": search_response.seller,
         "buyer": search_response.buyer,
         "query_type": search_response.query_type,
         "query": search_response.query,
-        "sources": [{
-            "title": source.metadata.title,
-            "url": source.metadata.url
-        } for source in search_response.sources]
+        "sources": [
+            {"title": source.metadata.title, "url": source.metadata.url}
+            for source in search_response.sources
+        ],
     }
     return data, metadata
 
 
 def search_query(seller, buyer, query_type, history=None) -> SearchResponse:
-    
-    condition_dict = {
-        "seller": seller, 
-        "buyer": buyer, 
-        "query_type": query_type
-    }
+    condition_dict = {"seller": seller, "buyer": buyer, "query_type": query_type}
     print("Checking if record exists in the database...")
-    if sqldb.check_record_exists(IndexType.BUYER_FOUNDATIONAL_PLAN.value, condition_dict):
+    if sqldb.check_record_exists(
+        IndexType.BUYER_FOUNDATIONAL_PLAN.value, condition_dict
+    ):
         print("Record exists, fetching from the database...")
-        return SearchResponse(**sqldb.get_record(IndexType.BUYER_FOUNDATIONAL_PLAN.value, condition_dict))
-    
+        return SearchResponse(
+            **sqldb.get_record(IndexType.BUYER_FOUNDATIONAL_PLAN.value, condition_dict)
+        )
+
     print("Record does not exist, making API call...")
-    
-    query = query_type_prompts[query_type]['search'].format(buyer=buyer)
-    
+
+    query = query_type_prompts[query_type]["search"].format(buyer=buyer)
+
     if history is None:
         history = [
             ["human", "Hi, how are you?"],
-            ["assistant", "I am doing well, how can I help you today?"]
+            ["assistant", "I am doing well, how can I help you today?"],
         ]
-    
+
     headers = {"Content-Type": "application/json"}
     payload = {
-        "chatModel": {
-            "provider": "openai",
-            "name": "gpt-4o-mini"
-        },
-        "embeddingModel": {
-            "provider": "openai",
-            "name": "text-embedding-3-large"
-        },
+        "chatModel": {"provider": "openai", "name": "gpt-4o-mini"},
+        "embeddingModel": {"provider": "openai", "name": "text-embedding-3-large"},
         "optimizationMode": "speed",
         "focusMode": "webSearch",
         "query": query,
-        "history": history
+        "history": history,
     }
-    
+
     response = requests.post(API_URL, headers=headers, data=json.dumps(payload)).json()
-    
-    #print("response = ")
-    #print(response)
-    response_obj = SearchResponse(**{
-        **response,
-        "buyer": buyer,
-        "seller": seller,
-        "query_type": query_type,
-        "query": query
-    })
-    description = query_type_prompts[query_type]['description']
+
+    # print("response = ")
+    # print(response)
+    response_obj = SearchResponse(
+        **{
+            **response,
+            "buyer": buyer,
+            "seller": seller,
+            "query_type": query_type,
+            "query": query,
+        }
+    )
+    description = query_type_prompts[query_type]["description"]
     response_obj.message = f"{description}\n{response['message']}"
-    
+
     sqldb.insert_record(
         IndexType.BUYER_FOUNDATIONAL_PLAN.value,
         {
@@ -384,25 +360,25 @@ def search_query(seller, buyer, query_type, history=None) -> SearchResponse:
             "query_type": query_type,
             "query": query,
             "message": response_obj.message,
-            "sources": response['sources'],
-        }
+            "sources": response["sources"],
+        },
     )
-    
+
     data, metadata = curate_buyer_index_data_from_search_response(response_obj)
-    
+
     add_data(
         data=data,
         metadata=metadata,
         index_name=seller,
         index_type=IndexType.BUYER_FOUNDATIONAL_PLAN,
     )
-    
+
     return response_obj
 
 
 def get_cited_sources(source):
     print(source)
-    pattern = r'\[([^\]]+)\]'
+    pattern = r"\[([^\]]+)\]"
     matches: List[str] = re.findall(pattern, source)
     print("matches = ", matches)
     return list(set([int(i) for i in matches if i.isnumeric()]))
@@ -416,60 +392,65 @@ def get_cited_content(sources: List[Source], citations: List[int]) -> List[Cited
         content = sources[citation].pageContent
         title = sources[citation].metadata.title
         url = sources[citation].metadata.url
-        cited_content.append(CitedSource(
-            citation_id=citation,
-            title=title,
-            content=content,
-            url=url
-        ))
+        cited_content.append(
+            CitedSource(citation_id=citation, title=title, content=content, url=url)
+        )
     return cited_content
 
 
 def extract_data_from_sources(search_response: SearchResponse) -> SearchResponse:
     condition_dict = {
-        "seller": search_response.seller, 
-        "buyer": search_response.buyer, 
-        "query_type": search_response.query_type
+        "seller": search_response.seller,
+        "buyer": search_response.buyer,
+        "query_type": search_response.query_type,
     }
     print("Checking if record exists in the database...")
-    if sqldb.check_record_exists(IndexType.BUYER_FOUNDATIONAL_PLAN.value, condition_dict):
+    if sqldb.check_record_exists(
+        IndexType.BUYER_FOUNDATIONAL_PLAN.value, condition_dict
+    ):
         print("Record exists, fetching from the database...")
-        record = sqldb.get_record(IndexType.BUYER_FOUNDATIONAL_PLAN.value, condition_dict)
-        if record['source_extracted_data']:
+        record = sqldb.get_record(
+            IndexType.BUYER_FOUNDATIONAL_PLAN.value, condition_dict
+        )
+        if record["source_extracted_data"]:
             return SearchResponse(**record)
-    
+
     def make_search_call():
         print("Record does not exist, making API call...")
         citations = get_cited_sources(search_response.message)
         print("Citations = ", citations)
         if not citations:
             data = []
-            extracted_cited_sources= ExtractedCitedSource(CitedSource)
+            extracted_cited_sources = ExtractedCitedSource(CitedSource)
         else:
             cited_sources = get_cited_content(search_response.sources, citations)
             print("cited sources", cited_sources)
             links = [source.url for source in cited_sources]
             company_info = search_response.message
-            system_prompt = query_type_prompts[search_response.query_type]['system']
-            user_prompt = query_type_prompts[search_response.query_type]['user'].format(
-                buyer=search_response.buyer, company_info=company_info,
-                webpage="{webpage}", content="{content}"
+            system_prompt = query_type_prompts[search_response.query_type]["system"]
+            user_prompt = query_type_prompts[search_response.query_type]["user"].format(
+                buyer=search_response.buyer,
+                company_info=company_info,
+                webpage="{webpage}",
+                content="{content}",
             )
-            data = extract_data_from_links(links, user_prompt=user_prompt, system_prompt=system_prompt)
-            extracted_data_map = {source['link']: source['data'] for source in data}
+            data = extract_data_from_links(
+                links, user_prompt=user_prompt, system_prompt=system_prompt
+            )
+            extracted_data_map = {source["link"]: source["data"] for source in data}
             extracted_cited_sources = [
                 ExtractedCitedSource(
                     citation_id=citation.citation_id,
                     title=citation.title,
                     content=citation.content,
                     url=citation.url,
-                    data=extracted_data_map[citation.url]
+                    data=extracted_data_map[citation.url],
                 )
                 for citation in cited_sources
                 if citation.url in extracted_data_map
             ]
         return extracted_cited_sources
-    
+
     num_retries = MAX_RETRIES
     while num_retries > 0:
         try:
@@ -480,34 +461,40 @@ def extract_data_from_sources(search_response: SearchResponse) -> SearchResponse
             num_retries -= 1
             if num_retries == 0:
                 raise
-        
+
     sqldb.update_record(
         IndexType.BUYER_FOUNDATIONAL_PLAN.value,
         condition_dict,
-        {"source_extracted_data": [d.model_dump(mode='json') for d in extracted_cited_sources]}
+        {
+            "source_extracted_data": [
+                d.model_dump(mode="json") for d in extracted_cited_sources
+            ]
+        },
     )
-    
-    sources_data, metadata = curate_buyer_index_sources_data_from_search_response(search_response)
+
+    sources_data, metadata = curate_buyer_index_sources_data_from_search_response(
+        search_response
+    )
     add_data(
         data=sources_data,
         metadata=metadata,
         index_name=search_response.seller,
-        index_type=IndexType.BUYER_FOUNDATIONAL_PLAN,    
+        index_type=IndexType.BUYER_FOUNDATIONAL_PLAN,
     )
-    
-    return search_response.model_copy(update={"source_extracted_data": extracted_cited_sources})
+
+    return search_response.model_copy(
+        update={"source_extracted_data": extracted_cited_sources}
+    )
 
 
 buyer = "https://www.manpowergroup.com/en"
 seller = "https://whatfix.com"
 
 
-
-
 from echo.tools.perplexity_search import create_account_plan
 from echo.indexing import setup_db_tables
 
-buyer = "https://www.manpowergroup.com/en"
+buyer = "https://www.coca-cola.com/in/en"
 seller = "https://whatfix.com"
 
 setup_db_tables()
@@ -517,10 +504,11 @@ create_account_plan(seller=seller, buyer=buyer)
 # query part
 
 from echo.queries import get_queries
+
 queries = get_queries(seller=seller)
 print(queries)
 
-#account_plan_query = queries['prediscovery']
+# account_plan_query = queries['prediscovery']
 from echo.query_executor import arun_queries
 from echo.query_executor import ResponseFormat
 from echo.query_executor import ContextExtractionMode
@@ -547,11 +535,15 @@ print(type(responses))
 print("\n\n\n")
 
 # summary endpoint for email
-import json
+
 email_summary = {}
 for query in responses.responses:
-    email_summary[query] = { "response":responses.responses[query].response,"sub_queries_context":responses.responses[query].sub_queries_context,"summary":responses.responses[query].summary}
-    
-email_summary=json.dumps(email_summary, indent=4)
+    email_summary[query] = {
+        "response": responses.responses[query].response,
+        "sub_queries_context": responses.responses[query].sub_queries_context,
+        "summary": responses.responses[query].summary,
+    }
+
+email_summary = json.dumps(email_summary, indent=4)
 print(email_summary)
 print(type(email_summary))

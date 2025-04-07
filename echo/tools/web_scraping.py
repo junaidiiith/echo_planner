@@ -9,7 +9,7 @@ import concurrent.futures
 from typing import List
 from dotenv import load_dotenv
 from echo.settings import CHUNK_OVERLAP, CHUNK_SIZE, MAX_TEXT_TOKENS
-from llm_utils import get_response
+from echo.llm_utils import get_response
 
 from echo.utils import (
     get_llm,
@@ -84,27 +84,29 @@ def extract_text_from_url(url, timeout=30):
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
     }
-    
+
     try:
-        response = requests.get(url, headers=headers, timeout=timeout)  # Set timeout to 30 seconds
+        response = requests.get(
+            url, headers=headers, timeout=timeout
+        )  # Set timeout to 30 seconds
     except requests.exceptions.Timeout:
         print("Request timed out after 30 seconds.")
         return None
     except requests.exceptions.RequestException as e:
         print(f"Request failed: {e}")
         return None
-    
+
     if response.status_code == 200:
         content_type = response.headers.get("Content-Type", "").lower()
         if "html" not in content_type:
             print(f"Warning: Content type is not HTML: {content_type}")
             return None
-        
+
         soup = BeautifulSoup(response.text, "html.parser")
         return soup.get_text(separator="\n", strip=True)
     else:
         print(f"Failed to fetch page, status code: {response.status_code}")
-    
+
     return None
 
 
@@ -189,12 +191,14 @@ async def extract_nav_links(url, num_links=15):
     final_links = [link["url"] for link in navbar_links["nav_links"]]
 
     print("Final Links:", final_links)
-    return [link if link.startswith("http") else f"{url}{link}" for link in final_links[:num_links]]
+    return [
+        link if link.startswith("http") else f"{url}{link}"
+        for link in final_links[:num_links]
+    ]
 
 
 def extract_data_from_webpage(
-    content: str, 
-    system_prompt: str = DATA_EXTRACTION_SYS_PROMPT
+    content: str, system_prompt: str = DATA_EXTRACTION_SYS_PROMPT
 ):
     response = get_response(
         [
@@ -209,7 +213,6 @@ def extract_data_from_webpage(
 
 
 async def extract_data_from_website(url: str):
-    
     navbar_links = await extract_nav_links(url)
     extracted_results = extract_data_from_links(navbar_links)
 
@@ -224,11 +227,12 @@ async def extract_data_from_website(url: str):
 
 
 def extract_data_from_links(
-    links: List[str], 
+    links: List[str],
     user_prompt: str = DATA_EXTRACTION_PROMPT,
-    system_prompt: str = DATA_EXTRACTION_SYS_PROMPT
+    system_prompt: str = DATA_EXTRACTION_SYS_PROMPT,
 ):
     extracted_results = []
+
     def process_link(link: str):
         print("Processing link:", link)
         try:
@@ -240,7 +244,9 @@ def extract_data_from_links(
                 return None
             # Use the extracted text to get client-focused data
             extraction_prompt = user_prompt.format(webpage=link, content=extracted_text)
-            extracted_data = extract_data_from_webpage(extraction_prompt, system_prompt=system_prompt)
+            extracted_data = extract_data_from_webpage(
+                extraction_prompt, system_prompt=system_prompt
+            )
             print(f"Extracted data from {link}")
             return {"link": link, "data": extracted_data}
         except Exception as e:
@@ -252,9 +258,7 @@ def extract_data_from_links(
         max_workers=MAX_CONCURRENT_REQUESTS
     ) as executor:
         # Submit all tasks and store futures in a dictionary.
-        futures = {
-            executor.submit(process_link, link): link for link in set(links)
-        }
+        futures = {executor.submit(process_link, link): link for link in set(links)}
         for future in tqdm(
             concurrent.futures.as_completed(futures),
             total=len(futures),
@@ -263,17 +267,16 @@ def extract_data_from_links(
             result = future.result()
             if result is not None:
                 extracted_results.append(result)
-    
+
     # Filter out None results
     extracted_results = [result for result in extracted_results if result is not None]
     return extracted_results
-    
 
 
 def summarize_website_content(
-    content: str, 
+    content: str,
     summarization_prompt: str = DATA_SUMMARIZATION_PROMPT,
-    system_prompt: str = DATA_SUMMARIZATION_SYS_PROMPT
+    system_prompt: str = DATA_SUMMARIZATION_SYS_PROMPT,
 ):
     splitter = SentenceSplitter(chunk_size=CHUNK_SIZE, chunk_overlap=CHUNK_OVERLAP)
     docs = splitter.split_text(content)

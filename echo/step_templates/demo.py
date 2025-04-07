@@ -8,11 +8,11 @@ from typing import Dict, List
 from echo.indexing import IndexType, add_data
 from echo.tools.web_scraping import extract_data_from_website
 from echo.utils import (
-    add_pydantic_structure, 
-    dict_to_markdown, 
-    format_response, 
-    get_num_tokens, 
-    json_to_markdown
+    add_pydantic_structure,
+    dict_to_markdown,
+    format_response,
+    get_num_tokens,
+    json_to_markdown,
 )
 from echo.step_templates.generic import (
     CallType,
@@ -26,7 +26,7 @@ from echo.utils import get_crew as get_crew_obj
 import echo.utils as utils
 
 import echo.sqldb as sqldb
-from llm_utils import summarize_text
+from echo.llm_utils import summarize_text
 
 # ------------------------------------------------------------------------------------------------ #
 ## Seller Data
@@ -447,11 +447,17 @@ async def aget_research_data_for_client(inputs: dict, llm: LLM, **crew_config):
         else extract_data_from_website(seller)
     )
 
-    data["buyer_website_content"] = summarize_text(data["buyer_website_content"]) \
-        if get_num_tokens(data["buyer_website_content"]) > 4000 else data["buyer_website_content"]
-    
-    data["seller_website_content"] = summarize_text(data["seller_website_content"]) \
-        if get_num_tokens(data["seller_website_content"]) > 4000 else data["seller_website_content"]
+    data["buyer_website_content"] = (
+        summarize_text(data["buyer_website_content"])
+        if get_num_tokens(data["buyer_website_content"]) > 4000
+        else data["buyer_website_content"]
+    )
+
+    data["seller_website_content"] = (
+        summarize_text(data["seller_website_content"])
+        if get_num_tokens(data["seller_website_content"]) > 4000
+        else data["seller_website_content"]
+    )
 
     def save_data():
         print(f"Adding Buyer: {client} Data")
@@ -472,20 +478,19 @@ async def aget_research_data_for_client(inputs: dict, llm: LLM, **crew_config):
         }
 
         sqldb.update_record(
-            IndexType.BUYER_RESEARCH.value, 
-            {**condition_attributes, "raw": False}, 
-            update_dict
+            IndexType.BUYER_RESEARCH.value,
+            {**condition_attributes, "raw": False},
+            update_dict,
         )
-        
+
         existing_raw_record_data = sqldb.get_record(
-            IndexType.BUYER_RESEARCH.value, 
-            {**condition_attributes, "raw": True}
-        )['data']
-        
+            IndexType.BUYER_RESEARCH.value, {**condition_attributes, "raw": True}
+        )["data"]
+
         sqldb.update_record(
-            IndexType.BUYER_RESEARCH.value, 
-            {**condition_attributes, "raw": True}, 
-            {"data": existing_raw_record_data + "\n\n" + get_research_data(data, True)}
+            IndexType.BUYER_RESEARCH.value,
+            {**condition_attributes, "raw": True},
+            {"data": existing_raw_record_data + "\n\n" + get_research_data(data, True)},
         )
 
         add_data(

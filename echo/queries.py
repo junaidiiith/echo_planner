@@ -21,7 +21,7 @@ def get_queries(seller):
             SubQuery(
                 query="What all pieces of information about the buyer are uncovered in discovery calls of successful deals?",
                 index_type=IndexType.ANALYSIS.value,
-                inputs = {"stakeholder": "CFO"}
+                inputs={"stakeholder": "CFO"},
             ),
             SubQuery(
                 query="What all piece of information have we learnt about the buyer from discovery till now?",
@@ -319,7 +319,7 @@ def get_queries(seller):
             SubQuery(
                 query="What discounts and concessions can and have been offered during pricing calls?",
                 index_type=IndexType.ANALYSIS.value,
-                inputs={"call_type": CallType.PRICING.value, 'stakeholder': 'CFO'},
+                inputs={"call_type": CallType.PRICING.value, "stakeholder": "CFO"},
             ),
             SubQuery(
                 query="What discounts and concessions can and have been offered during negotiation calls?",
@@ -352,7 +352,7 @@ def get_queries(seller):
             )
         ],
     )
-    
+
     account_plan = Query(
         query="What are the top 3 priorities to do for this account in the next quarter?",
         seller=seller,
@@ -377,10 +377,9 @@ def get_queries(seller):
                 query="What are the top 3 strategic priorities for the account to solve for?",
                 index_type=IndexType.BUYER_FOUNDATIONAL_PLAN.value,
                 inputs={"query_type": QueryTypes.STRATEGY.value},
-            )
+            ),
         ],
     )
-
 
     queries = {
         CallType.PREDISCOVERY.value: {

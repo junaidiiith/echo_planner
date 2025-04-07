@@ -16,7 +16,7 @@ from tqdm.asyncio import tqdm as async_tqdm
 
 from llama_index.core.schema import NodeWithScore
 from echo.settings import SIMILARITY_TOP_K
-from llm_utils import summarize_text
+from echo.llm_utils import summarize_text
 
 
 class ContextExtractionMode(enum.Enum):
@@ -53,6 +53,7 @@ class QEResponse(BaseModel):
         ..., title="Sections", description="The filled sections of the call transcript."
     )
 
+
 class SingleQueryResponse(BaseModel):
     response: str = Field(
         ..., title="Response", description="The response to the query."
@@ -63,7 +64,8 @@ class SingleQueryResponse(BaseModel):
     summary: str = Field(
         ..., title="Summary", description="The summary of the response."
     )
-    
+
+
 class QueryResponse(BaseModel):
     summary: str = Field(
         ..., title="Summary", description="The summary of the responses."
@@ -71,6 +73,7 @@ class QueryResponse(BaseModel):
     responses: Dict[str, SingleQueryResponse] = Field(
         ..., title="Responses", description="The responses to the queries."
     )
+
 
 class QueryMetadata(BaseModel):
     key: str = Field(..., title="Key", description="The key for the metadata.")
@@ -248,13 +251,16 @@ def get_buyer_research(metadata: dict) -> str:
 
 
 def get_buyer_foundation_plan(metadata: dict) -> str:
-    metadata_filters = get_metadata_filters(IndexType.BUYER_FOUNDATIONAL_PLAN.value, metadata)  # noqa: F821
-    vector_index = get_vector_index(metadata["seller"], IndexType.BUYER_FOUNDATIONAL_PLAN.value)
+    metadata_filters = get_metadata_filters(
+        IndexType.BUYER_FOUNDATIONAL_PLAN.value, metadata
+    )  # noqa: F821
+    vector_index = get_vector_index(
+        metadata["seller"], IndexType.BUYER_FOUNDATIONAL_PLAN.value
+    )
     retriever = vector_index.as_retriever(filters=metadata_filters)
     docs: List[NodeWithScore] = retriever.retrieve("")
     assert len(docs) > 0, f"No Buyer Research documents found for {metadata['buyer']}"
     return "\n\n".join([d.text for d in docs])
-
 
 
 def get_sub_queries_context(
@@ -289,8 +295,8 @@ def get_sub_queries_context(
 
     sub_queries_context = [
         {
-            "query": "Buyer Research Information", 
-            "context": f"{buyer_context}\n\nFoundational Plan: {buyer_foundational_plan}"
+            "query": "Buyer Research Information",
+            "context": f"{buyer_context}\n\nFoundational Plan: {buyer_foundational_plan}",
         }
     ]
 
@@ -357,35 +363,35 @@ async def arun_queries(
             )
             responses[query_name] = {
                 "response": response,
-                "sub_queries_context": sub_queries_context
+                "sub_queries_context": sub_queries_context,
             }
 
     # added per query summarization func
     summary_per_query = dict()
     for query in call_queries.items():
         summary_per_query[query[0]] = summarize_text(
-            str(responses[query[0]]['response'])
+            str(responses[query[0]]["response"])
         )
-    
+
     summary = summarize_text(
-    "\n\n".join(
+        "\n\n".join(
             [
                 f"{query_name}: {responses[query_name]['response']}"
                 for query_name in responses
             ]
         )
     )
-    #responses["summary"] = summary
+    # responses["summary"] = summary
     responses = QueryResponse(
         summary=summary,
         responses={
             query_name: SingleQueryResponse(
                 response=responses[query_name]["response"],
                 sub_queries_context=responses[query_name]["sub_queries_context"],
-                summary=summary_per_query.get(query_name, "")
+                summary=summary_per_query.get(query_name, ""),
             )
             for query_name in responses
         },
     )
-    
+
     return responses
