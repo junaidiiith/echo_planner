@@ -4,13 +4,19 @@ from crewai.crews import CrewOutput
 from pydantic import BaseModel, Field
 from typing import Dict, List
 from echo.data.indexes import IndexDataType
-from echo.indexing import IndexType, add_data, check_metadata_exists, get_data_from_index
+from echo.indexing import (
+    IndexType,
+    add_data,
+    check_metadata_exists_in_db,
+    get_data_from_db,
+)
 from echo.tools.web_scraping import extract_data_from_website
 from echo.utils import (
-    dict_to_markdown, 
-    get_num_tokens, 
+    dict_to_markdown,
+    get_num_tokens,
     json_to_markdown,
-    format_response
+    format_response,
+    get_data_str,
 )
 from echo.step_templates.generic import (
     CallType,
@@ -20,18 +26,9 @@ from echo.step_templates.generic import (
     add_buyer_research,
     add_seller_research,
 )
-from echo.echo_agent import (
-    get_crew as get_crew_obj,
-    get_data_str,
-    EchoAgent
-)
+from echo.echo_agent import get_crew as get_crew_obj, EchoAgent
 from echo.llm_utils import summarize_text
-from echo.constants import (
-    RESEARCH, 
-    SIMULATION, 
-    ANALYSIS, 
-    EXTRACTION
-)
+from echo.constants import RESEARCH, SIMULATION, ANALYSIS, EXTRACTION
 
 # ------------------------------------------------------------------------------------------------ #
 ## Seller Data
@@ -419,50 +416,54 @@ def process_analysis_data_output(response: CrewOutput):
 
 async def aget_research_data_for_client(inputs: dict, llm: LLM, **crew_config):
     data = copy.deepcopy(inputs)
+    data.update({"call_type": CallType.DEMO.value})
+
     client, seller = inputs["buyer"], inputs["seller"]
 
-    assert check_metadata_exists(
+    def get_website_content(user, user_type):
+        index_type = (
+            IndexType.SELLER_RESEARCH
+            if user_type == "seller"
+            else IndexType.BUYER_RESEARCH
+        )
+        metadata = {
+            "data_type": IndexDataType.SELLER_WEBSITE_DATA.value
+            if user_type == "seller"
+            else IndexDataType.BUYER_WEBSITE_DATA.value,
+        }
+        if user_type == "buyer":
+            metadata.update({"buyer": client})
+
+        website_content = get_data_from_db(
+            index_name=seller,
+            index_type=index_type,
+            metadata=metadata,
+        )["data"]
+        if not website_content:
+            website_content = extract_data_from_website(user)
+        if get_num_tokens(website_content) > 4000:
+            website_content = summarize_text(website_content)
+        return website_content
+
+    assert check_metadata_exists_in_db(
         index_name=seller,
         index_type=IndexType.BUYER_RESEARCH,
-        metadata={"buyer": client}
+        metadata={"buyer": client},
     ), f"Demo Data for client {client} does not exist."
 
-    buyer_demo_record = get_data_from_index(
+    buyer_demo_record = get_data_from_db(
         index_name=seller,
         index_type=IndexType.BUYER_RESEARCH,
-        metadata={"buyer": client, "data_type": IndexDataType.BUYER_RESEARCH_DATA.value},
+        metadata={
+            "buyer": client,
+            "data_type": IndexDataType.BUYER_RESEARCH_DATA.value,
+        },
     )
     assert buyer_demo_record, f"Discovery Data for client {client} does not exist."
     data.update(buyer_demo_record["data"])
 
-    buyer_website_content = get_data_from_index(
-        index_name=seller,
-        index_type=IndexType.BUYER_RESEARCH, 
-        metadata={"buyer": client, "data_type": IndexDataType.BUYER_WEBSITE_DATA.value}
-    )["data"]
-
-    seller_website_content = get_data_from_index(
-        index_name=seller,
-        index_type=IndexType.SELLER_RESEARCH,
-        metadata={"data_type": IndexDataType.SELLER_WEBSITE_DATA.value}
-    )["data"]
-
-    data["buyer_website_content"] = (
-        buyer_website_content
-        if buyer_website_content
-        else extract_data_from_website(client)
-    )
-    data["seller_website_content"] = (
-        seller_website_content
-        if seller_website_content
-        else extract_data_from_website(seller)
-    )
-
-    data["buyer_website_content"] = summarize_text(data["buyer_website_content"]) \
-        if get_num_tokens(data["buyer_website_content"]) > 4000 else data["buyer_website_content"]
-    
-    data["seller_website_content"] = summarize_text(data["seller_website_content"]) \
-        if get_num_tokens(data["seller_website_content"]) > 4000 else data["seller_website_content"]
+    data["seller_website_content"] = get_website_content(seller, "seller")
+    data["buyer_website_content"] = get_website_content(client, "buyer")
 
     def save_data():
         print(f"Adding Buyer: {client} Data")
@@ -482,7 +483,6 @@ async def aget_research_data_for_client(inputs: dict, llm: LLM, **crew_config):
         update_dict = {
             "data": buyer_research_data,
         }
-
 
         add_data(
             data=get_research_data(data, True),
@@ -535,16 +535,16 @@ async def aget_simulation_data_for_client(inputs: dict, llm: LLM, **crew_config)
             index_type=IndexType.CALL_TRANSCRIPTS,
         )
 
-    if check_metadata_exists(
+    if check_metadata_exists_in_db(
         index_name=seller,
         index_type=IndexType.CALL_TRANSCRIPTS,
         metadata={
             "call_id": inputs["call_id"],
             "buyer": inputs["buyer"],
             "call_type": CallType.DEMO.value,
-        }
+        },
     ):
-        data["demo_transcript"] = get_data_from_index(
+        data["demo_transcript"] = get_data_from_db(
             index_name=seller,
             index_type=IndexType.CALL_TRANSCRIPTS,
             metadata={
@@ -574,7 +574,7 @@ async def aanalyze_data_for_client(inputs: dict, llm: LLM, **crew_config):
     data.update(await aget_simulation_data_for_client(inputs, llm, **crew_config))
 
     def check_stakeholder_analysis_exist(stakeholder):
-        return check_metadata_exists(
+        return check_metadata_exists_in_db(
             index_name=seller,
             index_type=IndexType.ANALYSIS,
             metadata={
@@ -582,7 +582,7 @@ async def aanalyze_data_for_client(inputs: dict, llm: LLM, **crew_config):
                 "call_id": call_id,
                 "call_type": CallType.DEMO.value,
                 "stakeholder": stakeholder,
-            }
+            },
         )
 
     def save_stakeholder_analysis(stakeholder):
@@ -604,12 +604,11 @@ async def aanalyze_data_for_client(inputs: dict, llm: LLM, **crew_config):
         )
 
     if all(
-        check_stakeholder_analysis_exist(stakeholder) 
-        for stakeholder in stakeholders
+        check_stakeholder_analysis_exist(stakeholder) for stakeholder in stakeholders
     ):
         demo_analysis_data = dict()
         for stakeholder in stakeholders:
-            demo_analysis_data[stakeholder] = get_data_from_index(
+            demo_analysis_data[stakeholder] = get_data_from_db(
                 index_name=seller,
                 index_type=IndexType.ANALYSIS,
                 metadata={
@@ -617,7 +616,7 @@ async def aanalyze_data_for_client(inputs: dict, llm: LLM, **crew_config):
                     "call_id": call_id,
                     "call_type": CallType.DEMO.value,
                     "stakeholder": stakeholder,
-                }
+                },
             )["data"]
 
         data.update({"demo_analysis_data": demo_analysis_data})

@@ -5,9 +5,10 @@ from echo.utils import get_crew_llm
 from echo.step_templates.discovery import (
     aget_data_for_clients as aget_discovery_data_for_clients,
     aget_seller_data,
-    aget_competitor_data,
 )
-from echo.step_templates.demo import aget_data_for_clients as aget_demo_data_for_clients
+from echo.step_templates.demo import (
+    aget_data_for_clients as aget_demo_data_for_clients
+)
 from echo.step_templates.pricing import (
     aget_data_for_clients as aget_pricing_data_for_clients,
 )
@@ -79,14 +80,4 @@ async def create_or_get_seller(inputs, llm: LLM = None, **crew_config):
 
     print(f"Creating seller for {inputs['seller']}")
     seller_data = await aget_seller_data(inputs, llm, **crew_config)
-    return seller_data
-
-
-# for competitor agent
-async def create_or_get_competitor(inputs, llm: LLM = None, **crew_config):
-    if llm is None:
-        llm = get_crew_llm()
-
-    print(f"Creating seller for {inputs['seller']}")
-    seller_data = await aget_competitor_data(inputs, llm, **crew_config)
     return seller_data

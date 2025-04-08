@@ -1,30 +1,30 @@
 import sqlite3
-import os
 from echo.utils import (
     get_db_name, 
     serialize_dict, 
-    deserialize_dict
+    deserialize_dict,
+    url_to_sql_name
 )
+from sqlite3 import Connection
 
 
-
-def create_db() -> sqlite3.Connection:
-    db_path = get_db_name()
-    
-    os.makedirs(os.path.dirname(db_path), exist_ok=True)
+def create_db(path) -> Connection:
+    path = url_to_sql_name(path)
+    db_path = get_db_name(path)
     conn = sqlite3.connect(db_path)
     return conn
 
 
-def create_table(query: str) -> None:
-    conn = create_db()
+def create_table(path: str, query: str) -> None:
+    conn: Connection = create_db(path)
+    # print("Query:", query)
     conn.execute(query)
     conn.commit()
     conn.close()
 
 
-def delete_table(table_name: str) -> None:
-    conn = create_db()
+def delete_table(path: str, table_name: str) -> None:
+    conn: Connection = create_db(path)
     query = f"DROP TABLE IF EXISTS {table_name}"
     conn.execute(query)
     conn.commit()
@@ -32,6 +32,7 @@ def delete_table(table_name: str) -> None:
 
 
 def insert_record(
+    path: str,
     table_name: str,
     attributes: dict,
 ) -> None:
@@ -45,7 +46,7 @@ def insert_record(
     
     condition_attributes = {k: v for k, v in attributes.items() if not isinstance(v, (list, dict))}
     attributes = serialize_dict(attributes)
-    conn = create_db()
+    conn: Connection = create_db(path)
     
     # Check if the record already exists
     query = f"SELECT * FROM {table_name} WHERE "\
@@ -67,11 +68,11 @@ def insert_record(
     conn.close()
 
 
-def update_record(table_name: str, condition_dict: dict, update_dict: dict) -> None:
+def update_record(path: str, table_name: str, condition_dict: dict, update_dict: dict) -> None:
     condition_dict = serialize_dict(condition_dict)
     update_dict = serialize_dict(update_dict)
     
-    conn = create_db()
+    conn: Connection = create_db(path)
     if not update_dict:
         return
     query = f"UPDATE {table_name} SET "\
@@ -83,9 +84,9 @@ def update_record(table_name: str, condition_dict: dict, update_dict: dict) -> N
     conn.close()
     
 
-def delete_record(table_name, conditions_dict: dict) -> None:
+def delete_record(path: str, table_name, conditions_dict: dict) -> None:
     conditions_dict = serialize_dict(conditions_dict)
-    conn = create_db()
+    conn: Connection = create_db(path)
     query = f"DELETE FROM {table_name} WHERE "\
         + " AND ".join(f"{key} = ?" for key in conditions_dict.keys())
         
@@ -94,13 +95,12 @@ def delete_record(table_name, conditions_dict: dict) -> None:
     conn.close()
     
 
-
-def query_records(table_name, condition_dict: dict = None, limit: int = None):
+def get_records(path: str, table_name, condition_dict: dict = None, limit: int = None):
     if condition_dict is None:
         condition_dict = {1: 1}
         
     condition_dict = serialize_dict(condition_dict)
-    conn = create_db()
+    conn: Connection = create_db(path)
     query = f"SELECT * FROM {table_name} WHERE "\
         + " AND ".join(f"{key} = ?" for key in condition_dict.keys())\
         + " ORDER BY timestamp DESC"
@@ -115,8 +115,8 @@ def query_records(table_name, condition_dict: dict = None, limit: int = None):
     return records
 
 
-def check_record_exists(table_name, condition_dict: dict):
-    conn = create_db()
+def check_record_exists(path: str, table_name, condition_dict: dict):
+    conn: Connection = create_db(path)
     query = f"SELECT * FROM {table_name} WHERE "\
         + " AND ".join(f"{key} = ?" for key in condition_dict.keys())
         
@@ -125,8 +125,8 @@ def check_record_exists(table_name, condition_dict: dict):
     return record is not None
 
 
-def get_record(table_name, condition_dict: dict):
-    conn = create_db()
+def get_record(path: str, table_name, condition_dict: dict):
+    conn: Connection = create_db(path)
     query = f"SELECT * FROM {table_name} WHERE "\
         + " AND ".join(f"{key} = ?" for key in condition_dict.keys())
     
@@ -141,8 +141,8 @@ def get_record(table_name, condition_dict: dict):
     return deserialize_dict(record_dict)
     
 
-def get_table_columns(table):
-    conn = create_db()
+def get_table_columns(path: str, table):
+    conn: Connection = create_db(path)
     query = f"PRAGMA table_info({table})"
     columns = conn.execute(query).fetchall()
     ### Exclude id and timestamp columns
@@ -150,8 +150,8 @@ def get_table_columns(table):
     conn.close()
     return columns
 
-def get_table_columns_for_embeddings(table, metadata_columns):
-    conn = create_db()
+def get_table_columns_for_embeddings(path: str, table, metadata_columns):
+    conn: Connection = create_db(path)
     query = f"PRAGMA table_info({table})"
     columns = conn.execute(query).fetchall()
     ### Exclude id and timestamp columns

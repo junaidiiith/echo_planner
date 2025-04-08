@@ -21,7 +21,7 @@ def get_queries(seller):
             SubQuery(
                 query="What all pieces of information about the buyer are uncovered in discovery calls of successful deals?",
                 index_type=IndexType.ANALYSIS.value,
-                inputs = {"stakeholder": "CFO"}
+                inputs={"stakeholder": "CFO"},
             ),
             SubQuery(
                 query="What all piece of information have we learnt about the buyer from discovery till now?",
@@ -319,7 +319,7 @@ def get_queries(seller):
             SubQuery(
                 query="What discounts and concessions can and have been offered during pricing calls?",
                 index_type=IndexType.ANALYSIS.value,
-                inputs={"call_type": CallType.PRICING.value, 'stakeholder': 'CFO'},
+                inputs={"call_type": CallType.PRICING.value, "stakeholder": "CFO"},
             ),
             SubQuery(
                 query="What discounts and concessions can and have been offered during negotiation calls?",
@@ -352,7 +352,7 @@ def get_queries(seller):
             )
         ],
     )
-    
+
     account_plan = Query(
         query="What are the top 3 priorities to do for this account in the next quarter?",
         seller=seller,
@@ -360,27 +360,26 @@ def get_queries(seller):
         sub_queries=[
             SubQuery(
                 query="What are the top 3 financial priorities for the account to solve for?",
-                index_type=IndexType.BUYER_FOUNDATIONAL_PLAN.value,
+                index_type=IndexType.BUYER_ACCOUNT_PLAN.value,
                 inputs={"query_type": QueryTypes.FMOD.value},
             ),
             SubQuery(
                 query="What are the top 3 competitors for the account that that client needs to consider?",
-                index_type=IndexType.BUYER_FOUNDATIONAL_PLAN.value,
+                index_type=IndexType.BUYER_ACCOUNT_PLAN.value,
                 inputs={"query_type": QueryTypes.COMPANALYSIS.value},
             ),
             SubQuery(
                 query="What is the most relevant news for the account?",
-                index_type=IndexType.BUYER_FOUNDATIONAL_PLAN.value,
+                index_type=IndexType.BUYER_ACCOUNT_PLAN.value,
                 inputs={"query_type": QueryTypes.RECENTNEWS.value},
             ),
             SubQuery(
                 query="What are the top 3 strategic priorities for the account to solve for?",
-                index_type=IndexType.BUYER_FOUNDATIONAL_PLAN.value,
+                index_type=IndexType.BUYER_ACCOUNT_PLAN.value,
                 inputs={"query_type": QueryTypes.STRATEGY.value},
-            )
+            ),
         ],
     )
-
 
     # new query for aligning value prop
     account_plan_value_prop = Query(
@@ -400,43 +399,43 @@ def get_queries(seller):
             SubQuery(
                 query="What is the details on the industry and products of the buyer account?",
                 index_type=IndexType.BUYER_RESEARCH.value,
-                #inputs={"query_type": QueryTypes.FMOD.value},
+                # inputs={"query_type": QueryTypes.FMOD.value},
             ),
             SubQuery(
                 query="What are the top 3 financial priorities for the account to solve for?",
-                index_type=IndexType.BUYER_FOUNDATIONAL_PLAN.value,
+                index_type=IndexType.BUYER_ACCOUNT_PLAN.value,
                 inputs={"query_type": QueryTypes.FMOD.value},
             ),
             SubQuery(
                 query="What are the top 3 competitors that buyer might be worried about and want to tackle",
-                index_type=IndexType.BUYER_FOUNDATIONAL_PLAN.value,
+                index_type=IndexType.BUYER_ACCOUNT_PLAN.value,
                 inputs={"query_type": QueryTypes.COMPANALYSIS.value},
             ),
             SubQuery(
                 query="What is the most relevant news and recent media for the buyeraccount?",
-                index_type=IndexType.BUYER_FOUNDATIONAL_PLAN.value,
+                index_type=IndexType.BUYER_ACCOUNT_PLAN.value,
                 inputs={"query_type": QueryTypes.RECENTNEWS.value},
             ),
             SubQuery(
                 query="What are the top 3 strategic priorities for the account to solve for?",
-                index_type=IndexType.BUYER_FOUNDATIONAL_PLAN.value,
+                index_type=IndexType.BUYER_ACCOUNT_PLAN.value,
                 inputs={"query_type": QueryTypes.STRATEGY.value},
             ),
             SubQuery(
                 query="What are the top value propositions of the sellers product and what pains do they solve for customers. Dont give generic answers, but deep pains and priotrities of their buyers theyve solved for",
                 index_type=IndexType.SELLER_RESEARCH.value,
-                #inputs={"query_type": QueryTypes.STRATEGY.value},
+                # inputs={"query_type": QueryTypes.STRATEGY.value},
             ),
             SubQuery(
                 query="What are the exhaustive use cases and benefits of the sellers product? Dont be generic, be specific and also include details of how the use cases are tackled by the sellers product",
                 index_type=IndexType.SELLER_RESEARCH.value,
-                #inputs={"query_type": QueryTypes.STRATEGY.value},
+                # inputs={"query_type": QueryTypes.STRATEGY.value},
             ),
             SubQuery(
                 query="What case studies and testimonials do we have for the sellers product? Please include details of the case studies and testimonials and how they align with the buyers priorities",
                 index_type=IndexType.SELLER_RESEARCH.value,
-                #inputs={"query_type": QueryTypes.STRATEGY.value},
-            )
+                # inputs={"query_type": QueryTypes.STRATEGY.value},
+            ),
         ],
     )
 
@@ -458,54 +457,52 @@ def get_queries(seller):
             SubQuery(
                 query="What is the details on the industry and products of the buyer account?",
                 index_type=IndexType.BUYER_RESEARCH.value,
-                #inputs={"query_type": QueryTypes.FMOD.value},
+                # inputs={"query_type": QueryTypes.FMOD.value},
             ),
             SubQuery(
                 query="What are the top 3 financial priorities for the account to solve for?",
-                index_type=IndexType.BUYER_FOUNDATIONAL_PLAN.value,
+                index_type=IndexType.BUYER_ACCOUNT_PLAN.value,
                 inputs={"query_type": QueryTypes.FMOD.value},
             ),
             SubQuery(
                 query="What are the top 3 competitors that buyer might be worried about and want to tackle",
-                index_type=IndexType.BUYER_FOUNDATIONAL_PLAN.value,
+                index_type=IndexType.BUYER_ACCOUNT_PLAN.value,
                 inputs={"query_type": QueryTypes.COMPANALYSIS.value},
             ),
             SubQuery(
                 query="What is the most relevant news and recent media for the buyeraccount?",
-                index_type=IndexType.BUYER_FOUNDATIONAL_PLAN.value,
+                index_type=IndexType.BUYER_ACCOUNT_PLAN.value,
                 inputs={"query_type": QueryTypes.RECENTNEWS.value},
             ),
             SubQuery(
                 query="What are the top 3 strategic priorities for the account to solve for?",
-                index_type=IndexType.BUYER_FOUNDATIONAL_PLAN.value,
+                index_type=IndexType.BUYER_ACCOUNT_PLAN.value,
                 inputs={"query_type": QueryTypes.STRATEGY.value},
             ),
             SubQuery(
                 query="What are the top value propositions of the sellers product and what pains do they solve for customers. Dont give generic answers, but deep pains and priotrities of their buyers theyve solved for",
                 index_type=IndexType.SELLER_RESEARCH.value,
-                #inputs={"query_type": QueryTypes.STRATEGY.value},
+                # inputs={"query_type": QueryTypes.STRATEGY.value},
             ),
             SubQuery(
                 query="What are the exhaustive use cases and benefits of the sellers product? Dont be generic, be specific and also include details of how the use cases are tackled by the sellers product",
                 index_type=IndexType.SELLER_RESEARCH.value,
-                #inputs={"query_type": QueryTypes.STRATEGY.value},
+                # inputs={"query_type": QueryTypes.STRATEGY.value},
             ),
             SubQuery(
                 query="What case studies and testimonials do we have for the sellers product? Please include details of the case studies and testimonials and how they align with the buyers priorities",
                 index_type=IndexType.SELLER_RESEARCH.value,
-                #inputs={"query_type": QueryTypes.STRATEGY.value},
-            )
+                # inputs={"query_type": QueryTypes.STRATEGY.value},
+            ),
         ],
     )
-    
-
 
     queries = {
         CallType.PREDISCOVERY.value: {
-            #"Buyer Account Plan": account_plan,
+            # "Buyer Account Plan": account_plan,
             "Buyer Account Plan Value Prop": account_plan_value_prop,
             "Competitor Differentiator Value Prop": competitor_differentiator_value_prop,
-        },   
+        },
     }
     """
     queries = {

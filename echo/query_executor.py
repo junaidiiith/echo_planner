@@ -14,9 +14,10 @@ from llama_index.core.vector_stores import (
 )
 from tqdm.asyncio import tqdm as async_tqdm
 
-from llama_index.core.schema import NodeWithScore
+from llama_index.core.schema import NodeWithScore, Document
 from echo.settings import SIMILARITY_TOP_K
 from echo.llm_utils import summarize_text
+from echo.tools.perplexity_search import call_api, call_api_with_extracted_sources
 
 
 class ContextExtractionMode(enum.Enum):
@@ -87,15 +88,7 @@ class QueryMetadata(BaseModel):
 
 class SubQuery(BaseModel):
     query: str = Field(
-        ...,
-        title="Sub Query",
-        description="The sub query for which the response is needed.",
-    )
-    index_type: str = Field(
-        ..., title="Index Type", description="The index type for the sub query."
-    )
-    inputs: Optional[Dict] = Field(
-        default=None, title="Inputs", description="The inputs for the sub query."
+        ..., title="Sub Query", description="The sub query for which the response is needed."
     )
     context_tasks: Optional[List[int]] = Field(
         default=None,
@@ -103,18 +96,38 @@ class SubQuery(BaseModel):
         description="The context tasks for the sub query.",
     )
 
+class LlamaSubQuery(SubQuery):
+    index_type: Optional[str] = Field(
+        ..., title="Index Type", description="The index type for the sub query."
+    )
+    inputs: Optional[Dict] = Field(
+        default=None, title="Inputs", description="The inputs for the sub query."
+    )
+
+class PerplexicaSourceExtraction(BaseModel):
+    system_prompt: str = Field(
+        ..., title="System Prompt", description="The system prompt for the source extraction."
+    )
+    user_prompt: str = Field(
+        ..., title="User Prompt", description="The user prompt for the source extraction."
+    )
+    
+
+
+class PerplexicaSubQuery(SubQuery):
+    source_extraction_prompts: Optional[PerplexicaSourceExtraction] = Field(
+        default=None,
+        title="Source Extraction Prompts",
+        description="The source extraction prompts for the sub query.",
+    )
+
 
 class Query(BaseModel):
     seller: str = Field(..., title="Seller", description="The seller for the call.")
-    call_type: str = Field(
-        ...,
-        title="Call Type",
-        description="The call type for which the response is needed.",
-    )
     query: str = Field(
         ..., title="Query", description="The query for which the response is needed."
     )
-    sub_queries: List[SubQuery] = Field(
+    sub_queries: List[Union[LlamaSubQuery, PerplexicaSubQuery]] = Field(
         ..., title="Sub Queries", description="The sub queries and their context."
     )
 
@@ -155,11 +168,7 @@ def get_metadata_filters(index_type: str, metadata: Dict):
             )
 
     filters = [
-        QueryMetadata(
-            key=item.key, 
-            value=metadata[item.key], 
-            operator=item.operator
-        )
+        QueryMetadata(key=item.key, value=metadata[item.key], operator=item.operator)
         for item in echo_index.metadata_columns
         if item.key in metadata
     ]
@@ -242,6 +251,33 @@ async def aget_qe_crew_response(
     return format_response(response.tasks_output[0])
 
 
+def run_perplexica_subquery(
+    perplexica_subquery: PerplexicaSubQuery,
+):
+    if perplexica_subquery.source_extraction_prompts:
+        source_extraction_prompts = perplexica_subquery.source_extraction_prompts
+        system_prompt = source_extraction_prompts.system_prompt
+        user_prompt = source_extraction_prompts.user_prompt
+        response = call_api_with_extracted_sources(
+            system_prompt=system_prompt,
+            user_prompt=user_prompt,
+            query=perplexica_subquery.query,
+        )
+        response_str = f"{response.message}\n\n" + "\n".join(
+            [
+                f"Title: {source.title}\nURL: {source.url}\nContent: {source.data}\n"
+                for source in response.extracted_sources
+            ]
+        )
+        return response_str
+        
+        
+        
+    response = call_api(query=perplexica_subquery.query)
+    response_str = f"{response['message']}\n\n"
+    return response_str
+
+
 def get_buyer_research(metadata: dict) -> str:
     metadata_filters = get_metadata_filters(IndexType.BUYER_RESEARCH.value, metadata)  # noqa: F821
     vector_index = get_vector_index(metadata["seller"], IndexType.BUYER_RESEARCH.value)
@@ -251,12 +287,12 @@ def get_buyer_research(metadata: dict) -> str:
     return "\n\n".join([d.text for d in docs])
 
 
-def get_buyer_foundation_plan(metadata: dict) -> str:
+def get_buyer_account_plan(metadata: dict) -> str:
     metadata_filters = get_metadata_filters(
-        IndexType.BUYER_FOUNDATIONAL_PLAN.value, metadata
+        IndexType.BUYER_ACCOUNT_PLAN.value, metadata
     )  # noqa: F821
     vector_index = get_vector_index(
-        metadata["seller"], IndexType.BUYER_FOUNDATIONAL_PLAN.value
+        metadata["seller"], IndexType.BUYER_ACCOUNT_PLAN.value
     )
     retriever = vector_index.as_retriever(filters=metadata_filters)
     docs: List[NodeWithScore] = retriever.retrieve("")
@@ -271,7 +307,7 @@ def get_sub_queries_context(
     similarity_top_k=SIMILARITY_TOP_K,
     **kwargs,
 ) -> List[Dict]:
-    def doc_data(doc):
+    def doc_data(doc: Document):
         lambda doc: f"Document Text: {doc.text}\n"
         +f"Document Metadata: {doc.metadata}"
 
@@ -289,15 +325,13 @@ def get_sub_queries_context(
         ).query(query)
         return "Relevant Context:\n" + str(response)
 
-    inputs.update({"seller": query.seller, "call_type": query.call_type})
-
     buyer_context = get_buyer_research(inputs)
-    buyer_foundational_plan = get_buyer_foundation_plan(inputs)
+    buyer_foundational_plan = get_buyer_account_plan(inputs)
 
     sub_queries_context = [
         {
             "query": "Buyer Research Information",
-            "context": f"{buyer_context}\n\nFoundational Plan: {buyer_foundational_plan}",
+            "context": f"{buyer_context}\n\Account Plan: {buyer_foundational_plan}",
         }
     ]
 
@@ -320,15 +354,22 @@ def get_sub_queries_context(
                 ]
             )
             sub_query.query = f"{sub_query.query}\n{context_str}"
-
-        sub_queries_context.append(
-            {
-                "query": sub_query.query,
-                "context": query_content(sub_query.query, metadata_filters)
-                if context_extraction_mode == ContextExtractionMode.QUERY_ENGINE
-                else retrieve_content(sub_query.query, metadata_filters),
-            }
-        )
+            
+        if isinstance(sub_query, PerplexicaSubQuery):
+            context = run_perplexica_subquery(sub_query)
+        elif isinstance(sub_query, LlamaSubQuery):
+            context = query_content(sub_query.query, metadata_filters)\
+            if context_extraction_mode == ContextExtractionMode.QUERY_ENGINE\
+            else retrieve_content(sub_query.query, metadata_filters)
+        else:
+            raise ValueError(
+                f"Unknown sub query type: {type(sub_query)}. Supported types are LlamaSubQuery and PerplexicaSubQuery."
+            )
+            
+        sub_queries_context.append({
+            "query": sub_query.query,
+            "context": context,
+        })
         print("Sub query context", sub_queries_context[-1])
 
     return sub_queries_context
@@ -351,34 +392,33 @@ async def arun_queries(
     inputs: Dict[str, str],
     response_format=ResponseFormat.MARKDOWN,
     context_extraction_mode: ContextExtractionMode = ContextExtractionMode.QUERY_ENGINE,
+    chain_of_queries: bool = False,
     **kwargs,
 ) -> QueryResponse:
-    responses = dict()
+    responses = list()
     for call_type, call_queries in queries.items():
         print(f"Running queries for call type {call_type}")
-        for query_name, query in async_tqdm(
-            call_queries.items(), desc="Running Queries"
-        ):
+        for i, query_name in async_tqdm(enumerate(call_queries), desc="Running Queries"):
+            query: Query = queries[query_name]
+            if chain_of_queries and i > 0:
+                query.query += f"\n\nInput:\n{responses[i-1]['response']}"
+            
             response, sub_queries_context = await aget_query_response(
-                query, inputs, response_format, context_extraction_mode, **kwargs
+                query, inputs, 
+                response_format, context_extraction_mode, **kwargs
             )
-            responses[query_name] = {
+            responses.append({
+                "query_name": query_name,
                 "response": response,
+                "response_summary": summarize_text(response),
                 "sub_queries_context": sub_queries_context,
-            }
-
-    # added per query summarization func
-    summary_per_query = dict()
-    for query in call_queries.items():
-        summary_per_query[query[0]] = summarize_text(
-            str(responses[query[0]]["response"])
-        )
+            })
 
     summary = summarize_text(
         "\n\n".join(
             [
-                f"{query_name}: {responses[query_name]['response']}"
-                for query_name in responses
+                f"{r['query_name']}: {r['response']}"
+                for r in responses
             ]
         )
     )
@@ -386,12 +426,12 @@ async def arun_queries(
     responses = QueryResponse(
         summary=summary,
         responses={
-            query_name: SingleQueryResponse(
-                response=responses[query_name]["response"],
-                sub_queries_context=responses[query_name]["sub_queries_context"],
-                summary=summary_per_query.get(query_name, ""),
+            r['query_name']: SingleQueryResponse(
+                response=r["response"],
+                sub_queries_context=r["response"]["sub_queries_context"],
+                summary=r["response_summary"],
             )
-            for query_name in responses
+            for r in responses
         },
     )
 

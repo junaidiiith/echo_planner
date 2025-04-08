@@ -53,12 +53,12 @@ class EchoIndex(BaseModel):
 indices_map = {
     IndexType.CALL_TRANSCRIPTS: {
         "create_table_query": f"""CREATE TABLE IF NOT EXISTS {IndexType.CALL_TRANSCRIPTS.value} (
-            call_id INTEGER,
             timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             buyer TEXT,
+            call_id INTEGER,
             call_type TEXT,
             transcript TEXT,
-            PRIMARY KEY (call_id, buyer, seller)
+            PRIMARY KEY (call_id, buyer)
         );""",
         "metadata_columns": [
             {
@@ -84,8 +84,8 @@ indices_map = {
     },
     IndexType.ANALYSIS: {
         "create_table_query": f"""CREATE TABLE IF NOT EXISTS {IndexType.ANALYSIS.value} (
-            call_id INTEGER,
             timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            call_id INTEGER,
             buyer TEXT,
             call_type TEXT,
             stakeholder TEXT,
@@ -94,7 +94,7 @@ indices_map = {
             description TEXT,
             transcript TEXT,
             data TEXT,
-            PRIMARY KEY (call_id, buyer, seller, stakeholder)
+            PRIMARY KEY (call_id, buyer, stakeholder)
         );""",
         "metadata_columns": [
             {
@@ -144,9 +144,9 @@ indices_map = {
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             buyer TEXT,
+            data_type TEXT,
             industry TEXT,
             company_size TEXT,
-            raw BOOLEAN DEFAULT FALSE,
             data TEXT
         );""",
         "metadata_columns": [
@@ -180,9 +180,8 @@ indices_map = {
         "create_table_query": f"""CREATE TABLE IF NOT EXISTS {IndexType.SELLER_RESEARCH.value} (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            seller TEXT,
             industry TEXT,
-            raw BOOLEAN DEFAULT FALSE,
+            data_type TEXT,
             data TEXT
         );""",
         "metadata_columns": [
@@ -202,71 +201,20 @@ indices_map = {
         ],
         "index_type": IndexType.SELLER_RESEARCH,
     },
-    IndexType.WEBSITE_CONTENT: {
-        "create_table_query": f"""CREATE TABLE IF NOT EXISTS {IndexType.WEBSITE_CONTENT.value} (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            name TEXT,
-            data TEXT
-        );""",
-        "metadata_columns": [
-            {
-                "key": "name",
-                "operator": FilterOperator.EQ,
-                "mandatory": True,
-            },
-        ],
-        "data_columns": [
-            "data",
-        ],
-        "index_type": IndexType.WEBSITE_CONTENT,
-    },
-    IndexType.COMPETITORS: {
-        "create_table_query": f"""CREATE TABLE IF NOT EXISTS {IndexType.COMPETITORS.value} (
-            timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            competitor TEXT,
-            industry TEXT,
-            raw BOOLEAN DEFAULT FALSE,
-            data TEXT,
-            PRIMARY KEY (competitor, industry)
-        );""",
-        "metadata_columns": [
-            {
-                "key": "competitor",
-                "operator": FilterOperator.EQ,
-                "mandatory": True,
-            },
-            {
-                "key": "industry",
-                "operator": FilterOperator.EQ,
-                "mandatory": False,
-            },
-        ],
-        "data_columns": [
-            "data",
-        ],
-        "index_type": IndexType.COMPETITORS,
-    },
     IndexType.BUYER_ACCOUNT_PLAN: {
         "create_table_query": f"""CREATE TABLE IF NOT EXISTS {IndexType.BUYER_ACCOUNT_PLAN.value} (
             buyer TEXT,
-            call_type TEXT,
             query_type TEXT,
             query TEXT,
             message TEXT,
             sources TEXT,
             source_extracted_data TEXT DEFAULT NULL,
             timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            PRIMARY KEY (seller, buyer, query_type)
+            PRIMARY KEY (buyer, query_type)
         );""",
         "metadata_columns": [
             {
                 "key": "buyer",
-                "operator": FilterOperator.EQ,
-                "mandatory": True,
-            },
-            {
-                "key": "call_type",
                 "operator": FilterOperator.EQ,
                 "mandatory": True,
             },
@@ -290,8 +238,6 @@ indices_map = {
     },
     IndexType.SELLER_ACCOUNT_PLAN: {
         "create_table_query": f"""CREATE TABLE IF NOT EXISTS {IndexType.SELLER_ACCOUNT_PLAN.value} (
-            seller TEXT,
-            buyer TEXT,
             call_type TEXT,
             query_type TEXT,
             query TEXT,
@@ -300,7 +246,7 @@ indices_map = {
             source_extracted_data TEXT DEFAULT NULL,
             competitors TEXT DEFAULT NULL,
             timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            PRIMARY KEY (seller, buyer, query_type)
+            PRIMARY KEY (query_type)
         );""",
         "metadata_columns": [
             {
@@ -317,12 +263,7 @@ indices_map = {
                 "key": "query_type",
                 "operator": FilterOperator.EQ,
                 "mandatory": False,
-            },
-            {
-                "key": "seller",
-                "operator": FilterOperator.EQ,
-                "mandatory": True,
-            },
+            }
         ],
         "data_columns": ["message", "sources", "source_extracted_data", "competitors"],
         "index_type": IndexType.SELLER_ACCOUNT_PLAN,

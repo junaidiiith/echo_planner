@@ -11,6 +11,7 @@ CHUNK_SIZE = 1024 # Cannot change this due to default value in llama index
 CHUNK_OVERLAP = 200
 SIMILARITY_TOP_K = 3
 MAX_RETRIES = 3
+MAX_CONCURRENT_REQUESTS = 5
 CALL_HISTORY_LIMIT = 4
 
 MAX_TEXT_TOKENS = 6000
@@ -18,5 +19,5 @@ MAX_CONTEXT_LENGTH = 8000
 
 N_COMPETITORS = 3
 
-debug = int(os.getenv("DEBUG", 0))
 
+debug_mode = os.getenv("DEBUG", "True") == "True"

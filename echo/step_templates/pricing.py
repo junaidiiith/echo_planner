@@ -1,5 +1,5 @@
 import copy
-from echo.echo_agent import EchoAgent, get_data_str
+from echo.echo_agent import EchoAgent
 from crewai import LLM
 from crewai.crews.crew_output import CrewOutput
 from echo.constants import (
@@ -8,8 +8,13 @@ from echo.constants import (
 )
 from pydantic import BaseModel, Field
 from typing import Dict, List
-from echo.indexing import IndexType, add_data, check_metadata_exists, get_data_from_index
-from echo.utils import dict_to_markdown, format_response, json_to_markdown
+from echo.indexing import (
+    IndexType,
+    add_data,
+    check_metadata_exists_in_db,
+    get_data_from_db,
+)
+from echo.utils import dict_to_markdown, format_response, json_to_markdown, get_data_str
 from echo.step_templates.generic import (
     CallType,
     Transcript,
@@ -107,16 +112,13 @@ task_templates = {
                 "You need to simulate the call as a conversation between the {seller}'s sales person and ALL the {buyer}'s stakeholders.\n"
                 "You are provided with the {buyer}'s and {seller}'s information from previous calls as well."
                 "The information from the previous calls will be used to simulate the pricing call."
-                
                 "\n{buyer}'s Data from the analysis of previous calls:\n{previous_calls_analysis}\n"
                 "Below is the pricing models of the buyer - \n---Pricing Model---\n{seller_pricing}---End of Pricing Model---\n\n"
-                
                 "In the call, {seller}'s sales person will aim to provide the pricing models for the product or service that was demonstrated during the sales demo."
                 "The {seller}'s team person is supposed to be very confident and knowledgeable about the product or service during the demo."
                 "In order to simulate the pricing call, you need to follow the following steps - "
                 "1. Think about what is the objective of a general pricing sales call after the demo call."
                 "2. Use the context, i.e., {seller}'s pricing model and previous calls analysis summary to simulate the call that fulfills the objectives of a pricing call.\n"
-                
                 "---Pricing Call Objectives---\n"
                 "The simulation MUST cover the following instructions -\n"
                 "1. The {seller}'s pricing models that MUST be clearly presented and explained during the sales pricing call.\n"
@@ -131,8 +133,6 @@ task_templates = {
                 "10. {seller}'s can use several different assets to make their pitch.\n"
                 "11. {seller}'s team MUST take care of their ROI and MUST USE historical case studies to sell their product service\n"
                 "---End of Pricing Call Objectives---\n"
-                
-                
                 "---Call Simulation Guidelines---:\n"
                 "Your goal is to provide a realistic and engaging simulation of a pricing call."
                 "The contents of each message should be as detailed and realistic as possible like a human conversation. "
@@ -218,7 +218,7 @@ def get_analysis_data(data: Dict, string_format: bool = False):
     if string_format:
         data_str = get_data_str(analysis_keys, data)
         return data_str
-    
+
     return {k: v for k, v in data.items() if k in analysis_keys}
 
 
@@ -257,12 +257,17 @@ async def aget_simulation_data_for_client(inputs: dict, llm: LLM, **crew_config)
     assert "stakeholders" in inputs, "No stakeholders found for simulation"
     seller, client = inputs["seller"], inputs["buyer"]
     call_id = inputs["call_id"]
-    
+
     data = copy.deepcopy(inputs)
+    data.update(
+        {
+            "call_type": CallType.PRICING.value,
+        }
+    )
+
     add_previous_call_analysis(data)
     add_seller_research(data)
-    
-    
+
     def save_data():
         metadata = {
             "buyer": client,
@@ -279,16 +284,16 @@ async def aget_simulation_data_for_client(inputs: dict, llm: LLM, **crew_config)
             index_type=IndexType.CALL_TRANSCRIPTS,
         )
 
-    if check_metadata_exists(
+    if check_metadata_exists_in_db(
         index_name=seller,
         index_type=IndexType.CALL_TRANSCRIPTS,
         metadata={
             "call_id": inputs["call_id"],
             "buyer": inputs["buyer"],
             "call_type": CallType.PRICING.value,
-        }
+        },
     ):
-        data["pricing_transcript"] = get_data_from_index(
+        data["pricing_transcript"] = get_data_from_db(
             index_name=seller,
             index_type=IndexType.CALL_TRANSCRIPTS,
             metadata={
@@ -298,7 +303,6 @@ async def aget_simulation_data_for_client(inputs: dict, llm: LLM, **crew_config)
             },
         )["transcript"]
         return data
-    
 
     crew = get_crew(SIMULATION, llm, **crew_config)
     response = await crew.kickoff_async(
@@ -311,19 +315,20 @@ async def aget_simulation_data_for_client(inputs: dict, llm: LLM, **crew_config)
     return data
 
 
-
 async def aanalyze_data_for_client(inputs: dict, llm: LLM, **crew_config):
     assert "stakeholders" in inputs, "No stakeholders found for simulation"
     stakeholders = inputs["stakeholders"]
     client, seller = inputs["buyer"], inputs["seller"]
     call_id = inputs["call_id"]
     data = copy.deepcopy(inputs)
-    data.update(await aget_simulation_data_for_client(copy.deepcopy(inputs), llm, **crew_config))
+    data.update(
+        await aget_simulation_data_for_client(copy.deepcopy(inputs), llm, **crew_config)
+    )
 
     add_buyer_research(data)
 
     def check_stakeholder_analysis_exist(stakeholder):
-        return check_metadata_exists(
+        return check_metadata_exists_in_db(
             index_name=seller,
             index_type=IndexType.ANALYSIS,
             metadata={
@@ -353,14 +358,13 @@ async def aanalyze_data_for_client(inputs: dict, llm: LLM, **crew_config):
         )
 
     if all(
-        check_stakeholder_analysis_exist(stakeholder) 
-        for stakeholder in stakeholders
+        check_stakeholder_analysis_exist(stakeholder) for stakeholder in stakeholders
     ):
         pricing_analysis_data = dict()
         for stakeholder in stakeholders:
-            pricing_analysis_data[stakeholder] = get_data_from_index(
+            pricing_analysis_data[stakeholder] = get_data_from_db(
                 index_name=seller,
-                index_type=IndexType.ANALYSIS.value,
+                index_type=IndexType.ANALYSIS,
                 metadata={
                     "buyer": client,
                     "call_id": call_id,
@@ -373,8 +377,7 @@ async def aanalyze_data_for_client(inputs: dict, llm: LLM, **crew_config):
         for stakeholder in stakeholders:
             save_stakeholder_analysis(stakeholder)
         return data
-    
-    
+
     crew = get_crew(ANALYSIS, llm, **crew_config)
 
     pricing_analysis_data = dict()
@@ -401,7 +404,6 @@ async def aanalyze_data_for_client(inputs: dict, llm: LLM, **crew_config):
     return data
 
 
-
 async def aget_data_for_clients(
     task_type: str, clients: List[str], inputs: dict, llm: LLM, **crew_config
 ):
@@ -412,9 +414,7 @@ async def aget_data_for_clients(
     }
     task_fn = task_to_data_extraction_fn[task_type]
 
-    assert all([k in inputs for k in ["seller"]]), (
-        f"Invalid input data for {task_type}"
-    )
+    assert all([k in inputs for k in ["seller"]]), f"Invalid input data for {task_type}"
     print(f"Getting {task_type} Data")
     data = await aget_clients_call_data(task_fn, clients, inputs, llm, **crew_config)
     return data

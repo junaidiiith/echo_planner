@@ -7,7 +7,7 @@ from bs4 import BeautifulSoup
 from tqdm.auto import tqdm
 import concurrent.futures
 from typing import List
-from echo.settings import CHUNK_OVERLAP, CHUNK_SIZE, MAX_TEXT_TOKENS
+from echo.settings import CHUNK_OVERLAP, CHUNK_SIZE, MAX_TEXT_TOKENS, debug_mode
 from echo.llm_utils import get_response
 
 from echo.utils import (
@@ -15,6 +15,7 @@ from echo.utils import (
     format_response,
     get_num_tokens,
     get_text_upto_tokens,
+    get_dummy_string
 )
 
 
@@ -195,6 +196,12 @@ async def extract_nav_links(url, num_links=15):
 def extract_data_from_webpage(
     content: str, system_prompt: str = DATA_EXTRACTION_SYS_PROMPT
 ):
+    if debug_mode:
+        print("Debug mode is enabled. Returning Dummy response.")
+        # Generate dummy data for testing purposes
+        return get_dummy_string()
+        
+    
     response = get_response(
         [
             {"role": "system", "content": system_prompt},
@@ -208,6 +215,11 @@ def extract_data_from_webpage(
 
 
 async def extract_data_from_website(url: str):
+    if debug_mode:
+        print("Debug mode is enabled. Returning Dummy response.")
+        # Generate dummy data for testing purposes
+        return get_dummy_string()
+    
     navbar_links = await extract_nav_links(url)
     extracted_results = extract_data_from_links(navbar_links)
 

@@ -71,6 +71,7 @@ def get_response(messages: List[str], num_retries = 3):
 def summarize_text(text, split_count=5):
     
     def summarize(text):
+        print("Summarizing text with total tokens: ", get_num_tokens(text))
         return get_response([
             {"role": "system", "content": DATA_SUMMARIZATION_SYS_PROMPT},
             {"role": "user", "content": DATA_SUMMARIZATION_PROMPT.format(
