@@ -515,14 +515,13 @@ async def arun_queries(
             ]
         )
     )
-    # responses["summary"] = summary
     return QueryResponse(
         summary=summary,
         responses=[
             SingleQueryResponse(
                 query=r["query"],
                 response=r["response"],
-                sub_queries_context=r["response"]["sub_queries_context"],
+                sub_queries_context=r["sub_queries_context"],
                 summary=r["response_summary"],
             )
             for r in query_responses
