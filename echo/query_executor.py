@@ -99,19 +99,13 @@ class SubQuery(BaseModel):
         title="Output Name",
         description="The output name for the sub query.",
     )
+    inputs: Optional[Dict] = Field(
+        default=None, title="Inputs", description="The inputs for the sub query."
+    )
     context_tasks: Optional[List[int]] = Field(
         default=None,
         title="Context Tasks",
         description="The context tasks for the sub query.",
-    )
-    
-
-class LlamaSubQuery(SubQuery):
-    index_type: IndexType = Field(
-        ..., title="Index Type", description="The index type for the sub query."
-    )
-    inputs: Optional[Dict] = Field(
-        default=None, title="Inputs", description="The inputs for the sub query."
     )
    
 
@@ -130,6 +124,13 @@ class PerplexicaSubQuery(SubQuery):
         title="Source Extraction Prompts",
         description="The source extraction prompts for the sub query.",
     )
+
+
+class LlamaSubQuery(SubQuery):
+    index_type: IndexType = Field(
+        ..., title="Index Type", description="The index type for the sub query."
+    )
+
 
 
 class Query(BaseModel):
@@ -386,13 +387,12 @@ def run_sub_queries(
         
         replace_sub_query_variables()
         update_sub_query()
-
-        metadata_filters = get_metadata_filters(sub_query.index_type, sub_query_inputs)
-        vector_index = get_vector_index(sub_query_inputs['seller'], sub_query.index_type)
             
         if isinstance(sub_query, PerplexicaSubQuery):
             context = run_perplexica_subquery(sub_query)
         elif isinstance(sub_query, LlamaSubQuery):
+            metadata_filters = get_metadata_filters(sub_query.index_type, sub_query_inputs)
+            vector_index = get_vector_index(sub_query_inputs['seller'], sub_query.index_type)
             context = query_content(sub_query.query, metadata_filters)\
             if context_extraction_mode == ContextExtractionMode.QUERY_ENGINE\
             else retrieve_content(sub_query.query, metadata_filters)
@@ -429,13 +429,14 @@ async def arun_query_chain(
     inputs: Dict[str, str],
     response_format: ResponseFormat = ResponseFormat.MARKDOWN,
     context_extraction_mode: ContextExtractionMode = ContextExtractionMode.QUERY_ENGINE
-):
+) -> QueryResponse:
     query_responses = list()
     query_outputs = dict()
+    query_inputs = copy.deepcopy(inputs)
     for echo_query in query_chain.queries:
         print("Running query", echo_query.query)
-        variables = get_variables_from_prompt(echo_query.query)
         
+        variables = get_variables_from_prompt(echo_query.query)
         variable_values = dict()
         for variable in variables:
             if variable in query_outputs:
@@ -443,15 +444,18 @@ async def arun_query_chain(
             else:
                 variable_values[variable] = "{" + variable + "}"
                 assert variable in inputs, (
-                    f"Input variable {variable} in query '{echo_query.query}' not found in inputs or outputs of previous: {inputs}"
+                    f"Input variable {variable} in query '{echo_query.query}' not found in inputs or outputs of previous: {inputs.keys()} | {query_outputs.keys()}"
                 )
-            
+        
+        
         echo_query.query = echo_query.query.format(**variable_values)
         response, sub_queries_context = await aget_query_response(
-            echo_query, inputs, 
+            echo_query, query_inputs, 
             response_format, context_extraction_mode
         )
         query_outputs[echo_query.output_name] = response
+        query_inputs.update(query_outputs)
+        
         query_responses.append(
             {
                 "query": echo_query.query,

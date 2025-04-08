@@ -199,6 +199,9 @@ def call_api_with_extracted_sources(
     )
     if not extracted_cited_sources:
         print("No data extracted from sources.")
-        return []
+        return SearchResponseWithCitedData(
+            message=search_response.message,
+            extracted_sources=[],
+        )
     print("Data extracted from sources:", extracted_cited_sources)
     return extracted_cited_sources
