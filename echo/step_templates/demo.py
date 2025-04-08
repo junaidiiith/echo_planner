@@ -415,10 +415,6 @@ def process_analysis_data_output(response: CrewOutput):
 
 
 async def aget_research_data_for_client(inputs: dict, llm: LLM, **crew_config):
-    data = copy.deepcopy(inputs)
-    data.update({"call_type": CallType.DEMO.value})
-
-    client, seller = inputs["buyer"], inputs["seller"]
 
     def get_website_content(user, user_type):
         index_type = (
@@ -441,29 +437,10 @@ async def aget_research_data_for_client(inputs: dict, llm: LLM, **crew_config):
         )["data"]
         if not website_content:
             website_content = extract_data_from_website(user)
-        if get_num_tokens(website_content) > 4000:
-            website_content = summarize_text(website_content)
+            if get_num_tokens(website_content) > 4000:
+                website_content = summarize_text(website_content)
+                
         return website_content
-
-    assert check_metadata_exists_in_db(
-        index_name=seller,
-        index_type=IndexType.BUYER_RESEARCH,
-        metadata={"buyer": client},
-    ), f"Demo Data for client {client} does not exist."
-
-    buyer_demo_record = get_data_from_db(
-        index_name=seller,
-        index_type=IndexType.BUYER_RESEARCH,
-        metadata={
-            "buyer": client,
-            "data_type": IndexDataType.BUYER_RESEARCH_DATA.value,
-        },
-    )
-    assert buyer_demo_record, f"Discovery Data for client {client} does not exist."
-    data.update(buyer_demo_record["data"])
-
-    data["seller_website_content"] = get_website_content(seller, "seller")
-    data["buyer_website_content"] = get_website_content(client, "buyer")
 
     def save_data():
         print(f"Adding Buyer: {client} Data")
@@ -490,13 +467,58 @@ async def aget_research_data_for_client(inputs: dict, llm: LLM, **crew_config):
             index_name=seller,
             index_type=IndexType.BUYER_RESEARCH,
         )
+    
+    data = copy.deepcopy(inputs)
+    data.update({"call_type": CallType.DEMO.value})
+
+    client, seller = inputs["buyer"], inputs["seller"]
+
+    if check_metadata_exists_in_db(
+        index_name=seller,
+        index_type=IndexType.BUYER_RESEARCH,
+        metadata={
+            "buyer": client,
+            "data_type": IndexDataType.BUYER_DEMO_RESEARCH_DATA.value,
+        }
+    ):
+        buyer_demo_record = get_data_from_db(
+            index_name=seller,
+            index_type=IndexType.BUYER_RESEARCH,
+            metadata={
+                "buyer": client,
+                "data_type": IndexDataType.BUYER_DEMO_RESEARCH_DATA.value,
+            },
+        )
+    else:
+        assert check_metadata_exists_in_db(
+            index_name=seller,
+            index_type=IndexType.BUYER_RESEARCH,
+            metadata={"buyer": client},
+        ), f"Demo Data for client {client} does not exist."
+
+        buyer_demo_record = get_data_from_db(
+            index_name=seller,
+            index_type=IndexType.BUYER_RESEARCH,
+            metadata={
+                "buyer": client,
+                "data_type": IndexDataType.BUYER_RESEARCH_DATA.value,
+            },
+        )
+    
+    assert buyer_demo_record, f"Discovery Data for client {client} does not exist."
+    data.update(buyer_demo_record["data"])
+
+    data["seller_website_content"] = get_website_content(seller, "seller")
+    data["buyer_website_content"] = get_website_content(client, "buyer")
+
 
     add_previous_call_analysis(data)
     add_seller_research(data)
     add_buyer_research(data)
 
-    if "demo_features" in buyer_demo_record["data"]:
-        save_data()
+    print(data.keys())
+    
+    if "demo_features" in data:
         return data
 
     crew = get_crew(RESEARCH, llm, **crew_config)
@@ -621,8 +643,8 @@ async def aanalyze_data_for_client(inputs: dict, llm: LLM, **crew_config):
 
         data.update({"demo_analysis_data": demo_analysis_data})
 
-        for stakeholder in stakeholders:
-            save_stakeholder_analysis(stakeholder)
+        # for stakeholder in stakeholders:
+        #     save_stakeholder_analysis(stakeholder)
 
         return data
 

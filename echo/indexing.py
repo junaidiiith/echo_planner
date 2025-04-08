@@ -21,16 +21,16 @@ from echo.utils import (
 import echo.sqldb as sqldb
 
 
-def get_vector_index(index_name: str, index_type: str):
+def get_vector_index(index_name: str, index_type: IndexType):
     index_type = (
-        IndexType.ANALYSIS.value
-        if index_type == IndexType.CURRENT_CALL.value
+        IndexType.ANALYSIS
+        if index_type == IndexType.CURRENT_CALL
         else index_type
     )
     index_name = url_to_sql_name(index_name)
     chroma_db_path = db_storage_path(index_name)
     db = chromadb.PersistentClient(path=str(chroma_db_path))
-    chroma_collection = db.get_or_create_collection(f"{index_type}")
+    chroma_collection = db.get_or_create_collection(f"{index_type.value}")
     vector_store = ChromaVectorStore(chroma_collection=chroma_collection)
     index = VectorStoreIndex.from_vector_store(
         vector_store, embed_model=get_embed_model()
@@ -92,7 +92,7 @@ def check_metadata_exists_in_index(
         if mc.key in metadata
     }
     
-    index = get_vector_index(index_name, index_type.value)
+    index = get_vector_index(index_name, index_type)
     metadatas = get_metadatas(index)
     print("Searching for metadata in index")
     print("Filtered metadata:", filtered_metadata)
@@ -192,8 +192,8 @@ def add_data(
     index_name: str, 
     index_type: IndexType
 ):
-    print(f"Adding data to index: {index_name} with metadata: {metadata}")
-    print("Data:", data)
+    # print(f"Adding data to index: {index_name} with metadata: {metadata}")
+    # print("Data:", data)
     echo_index = get_echo_index(index_name, index_type)
     metadata = serialize_dict(metadata)
     metadata_columns = echo_index.metadata_columns
@@ -225,16 +225,16 @@ def add_data(
         metadata=complete_metadata,
     )
 
-    with open('t.json') as f:
-        import json
-        data = json.load(f)[0]['content']
+    # with open('t.json') as f:
+    #     import json
+    #     data = json.load(f)[0]['content']
         
     if not check_metadata_exists_in_index(
         index_name=index_name, 
         index_type=index_type, 
         metadata=complete_metadata
     ):
-        index = get_vector_index(index_name, index_type.value)
+        index = get_vector_index(index_name, index_type)
         
         node = Document(text=data, metadata=filtered_metadata)
         if not check_index_node_exists(data, filtered_metadata, index):

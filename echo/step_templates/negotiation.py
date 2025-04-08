@@ -272,7 +272,6 @@ async def aget_simulation_data_for_client(inputs: dict, llm: LLM, **crew_config)
                 "call_type": CallType.NEGOTIATION.value,
             },
         )["transcript"]
-        save_data()
         return data
 
     crew = get_crew(SIMULATION, llm, **crew_config)
@@ -348,8 +347,8 @@ async def aanalyze_data_for_client(inputs: dict, llm: LLM, **crew_config):
             )["data"]
 
         data.update({"negotiation_analysis_data": negotiation_analysis_data})
-        for stakeholder in stakeholders:
-            save_stakeholder_analysis(stakeholder)
+        # for stakeholder in stakeholders:
+        #     save_stakeholder_analysis(stakeholder)
         return data
 
     crew = get_crew(ANALYSIS, llm, **crew_config)

@@ -374,8 +374,8 @@ async def aanalyze_data_for_client(inputs: dict, llm: LLM, **crew_config):
             )["data"]
 
         data.update({"pricing_analysis_data": pricing_analysis_data})
-        for stakeholder in stakeholders:
-            save_stakeholder_analysis(stakeholder)
+        # for stakeholder in stakeholders:
+        #     save_stakeholder_analysis(stakeholder)
         return data
 
     crew = get_crew(ANALYSIS, llm, **crew_config)
