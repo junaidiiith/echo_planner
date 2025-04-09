@@ -54,7 +54,7 @@ def get_response(messages: List[str], num_retries = 3):
     
     def get_resp():
         return ai.Client().chat.completions.create(
-            model=os.getenv("AISUITE_FIREWORKS_DEEPSEEK_V3"),
+            model=os.getenv("AISUITE_OPENAI_GPT4o"),
             messages=messages,
         ).choices[0].message.content
     

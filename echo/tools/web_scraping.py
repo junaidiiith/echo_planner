@@ -1,3 +1,4 @@
+import json
 from crewai import Agent, Task
 from echo.echo_agent import EchoAgent
 from llama_index.core.node_parser import SentenceSplitter
@@ -105,6 +106,48 @@ def extract_text_from_url(url, timeout=30):
         print(f"Failed to fetch page, status code: {response.status_code}")
 
     return None
+
+def extract_links_from_url(url):
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+    }
+    response = requests.get(url, headers=headers)
+    soup = BeautifulSoup(response.content, 'html.parser')
+    # Start with the header if it exists; otherwise, use the body.
+    container = soup.find("header") or soup.body
+
+    # Find all anchor tags within the container.
+    all_links = container.find_all("a", href=True)
+
+    # Filter links by ensuring they have non-empty text (you might add further heuristics)
+    links = [
+        (link.get_text(strip=True), link["href"])
+        for link in all_links
+        if link.get_text(strip=True)
+    ]
+
+    # Find all <script type="application/json">
+    scripts = soup.find_all("script", type="application/json")
+
+    for script in scripts:
+        try:
+            data = json.loads(script.string)
+            # Recursively find all href values
+            def extract_links(obj):
+                if isinstance(obj, dict):
+                    for k, v in obj.items():
+                        if k == "href" and v:
+                            links.append((obj.get("text", ""), v))
+                        extract_links(v)
+                elif isinstance(obj, list):
+                    for item in obj:
+                        extract_links(item)
+
+            extract_links(data)
+        except Exception:
+            pass  # Silently skip malformed JSON
+    
+    return links
 
 
 async def extract_nav_links(url, num_links=15):
@@ -250,9 +293,12 @@ def extract_data_from_links(
                 print(f"Failed to extract text from {link}")
                 return None
             # Use the extracted text to get client-focused data
+            print("Extracting data from:", link)
+            print("Extracted text:", extracted_text)
             extraction_prompt = user_prompt.format(webpage=link, content=extracted_text)
             extracted_data = extract_data_from_webpage(
-                extraction_prompt, system_prompt=system_prompt
+                extraction_prompt, 
+                system_prompt=system_prompt
             )
             print(f"Extracted data from {link}")
             return {"link": link, "data": extracted_data}

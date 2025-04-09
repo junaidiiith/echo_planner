@@ -95,7 +95,7 @@ def delete_record(path: str, table_name, conditions_dict: dict) -> None:
     conn.close()
     
 
-def get_records(path: str, table_name, condition_dict: dict = None, limit: int = None):
+def get_records(path: str, table_name: str, condition_dict: dict = None, limit: int = None):
     if condition_dict is None:
         condition_dict = {1: 1}
         

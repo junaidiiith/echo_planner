@@ -1,6 +1,7 @@
 import copy
 import enum
 from crewai import Agent, Task, Crew
+from openai import OpenAI
 from echo.data.indexes import get_echo_index
 from echo.indexing import get_vector_index, IndexType
 from echo.utils import format_response, get_crew_llm, get_variables_from_prompt
@@ -18,7 +19,6 @@ from llama_index.core.schema import NodeWithScore, Document
 from echo.settings import SIMILARITY_TOP_K
 from echo.llm_utils import summarize_text
 from echo.tools.perplexity_search import call_api, call_api_with_extracted_sources
-
 
 class ContextExtractionMode(enum.Enum):
     RETRIEVER = "retriever"
@@ -131,13 +131,23 @@ class LlamaSubQuery(SubQuery):
         ..., title="Index Type", description="The index type for the sub query."
     )
 
+class LLMSubQuery(SubQuery):
+    use_web_search: bool = Field(
+        default=False,
+        title="Use Web Search",
+        description="Whether to use web search for the sub query.",
+    )
 
 
 class Query(BaseModel):
     query: str = Field(
         ..., title="Query", description="The query for which the response is needed."
     )
-    sub_queries: List[Union[LlamaSubQuery, PerplexicaSubQuery]] = Field(
+    sub_queries: List[Union[
+        LlamaSubQuery, 
+        PerplexicaSubQuery,
+        LLMSubQuery
+    ]] = Field(
         ..., title="Sub Queries", description="The sub queries and their context."
     )
     output_name: str = Field(
@@ -296,6 +306,23 @@ def run_perplexica_subquery(perplexica_subquery: PerplexicaSubQuery):
     return response_str
 
 
+def run_llm_subquery(sub_query: LLMSubQuery):
+    client = OpenAI()
+    if sub_query.use_web_search:
+        response = client.responses.create(
+            model="gpt-4o",
+            tools=[{"type": "web_search_preview"}],
+            input=f"{sub_query.query}",
+        )
+    else:
+        response = client.responses.create(
+            model="gpt-4o",
+            input=f"{sub_query.query}",
+        )
+    
+    return response.output_text
+
+
 def get_buyer_research(metadata: dict) -> str:
     metadata_filters = get_metadata_filters(IndexType.BUYER_RESEARCH, metadata)  # noqa: F821
     vector_index = get_vector_index(metadata["seller"], IndexType.BUYER_RESEARCH)
@@ -342,10 +369,13 @@ def run_sub_queries(
             if variable in sub_query_outputs:
                 variable_values[variable] = sub_query_outputs[variable]
             else:
-                variable_values[variable] = "{" + variable + "}"
+                # variable_values[variable] = "{" + variable + "}"
                 assert variable in sub_query_inputs, (
-                    f"Input variable {variable} in sub query '{sub_query.query}' not found in inputs or outputs of previous: {sub_query_inputs}"
+                    f"Input variable {variable} in sub query '{sub_query.query}'"
+                    f" not found in inputs or outputs of previous: {sub_query_inputs}"
                 )
+                variable_values[variable] = sub_query_inputs[variable]
+                
         sub_query.query = sub_query.query.format(**variable_values)
     
     def update_sub_query():
@@ -368,27 +398,40 @@ def run_sub_queries(
         ).query(query)
         return "Relevant Context:\n" + str(response)
 
+    
+    assert all(a in inputs for a in ['buyer', 'seller']), (
+        f"Buyer and Seller metadata not found in inputs: {inputs.keys()}"
+    )
+    seller, buyer = inputs["seller"], inputs["buyer"]
+    
     buyer_context = get_buyer_research(inputs)
     buyer_foundational_plan = get_buyer_account_plan(inputs)
-
+    buyer_seller_context = f"Answer the question in context to the seller as {seller} selling their products to a potential buyer: {buyer}"
+    
     sub_queries_context = [
         {
             "query": "Buyer Research Information",
-            "context": f"{buyer_context}\n\nAccount Plan: {buyer_foundational_plan}",
+            "context": (
+                f"{buyer_seller_context}"
+                f"{buyer_context}\n\nAccount Plan: {buyer_foundational_plan}"
+            )
         }
     ]
     sub_query_outputs = dict()
 
     for sub_query in query.sub_queries:
         print("Running sub query", sub_query.query)
+        sub_query.query += f"{buyer_seller_context}"
         sub_query_inputs = copy.deepcopy(inputs)
         if sub_query.inputs:
             sub_query_inputs.update(sub_query.inputs)
         
         replace_sub_query_variables()
         update_sub_query()
-            
-        if isinstance(sub_query, PerplexicaSubQuery):
+        
+        if isinstance(sub_query, LLMSubQuery):
+            context = run_llm_subquery(sub_query)
+        elif isinstance(sub_query, PerplexicaSubQuery):
             context = run_perplexica_subquery(sub_query)
         elif isinstance(sub_query, LlamaSubQuery):
             metadata_filters = get_metadata_filters(sub_query.index_type, sub_query_inputs)
@@ -485,7 +528,6 @@ async def arun_query_chain(
         ],
     )
 
-        
 
 async def arun_queries(
     queries: Dict[str, Dict[str, Query]],

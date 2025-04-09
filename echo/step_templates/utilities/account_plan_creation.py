@@ -21,21 +21,6 @@ from echo.indexing import (
 from tqdm.auto import tqdm
 
 
-# class ExtractedData(BaseModel):
-#     link: str
-#     data: str
-
-
-# class CitedSource(BaseModel):
-#     citation_id: int
-#     title: str
-#     content: str
-#     url: str
-
-
-# class ExtractedCitedSource(CitedSource):
-#     data: Optional[str] = None
-
 
 class QueryTypes(enum.Enum):
     FMOD = "Financial Moddeling"
@@ -73,8 +58,10 @@ query_type_prompts = {
             "This information is crucial for understanding the company's direction and potential as a client."
         ),
         "search": (
-            "Identify the company's key business priorities and strategic initiatives for the company - {buyer}. "
-            "Analyze 10-K reports and financial statements. "
+            "Identify the company's key business priorities and strategic goals and pains for the company - {buyer}. "
+            "Analyze 10-K reports and financial statements, leadership interviews, Earnings call transcripts and annual reports. "
+            "10-K, 10-Q (SEC Filings)"
+            "Also get access to hiring trends and growth of segments of the company"
             "Gain insights into the company's operations, products, services, and market position. "
             "Assess the company's revenue, profitability, and overall financial stability to gauge its potential as a client."
             "Understand the company's future plans and priorities. "
