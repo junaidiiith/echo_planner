@@ -4,6 +4,8 @@ from echo.indexing import IndexType
 from echo.query_executor import (  # type: ignore
     LlamaSubQuery,
     LLMSubQuery,
+    PerplexicaSourceExtraction,
+    PerplexicaSubQuery,
     Query,
     QueryChain,
 )
@@ -31,34 +33,30 @@ def get_multithread_query_chain(seller, buyer):
 
     """,
         sub_queries=[
-            # LlamaSubQuery(
-            #     query="What is the details on the industry and products of the buyer account?",
-            #     index_type=IndexType.BUYER_RESEARCH,
-            # ),
-            # LlamaSubQuery(
-            #     query="What are the top 3 financial, strategic and competitive goals and pains for the buyer account to solve for?",
-            #     index_type=IndexType.BUYER_RESEARCH,
-            # ),
-            # LlamaSubQuery(
-            #     query="What are the top 3 financial priorities for the account to solve for?",
-            #     index_type=IndexType.BUYER_ACCOUNT_PLAN,
-            #     inputs={"query_type": QueryTypes.FMOD.value},
-            # ),
-            # LlamaSubQuery(
-            #     query="What are the top 3 competitors that buyer might be worried about and want to tackle",
-            #     index_type=IndexType.BUYER_ACCOUNT_PLAN,
-            #     inputs={"query_type": QueryTypes.COMPANALYSIS.value},
-            # ),
-            # LlamaSubQuery(
-            #     query="What is the most relevant news and recent media for the buyeraccount?",
-            #     index_type=IndexType.BUYER_ACCOUNT_PLAN,
-            #     inputs={"query_type": QueryTypes.RECENTNEWS.value},
-            # ),
-            # LlamaSubQuery(
-            #     query="What are the top 3 strategic priorities for the account",
-            #     index_type=IndexType.BUYER_ACCOUNT_PLAN,
-            #     inputs={"query_type": QueryTypes.STRATEGY.value},
-            # ),
+            LlamaSubQuery(
+                query="What is the details on the industry and products of the buyer account?",
+                index_type=IndexType.BUYER_RESEARCH,
+            ),
+            LlamaSubQuery(
+                query="What are the top 3 financial priorities for the account to solve for?",
+                index_type=IndexType.BUYER_ACCOUNT_PLAN,
+                inputs={"query_type": QueryTypes.FMOD.value},
+            ),
+            LlamaSubQuery(
+                query="What are the top 3 competitors that buyer might be worried about and want to tackle",
+                index_type=IndexType.BUYER_ACCOUNT_PLAN,
+                inputs={"query_type": QueryTypes.COMPANALYSIS.value},
+            ),
+            LlamaSubQuery(
+                query="What is the most relevant news and recent media for the buyeraccount?",
+                index_type=IndexType.BUYER_ACCOUNT_PLAN,
+                inputs={"query_type": QueryTypes.RECENTNEWS.value},
+            ),
+            LlamaSubQuery(
+                query="What are the top 3 strategic priorities for the account",
+                index_type=IndexType.BUYER_ACCOUNT_PLAN,
+                inputs={"query_type": QueryTypes.STRATEGY.value},
+            ),
             LlamaSubQuery(
                 query="What are the top value propositions of the sellers product and what pains do they solve for customers. Dont give generic answers, but deep pains and priotrities of their buyers theyve solved for",
                 index_type=IndexType.SELLER_RESEARCH,
@@ -77,63 +75,117 @@ def get_multithread_query_chain(seller, buyer):
         ],
         output_name="account_plan_value_prop",
     )
-
     multi_threading_team_gen = Query(
         query=(
             "You're an experienced enterprise seller. Given these company initiatives, for the ones marked relevant to the seller's product, "
             "Infer which internal team likely owns or sponsors each initiative. \n"
             "If multiple teams are involved, note primary and secondary.\n"
             "Input:\n"
-            f"{account_plan_value_prop}\n"
+            "{account_plan_value_prop}\n"
             "Return format:\n"
             "- Initiative: ...\n"
             "- Likely owning team(s): ...\n"
-            "- Roles and titles within the team:\n"
             "- Reasoning:\n"
         ),
         sub_queries=[
-            # LlamaSubQuery(
-            #     query="What is the details on the industry and products of the buyer account?",
-            #     index_type=IndexType.BUYER_RESEARCH,
-            #     inputs={"data_type": IndexDataType.BUYER_RESEARCH_DATA.value}
-            # )
+            LlamaSubQuery(
+                query="What is the details on the industry and products of the buyer account?",
+                index_type=IndexType.BUYER_RESEARCH,
+                inputs={"data_type": IndexDataType.BUYER_RESEARCH_DATA.value},
+            )
         ],
         output_name="multi_threading_team_gen",
     )
 
-    llm_search_query = Query(
-        query=(
-            "You're an experienced enterprise seller. Given these company initiatives, team roles, team members and their background"
-            "Return format:\n"
-            "- Initiative: ...\n"
-            "- Likely owning team(s): ...\n"
-            "- Roles and titles within the team:\n"
-            "- Reasoning:\n"
-            "- Names of people in the team:\n"
-            "- Brief background on them and their role:\n"
-        ),
+    perplexity_search_query = Query(
+        query="""
+    You are provided with the company initiatives and the owning team for each of them.
+    
+    {multi_threading_team_gen}.
+    
+    You are provided with the company initiatives and the relevant information about from the web about the potential team members and employees of the company that would be relevant to the company initiatives.
+    Now, for each of the initiatives, Search for all possible employees and leaders from LinkedIn data who belong to that team and extract role, name, and background.
+    """,
         sub_queries=[
-            LLMSubQuery(
+            PerplexicaSubQuery(
                 query=(
-                    f"""
-                Given these initiatives, and responsible roles for each mentioned below, find the people at these roles at {buyer}. Prioritize linkedin as the most trustable source.
-                here is the input - {multi_threading_team_gen}
-
-                Return format:
-                Keep the input as is and append three fields to them
-                Name:
-                Role:
-                Brief overview on them and their role:
-                """
+                    "You are provided with the company initiatives and the owning team for each of them\n"
+                    "{multi_threading_team_gen}\n"
+                    "Now, for each of the initiatives, Search for all possible employees and leaders from LinkedIn data who belong to that team and extract role, name, and background.\n"
                 ),
-                use_web_search=True,
+                source_extraction_prompts=PerplexicaSourceExtraction(
+                    system_prompt=(
+                        "You are a strategic sales assistant. Given the list of initiatives, owning team and reasoning "
+                        "You need to extract the team members and employees of the company that would be relevant to the company initiatives.\n"
+                    ),
+                    user_prompt=(
+                        "You are provided with the company initiatives and the owning team for each of them\n"
+                        "You need to extract the team members and employees of the company that would be relevant to the company initiatives.\n"
+                        "Extract out the team members or employees from the below data\n"
+                    ),
+                ),
             )
         ],
-        output_name="gpt4o_web_search_query",
+        output_name="perplexity_search_query",
     )
 
+    # 2) do a perplexica serach here using team name and buyer name FOR EACH INITIATIVE RETURNED FROM ABOVE
+    # Search for all possible employees and leaders  from linkedin who belong to that team and extract role, name, and background
+
+    # 3) multi threading ROLE AND PERSON EXTRACTOR - use above response also aas input below additionally
+
+    multi_threading_person_extractor = Query(
+        query="""
+        You are a strategic sales assistant. Given the list of initiatives, owning team and reasoning 
+        for every relavant initiative the company is pursuing.
+        
+        
+        You are provided with the company initiatives and the owning team for each of them.
+        {multi_threading_team_gen}.
+        
+        You are further provided with the relevant team members and employees of the company that would be relevant to the company initiatives as crawled from the web.
+        {perplexity_search_query}
+        
+        Do the following:
+
+        Given the company {buyer}, and the owning team of that initiative and the team members crawled from linkedin,
+        return people who match titles commonly associated with owning this initiative.
+        Focus on seniority, team fit, and tenure. Prioritize those with likely budget/influence.
+
+        Also, Classify each as a champion, decision maker, gatekeeper and influncer within the team responsible for the initiative.
+        champion - one who directly owns the pain and will want it solved
+        decision maker- the one with power to purchase in the team and for the initiative
+        gatekeeper - the one who will block the deal from happening or be tough to convince. This is the only role that could be outside the team like procurement , legal etc.
+        influencer - the one who will influence the decision maker and champion to buy the product.
+
+        Return:
+        - initiative
+        - Name
+        - Title
+        - Tenure
+        - Team
+        - Reason they likely own this initiative
+        - Classification (champion, decision maker, gatekeeper, influencer) and why
+
+        here is the list of initiatives and the owning team for each of them:
+        {multi_threading_team_gen}
+    """,
+        sub_queries=[
+            LlamaSubQuery(
+                query="What is the details on the industry and products of the buyer account?",
+                index_type=IndexType.BUYER_RESEARCH,
+                inputs={
+                    "data_type": IndexDataType.BUYER_RESEARCH_DATA.value
+                },  ## Has demo data separately
+            )
+        ],
+        output_name="multi_threading_person_extractor",
+    )
+
+    # 4) multi threading outreach generator
+
     multi_threading_outreach_generator = Query(
-        query=f"""
+        query="""
         You're a strategic AE selling {seller}. 
         You are given a list of initiatives, persona to target, title, reasoning and initiative they are participating in. For each buyer in the list
         Do the following:
@@ -155,7 +207,7 @@ def get_multithread_query_chain(seller, buyer):
 
 
         Input:
-        {llm_search_query}
+        {multi_threading_person_extractor}
         
     """,
         sub_queries=[
@@ -177,9 +229,10 @@ def get_multithread_query_chain(seller, buyer):
         queries=[
             account_plan_value_prop,
             multi_threading_team_gen,
-            llm_search_query,
+            perplexity_search_query,
+            multi_threading_person_extractor,
             multi_threading_outreach_generator,
-        ],
+        ]
     )
     return query_chain
 
