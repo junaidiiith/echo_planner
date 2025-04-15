@@ -10,6 +10,8 @@ class IndexType(Enum):
     ANALYSIS = "analysis"
     BUYER_RESEARCH = "buyer_research"
     SELLER_RESEARCH = "seller_research"
+    BUYER_WEB_SEARCH = "buyer_web_search"
+    SELLER_WEB_SEARCH = "seller_web_search"
     BUYER_ACCOUNT_PLAN = "buyer_account_plan"
     SELLER_ACCOUNT_PLAN = "seller_account_plan"
     WEBSITE_CONTENT = "website_content"
@@ -268,6 +270,37 @@ indices_map = {
         "data_columns": ["message", "sources", "source_extracted_data", "competitors"],
         "index_type": IndexType.SELLER_ACCOUNT_PLAN,
     },
+    IndexType.BUYER_WEB_SEARCH: {
+        "create_table_query": f"""CREATE TABLE IF NOT EXISTS {IndexType.BUYER_WEB_SEARCH.value} (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            buyer TEXT,
+            data TEXT
+        );""",
+        "metadata_columns": [
+            {
+                "key": "buyer",
+                "operator": FilterOperator.EQ,
+                "mandatory": True,
+            },
+        ],
+        "data_columns": [
+            "data",
+        ],
+        "index_type": IndexType.BUYER_WEB_SEARCH,
+    },
+    IndexType.SELLER_WEB_SEARCH: {
+        "create_table_query": f"""CREATE TABLE IF NOT EXISTS {IndexType.SELLER_WEB_SEARCH.value} (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            data TEXT
+        );""",
+        "metadata_columns": [],
+        "data_columns": [
+            "data",
+        ],
+        "index_type": IndexType.SELLER_WEB_SEARCH,
+    }
 }
 
 

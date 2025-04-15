@@ -1,4 +1,5 @@
 import aisuite as ai
+from openai import OpenAI
 from echo.settings import MAX_CONTEXT_LENGTH
 from echo.utils import (
     get_num_tokens, 
@@ -98,4 +99,20 @@ def summarize_text(text, split_count=5):
             for i in range(1, split_count)
         ]
         return "\n\n".join(summary for summary in summaries if summary)
+
+
+def run_openai_query(query: str, use_tools: bool = False):
+    client = OpenAI()
+    if use_tools:
+        response = client.responses.create(
+            model="gpt-4o",
+            tools=[{"type": "web_search_preview"}],
+            input=f"{query}",
+        )
+    else:
+        response = client.responses.create(
+            model="gpt-4o",
+            input=f"{query}",
+        )
     
+    return response.output_text

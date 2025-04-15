@@ -1,5 +1,6 @@
 import json
 from crewai import Agent, Task
+from echo.data.utils import get_relevant_link_categories
 from echo.echo_agent import EchoAgent
 from llama_index.core.node_parser import SentenceSplitter
 from pydantic import BaseModel, Field
@@ -10,6 +11,8 @@ import concurrent.futures
 from typing import List
 from echo.settings import CHUNK_OVERLAP, CHUNK_SIZE, MAX_TEXT_TOKENS, debug_mode
 from echo.llm_utils import get_response
+from langchain_community.document_loaders import SeleniumURLLoader
+from langchain_core.documents import Document
 
 from echo.utils import (
     get_crew_llm,
@@ -27,6 +30,11 @@ class Link(BaseModel):
         description="The text of the navigation link",
     )
     url: str = Field(..., title="URL of the navigation link")
+    category: str = Field(
+        ...,
+        title="Category of the navigation link",
+        description="The category of the navigation link",
+    )
 
 
 class ExtractSchema(BaseModel):
@@ -78,6 +86,12 @@ Below are the extracted contents from the webpages -
 """
 
 
+def get_url_doc(urls: List[str]):
+    link_docs = SeleniumURLLoader(urls=urls).load()
+    return link_docs
+    
+
+
 def extract_text_from_url(url, timeout=30):
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
@@ -107,7 +121,7 @@ def extract_text_from_url(url, timeout=30):
 
     return None
 
-def extract_links_from_url(url):
+def extract_links_from_url(url: str):
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
     }
@@ -121,7 +135,7 @@ def extract_links_from_url(url):
 
     # Filter links by ensuring they have non-empty text (you might add further heuristics)
     links = [
-        (link.get_text(strip=True), link["href"])
+        link["href"]
         for link in all_links
         if link.get_text(strip=True)
     ]
@@ -137,7 +151,7 @@ def extract_links_from_url(url):
                 if isinstance(obj, dict):
                     for k, v in obj.items():
                         if k == "href" and v:
-                            links.append((obj.get("text", ""), v))
+                            links.append(v)
                         extract_links(v)
                 elif isinstance(obj, list):
                     for item in obj:
@@ -147,97 +161,152 @@ def extract_links_from_url(url):
         except Exception:
             pass  # Silently skip malformed JSON
     
+    
+    def process_link(link: str):
+        if link.startswith("http") or url in link:
+            return link
+        if url.endswith("/") and link.startswith('/'):
+            link = url + link[1:]
+        elif not url.endswith("/") and link.startswith('/'):
+            link = url + link
+        elif not url.endswith("/") and not link.startswith('/'):
+            link = url + "/" + link
+        
+        return link
+
+    links = list(set([process_link(link) for link in links]))
     return links
 
 
-async def extract_nav_links(url, num_links=15):
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-    }
-    response = requests.get(url, headers=headers)
-    soup = BeautifulSoup(response.text, "html.parser")
+async def extract_nav_links(url, num_links=50):
+    links = extract_links_from_url(url)
+    link_docs = SeleniumURLLoader(urls=links).load()
+    url_doc = get_url_doc([url])[0]
+    url_content = f"Title: {url_doc.metadata['title']}\nDescription:{url_doc.metadata['description']}\nContent: {url_doc.page_content}"
+    content = get_text_upto_tokens(url_content, 4000)
+    categories = get_relevant_link_categories()
 
-    # Start with the header if it exists; otherwise, use the body.
-    container = soup.find("header") or soup.body
+    async def get_nav_links(per_batch_links=10):
+        class Link(BaseModel):
+            url: str = Field(..., title="URL of the navigation link")
+            category: str = Field(
+                ...,
+                title="Category of the navigation link",
+                description="The category of the navigation link",
+            )
+            rationale: str = Field(
+                ...,
+                title="Rationale for the category",
+                description="The rationale for the category of the navigation link",
+            )
 
-    # Find all anchor tags within the container.
-    all_links = container.find_all("a", href=True)
 
-    # Filter links by ensuring they have non-empty text (you might add further heuristics)
-    links = [
-        (link.get_text(strip=True), link["href"])
-        for link in all_links
-        if link.get_text(strip=True)
-    ]
-    content = get_text_upto_tokens(soup.get_text(separator="\n", strip=True), 4000)
+        class CategorizedLinks(BaseModel):
+            nav_links: List[Link] = Field(
+                ...,
+                title="Navigation links on the website from Link Object",
+                description="List of navigation links on the website from Link Object",
+            )
 
-    async def get_nav_links(num_links=num_links):
         agent = Agent(
-            role="Website Crawling Expert",
-            goal="Filter out the relevant links that might be relevant for an Account Executive to understand the company's offerings and services",
-            backstory="You are an expert in extracting or filter out all the important links from a given website that might be relevant for an Account Executive to understand the company's offerings and services.",
-            llm=get_crew_llm(),
-        )
+                role="Website Crawling Expert",
+                goal="Filter out the relevant links that might be relevant for an Account Executive to understand the company's offerings and services",
+                backstory="You are an expert in extracting or filter out all the important links from a given website that might be relevant for an Account Executive to understand the company's offerings and services.",
+                llm=get_crew_llm(),
+            )
+
         task = Task(
-            name="Extracting Navigation Links",
+            name="Categorizing Links",
             description=(
-                "Given below the {website} landing page content and a list navigation links from {website}, filter out the top {num_links} most relevant links that might be relevant for an Account Executive to understand the company's offerings and services."
-                "A link is relevant if it can provide information about the company's products, services, pricing, case studies, testimonials, competitive advantages, and any value propositions that differentiate this company from its competitors."
-                "The final output should have atmost {num_links} links."
-                "---Website Content---\n"
+                "Given below the {website} landing page content and a list navigation links from {website}, extract out the most relevant links that might be relevant for an Account Executive to understand the company's offerings and services."
+                "A link is relevant if it can belong to one of the categories below: \n"
+                "{categories}"
+                
+                "\n---Website Content---\n"
                 "{content}"
-                "---End of Content---"
-                "---Extracted Navigation Links---\n"
+                "\n---End of Content---\n"
+                
+                "\n---Extracted Navigation Links---\n"
                 "{links}"
-                "---End of Navigation Links---"
-                "Based on this information, filter only the relevant links that might be relevant for an Account Executive to understand the company's offerings and services."
+                "\n---End of Navigation Links---\n"
+                
+                "Based on this information, filter only the relevant links that might be relevant for an Account Executive to understand the company's offerings and services.\n"
+                "You need to extract the relevant link and also assign a category to the link.\n"
+                "You also need to provide a rationale for the category assigned to the link.\n"
+                "The category should be one and ONLY ONE of the categories provided\n"
+                "The final output should have atmost {num_links} links."
+                "The total links can be less than {num_links} IF A LOT OF LINKS ARE NOT RELEVANT but not more than that.\n"
             ),
             expected_output=(
                 "The response should conform to the provided schema."
                 "You need to extract the following information in the following pydantic structure -\n"
                 "{pydantic_structure}\n"
             ),
-            output_pydantic=ExtractSchema,
-            agent=agent,
+            output_pydantic=CategorizedLinks,
+            agent=agent,    
         )
 
-        crew = EchoAgent(agents=[agent], tasks=[task])
+        crew = EchoAgent(
+            agents=[agent], 
+            tasks=[task]
+        )
         inputs = {
             "website": url,
             "content": content,
+            "categories": categories,
             "links": links_str,
-            "num_links": num_links,
+            "num_links": per_batch_links,
         }
 
         response = await crew.kickoff_async(inputs=inputs)
         return format_response(response)
 
-    all_links: List[ExtractSchema] = list()
-    for i in tqdm(range(0, len(links), num_links), desc="Extracting Navigation Links"):
-        links_str = "\n".join(
-            [f"{text}: {href}" for text, href in links[i : i + num_links]]
-        )
-        navbar_links = await get_nav_links()
-        all_links.append(navbar_links)
 
-    all_links = list(
-        {link["url"]: link for al in all_links for link in al["nav_links"]}.values()
-    )[:MAX_POTENTIAL_LINKS]
-    links_str = "\n".join([f"{link['text']}: {link['url']}" for link in all_links])
+    url_to_doc_map = {
+        link_doc.metadata["source"]: link_doc
+        for link_doc in link_docs
+    }
+
+    all_links: List[Document] = list()
+    for i in tqdm(range(0, len(link_docs), num_links), desc="Extracting Navigation Links"):
+        
+        links_str = "\n\n".join([(
+                f"URL: {link_doc.metadata['source']}\n"
+                f"Title: {link_doc.metadata['title']}\n"
+                f"Description: {link_doc.metadata['description']}"
+            )
+            for link_doc in link_docs[i:i + num_links]
+        ])
+        navbar_links = await get_nav_links()
+        url_docs = [
+            url_to_doc_map[link["url"]] for link in navbar_links["nav_links"]
+        ]
+        all_links.extend(url_docs)
+
+
+    all_links = all_links[:MAX_POTENTIAL_LINKS]
+    links_str = "\n\n".join([(
+            f"URL: {link_doc.metadata['source']}\n"
+            f"Title: {link_doc.metadata['title']}\n"
+            f"Description: {link_doc.metadata['description']}"
+        )
+        for link_doc in all_links
+    ])
 
     print("Getting final links")
     navbar_links = await get_nav_links()
-    final_links = [link["url"] for link in navbar_links["nav_links"]]
+    final_links = [
+        (url_to_doc_map[link["url"]], link["category"]) 
+        for link in navbar_links["nav_links"]
+    ]
 
     print("Final Links:", final_links)
-    return [
-        link if link.startswith("http") else f"{url}{link}"
-        for link in final_links[:num_links]
-    ]
+    return final_links
 
 
 def extract_data_from_webpage(
-    content: str, system_prompt: str = DATA_EXTRACTION_SYS_PROMPT
+    content: str, 
+    system_prompt: str = DATA_EXTRACTION_SYS_PROMPT
 ):
     if debug_mode:
         print("Debug mode is enabled. Returning Dummy response.")

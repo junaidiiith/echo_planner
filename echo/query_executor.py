@@ -1,7 +1,6 @@
 import copy
 import enum
 from crewai import Agent, Task, Crew
-from openai import OpenAI
 from echo.data.indexes import get_echo_index
 from echo.indexing import get_vector_index, IndexType
 from echo.utils import format_response, get_crew_llm, get_variables_from_prompt
@@ -17,7 +16,7 @@ from tqdm.asyncio import tqdm as async_tqdm
 
 from llama_index.core.schema import NodeWithScore, Document
 from echo.settings import SIMILARITY_TOP_K
-from echo.llm_utils import summarize_text
+from echo.llm_utils import run_openai_query, summarize_text
 from echo.tools.perplexity_search import call_api, call_api_with_extracted_sources
 
 class ContextExtractionMode(enum.Enum):
@@ -307,20 +306,7 @@ def run_perplexica_subquery(perplexica_subquery: PerplexicaSubQuery):
 
 
 def run_llm_subquery(sub_query: LLMSubQuery):
-    client = OpenAI()
-    if sub_query.use_web_search:
-        response = client.responses.create(
-            model="gpt-4o",
-            tools=[{"type": "web_search_preview"}],
-            input=f"{sub_query.query}",
-        )
-    else:
-        response = client.responses.create(
-            model="gpt-4o",
-            input=f"{sub_query.query}",
-        )
-    
-    return response.output_text
+    return run_openai_query(sub_query.query, sub_query.use_web_search)
 
 
 def get_buyer_research(metadata: dict) -> str:

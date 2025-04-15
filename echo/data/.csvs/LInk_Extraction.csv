@@ -1,0 +1,18 @@
+Section,Examples,Purpose,Non-Text Assets,Prompt
+Hero Headline & Subhead,"“Drive rep productivity with AI”
+“Built for GTM teams”",Core product promise and ICP target language,Hero visual (if it conveys positioning clearly),"Extract the main headline and subheadline. Identify the core product promise, target users, and market positioning in 1–2 sentences."
+Features & Capabilities,"Product modules
+Integrations
+AI components",Aligns with buyer pains or tech stack; helps match capabilities to needs,— (none for PoC),"List all product features, capabilities, and integrations mentioned. Summarize each feature in a sentence, and categorize by theme (e.g. AI, integrations, UI)."
+Persona-Focused Pages,"Pages for Sales Leaders,
+Enablement, RevOps",Supports stakeholder mapping and personalized value framing,Persona illustrations (optional),"Identify the target personas mentioned. For each, extract their goals, pains, and the promised outcomes tailored to them."
+Use Case Pages,"Onboarding, Forecasting,
+Pipeline Health",Direct input to infer buyer initiatives and anchor business case sections,— (none for PoC),"List each use case described. For each use case, extract the buyer problem it addresses, the promised outcome, and the typical user or persona involved."
+Customer Logos,"Grid of logos (e.g., Glean,
+Rippling, Snowflake)",Provides social proof and lets us recommend relevant examples,✅ Logo images,"Extract the names of all customer logos shown. If possible, infer industry and company size from context or URL."
+Case Studies / Outcomes,"Quotes, challenges, results
+(e.g. “+40% demo conversion”)",Fuels value prop messaging and ROI references,✅ PDFs or visuals of result metrics,"For each case study, extract the company name, persona quoted, challenge, solution, and quantifiable outcome. Provide summary in 3 bullet points per study."
+Blog & Thought Leadership,"Articles like “AI in Sales Ops,”
+“Reinventing Coaching”","Extracts tone, narrative, and company POV for outbound or strategic talk tracks",— (none for PoC),"Scan latest 3–5 blog titles and summaries. Extract the core themes, company POV, and any strategic messaging tone relevant to outbound narrative."
+CTA / Conversion Copy,"“Get your demo”, “Fix pipeline visibility”",Helps learn their sales messaging and urgency framing,— (none for PoC),Extract all CTA buttons and surrounding text. Identify the call-to-action language and any urgency or emotional appeal used.
+Video & Webinar Content,"Demo reels, customer webinars, expert interviews","Supports buyer persona tone, narrative extraction, or sales talk tracks",✅ Video thumbnails + transcript if available,"List all video titles on the page. If transcripts are available, extract top 3 talk track quotes and summarize each video's focus in 2 sentences."
