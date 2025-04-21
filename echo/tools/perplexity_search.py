@@ -10,7 +10,7 @@ from echo.tools.web_scraping import extract_data_from_links
 
 
 # Replace with your actual port if different from 3000
-API_URL = "http://localhost:3000/api/search"
+API_URL = os.getenv("PERPLEXICA_BASE_URL", "http://localhost:3000/api/search")
 
 
 class Metadata(BaseModel):
@@ -42,7 +42,7 @@ class CitedSource(BaseModel):
 
 class ExtractedCitedSource(CitedSource):
     data: Optional[str] = None
-    
+
 
 class SearchResponseWithCitedData(BaseModel):
     message: str
@@ -79,13 +79,12 @@ def get_cited_content(sources: List[Source], citations: List[int]) -> List[Cited
     return cited_content
 
 
-
 def call_api(query: str, history: list = None) -> Dict:
     if debug_mode:
         print("Debug mode is enabled. Returning Dummy response.")
         response = get_pydantic_dummy_instance(SearchResponse)
         return response.model_dump(mode="json")
-    
+
     if history is None:
         history = [
             ["human", "Hi, how are you?"],
@@ -121,9 +120,7 @@ def call_api(query: str, history: list = None) -> Dict:
 
 
 def extract_data_from_sources(
-    search_response: SearchResponse, 
-    user_prompt: str, 
-    system_prompt: str
+    search_response: SearchResponse, user_prompt: str, system_prompt: str
 ) -> SearchResponseWithCitedData:
     def make_search_call():
         print("Record does not exist, making API call...")
@@ -142,9 +139,7 @@ def extract_data_from_sources(
                 content="{content}",
             )
             data = extract_data_from_links(
-                links, 
-                user_prompt=prompt, 
-                system_prompt=system_prompt
+                links, user_prompt=prompt, system_prompt=system_prompt
             )
             extracted_data_map = {source["link"]: source["data"] for source in data}
             extracted_cited_sources = [
@@ -183,10 +178,7 @@ def extract_data_from_sources(
 
 
 def call_api_with_extracted_sources(
-    query: str, 
-    user_prompt: str, 
-    system_prompt: str, 
-    history: list = None
+    query: str, user_prompt: str, system_prompt: str, history: list = None
 ) -> SearchResponseWithCitedData:
     if debug_mode:
         print("Debug mode is enabled. Returning Dummy response.")
