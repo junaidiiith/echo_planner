@@ -115,4 +115,4 @@ def run_openai_query(query: str, use_tools: bool = False):
             input=f"{query}",
         )
     
-    return response.output_text
+    return response

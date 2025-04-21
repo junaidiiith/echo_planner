@@ -240,3 +240,5 @@ def add_data(
         if not check_index_node_exists(data, filtered_metadata, index):
             index.insert(node)
             print(f"Added node to index: {index_name} with metadata: {filtered_metadata}")
+    else:
+        print(f"Node already exists in index: {index_name} with metadata: {filtered_metadata}")

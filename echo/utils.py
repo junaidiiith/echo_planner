@@ -361,3 +361,18 @@ def url_to_sql_name(url):
     table_name = re.sub(r'\W+', '_', domain).strip('_').lower()
     return table_name
 
+
+def set_new_firecrawl_key(old_key: str):
+    with open('firecrawl_keys.json') as f:
+        keys: List = json.load(f)
+    if old_key and old_key in keys:
+        keys.remove(old_key)
+        
+    if not keys:
+        raise Exception("No keys available")
+    print("Setting a new filecrawl key: ", keys[0])
+    # Set the first key as the new key
+    with open('firecrawl_keys.json', 'w') as f:
+        json.dump(keys, f)
+    os.environ["FIRECRAWL_API_KEY"] = keys[0]
+        

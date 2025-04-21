@@ -275,6 +275,8 @@ indices_map = {
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             buyer TEXT,
+            category TEXT,
+            summary TEXT,
             data TEXT
         );""",
         "metadata_columns": [
@@ -283,9 +285,15 @@ indices_map = {
                 "operator": FilterOperator.EQ,
                 "mandatory": True,
             },
+            {
+                "key": "category",
+                "operator": FilterOperator.EQ,
+                "mandatory": False,
+            },
         ],
         "data_columns": [
             "data",
+            "summary"
         ],
         "index_type": IndexType.BUYER_WEB_SEARCH,
     },
@@ -293,9 +301,22 @@ indices_map = {
         "create_table_query": f"""CREATE TABLE IF NOT EXISTS {IndexType.SELLER_WEB_SEARCH.value} (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            category TEXT,
+            url TEXT,
             data TEXT
         );""",
-        "metadata_columns": [],
+        "metadata_columns": [
+            {
+                "key": "category",
+                "operator": FilterOperator.EQ,
+                "mandatory": False,
+            },
+            {
+                "key": "url",
+                "operator": FilterOperator.EQ,
+                "mandatory": False,
+            }
+        ],
         "data_columns": [
             "data",
         ],

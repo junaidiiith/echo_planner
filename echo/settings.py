@@ -19,5 +19,7 @@ MAX_CONTEXT_LENGTH = 8000
 
 N_COMPETITORS = 3
 
+FIRECRAWL_KEYS_FILE = 'firecrawl_keys.json'
+
 
 debug_mode = os.getenv("DEBUG", "True") == "True"
