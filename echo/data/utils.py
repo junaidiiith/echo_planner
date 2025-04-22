@@ -8,11 +8,11 @@ def get_current_dir():
 
 
 def get_buyer_insights_categories_df():
-    return pd.read_csv(f"{get_current_dir()}/.csvs/Buyer_Insights_Categories.csv")
+    return pd.read_csv(f"{get_current_dir()}/.csvs/buyer_insights_categories.csv")
 
 
 def get_seller_relevant_link_categories():
-    link_extraction_df = pd.read_csv(f"{get_current_dir()}/.csvs/Link_Extraction.csv")
+    link_extraction_df = pd.read_csv(f"{get_current_dir()}/.csvs/link_extraction.csv")
     categories = {r["Section"]: dict(r) for _, r in link_extraction_df.iterrows()}
     return categories
 
@@ -59,10 +59,10 @@ def generate_enums():
             f.write(enum_code)
         print(f"Enums created in {filename}")
 
-    if not os.path.exists(f"{get_current_dir()}/.csvs/Buyer_Insights_Categories.csv"):
+    if not os.path.exists(f"{get_current_dir()}/.csvs/buyer_insights_categories.csv"):
         print("Buyer Insights Categories CSV file not found.")
         return
-    if not os.path.exists(f"{get_current_dir()}/.csvs/Link_Extraction.csv"):
+    if not os.path.exists(f"{get_current_dir()}/.csvs/link_extraction.csv"):
         print("Link Extraction CSV file not found.")
         return
     if os.path.exists('echo/data/index_enums.py'):
