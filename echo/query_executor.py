@@ -314,6 +314,8 @@ def get_buyer_research(metadata: dict) -> str:
     vector_index = get_vector_index(metadata["seller"], IndexType.BUYER_RESEARCH)
     retriever = vector_index.as_retriever(filters=metadata_filters)
     docs: List[NodeWithScore] = retriever.retrieve("")
+    print(metadata_filters)
+    print(metadata)
     assert len(docs) > 0, f"No Buyer Research documents found for {metadata['buyer']}"
     return "\n\n".join([d.text for d in docs])
 
@@ -390,24 +392,25 @@ def run_sub_queries(
     )
     seller, buyer = inputs["seller"], inputs["buyer"]
     
-    buyer_context = get_buyer_research(inputs)
-    buyer_foundational_plan = get_buyer_account_plan(inputs)
-    buyer_seller_context = f"Answer the question in context to the seller as {seller} selling their products to a potential buyer: {buyer}"
+    # buyer_context = get_buyer_research(inputs)
+    # buyer_foundational_plan = get_buyer_account_plan(inputs)
+    # buyer_seller_context = f"Answer the question in context to the seller as {seller} selling their products to a potential buyer: {buyer}"
     
-    sub_queries_context = [
-        {
-            "query": "Buyer Research Information",
-            "context": (
-                f"{buyer_seller_context}"
-                f"{buyer_context}\n\nAccount Plan: {buyer_foundational_plan}"
-            )
-        }
-    ]
+    # sub_queries_context = [
+    #     {
+    #         "query": "Buyer Research Information",
+    #         "context": (
+    #             f"{buyer_seller_context}"
+    #             f"{buyer_context}\n\nAccount Plan: {buyer_foundational_plan}"
+    #         )
+    #     }
+    # ]
+    sub_queries_context = []
     sub_query_outputs = dict()
 
     for sub_query in query.sub_queries:
         print("Running sub query", sub_query.query)
-        sub_query.query += f"{buyer_seller_context}"
+        #sub_query.query += f"{buyer_seller_context}"
         sub_query_inputs = copy.deepcopy(inputs)
         if sub_query.inputs:
             sub_query_inputs.update(sub_query.inputs)

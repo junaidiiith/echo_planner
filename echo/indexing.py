@@ -35,7 +35,7 @@ def get_vector_index(index_name: str, index_type: IndexType):
     index = VectorStoreIndex.from_vector_store(
         vector_store, embed_model=get_embed_model()
     )
-
+    print(index_name)
     return index
 
 
