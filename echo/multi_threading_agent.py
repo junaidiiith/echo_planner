@@ -1493,7 +1493,7 @@ def remove_duplicates(people):
   return all_people_deduped
 
 
-def fetch_all_profiles( header,buyer, all_titles_to_search, delay=1.0):
+def fetch_all_profiles( header,buyer, all_titles_to_search, max_pages=4,delay=1.0):
     headers = header
     all_profiles = []
     page_number = 1
@@ -1502,7 +1502,7 @@ def fetch_all_profiles( header,buyer, all_titles_to_search, delay=1.0):
         print("running for page ")
         print(str(page_number))
         print("\n")
-        if int(page_number) > 4:
+        if int(page_number) > int(max_pages):
           break
         params = header.copy()
         params['page_number'] = str(page_number)
