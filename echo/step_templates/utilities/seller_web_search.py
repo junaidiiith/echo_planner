@@ -368,9 +368,9 @@ def add_seller_web_search_data(seller: str):
     #     links_by_category = json.load(f)
     
     category_data = get_data_from_links_by_category(seller, links_by_category)
-    with open("category_data.json") as f:
-        import json
-        category_data = json.load(f)
+    # with open("category_data.json") as f:
+    #     import json
+    #     category_data = json.load(f)
         
     
     return {
