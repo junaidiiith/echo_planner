@@ -67,7 +67,7 @@ def create_value_prop(buyer, seller, buyer_initiatives, seller_info):
 
   Output only the json and nothing else. Dont make anything up and answer from context provided.
   """
-  client = openai.OpenAI(api_key="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")
+  client = openai.OpenAI()
 
   response_value_prop = client.responses.create(
       model="o4-mini",
@@ -174,7 +174,7 @@ def find_teams(buyer, seller, response_value_prop):
     ]
   }}
   """
-  client = openai.OpenAI(api_key="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")
+  client = openai.OpenAI()
 
   best_fit_team_user_prompt = f"""
   here are the initiaitves identified for the buyer and how well the seller {seller} fits to solve them - {response_value_prop}
@@ -630,7 +630,7 @@ def extract_relevant_person_data(person_data, target_company):
   person_data_relevant = {k:person_data[k] for k in fields}
   person_data_relevant["industry_experience"] = get_industry_experience(person_data["employer"])
   person_data_relevant["tenure"] = get_current_tenure(person_data["employer"])
-  client = openai.OpenAI(api_key="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")
+  client = openai.OpenAI()
 
   # call llm here only ?
 
@@ -849,7 +849,7 @@ def get_influence_score(strategy_people_data):
                     influence_score_prompt_user = f"""
                     here is persona data - {str(person)} and here is the buyer company's initiative - {str(strategy)}
                     """
-                    client = openai.OpenAI(api_key="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")
+                    client = openai.OpenAI()
 
 
                     node_influence = client.responses.create(
@@ -1304,7 +1304,7 @@ class StakeholderGraph:
 
           Write a 3–4 line personalized engagement strategy for how to approach this stakeholder, based on their role, org unit, influence, and tags. Be specific.
           """
-          client = openai.OpenAI(api_key="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")
+          client = openai.OpenAI()
 
 
           response_engagement_strategy = client.responses.create(
@@ -1451,7 +1451,7 @@ class StakeholderGraph:
 
 
                 """
-      client = openai.OpenAI(api_key="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")
+      client = openai.OpenAI()
 
       response_explain_strategy = client.responses.create(
       model="gpt-4o",
