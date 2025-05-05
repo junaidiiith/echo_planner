@@ -58,7 +58,7 @@ def account_plan_extract_data(account_research_data: str, buyer, seller):
   here is the data on {buyer} and {seller} - {account_research_data}
   """
   api_key = os.getenv("OPENAI_API_KEY")
-  client = openai.OpenAI(api_key="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")
+  client = openai.OpenAI(api_key=api_key)
 
   response_account_research = client.responses.parse(
       model="o4-mini",
