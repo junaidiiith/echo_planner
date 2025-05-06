@@ -17,6 +17,7 @@ from tqdm.asyncio import tqdm as async_tqdm
 from llama_index.core.schema import NodeWithScore, Document
 from echo.settings import SIMILARITY_TOP_K
 from echo.llm_utils import run_openai_query, summarize_text
+from echo.query_kg import ask_kg
 from echo.tools.perplexity_search import call_api, call_api_with_extracted_sources
 
 class ContextExtractionMode(enum.Enum):
@@ -137,6 +138,8 @@ class LLMSubQuery(SubQuery):
         description="Whether to use web search for the sub query.",
     )
 
+class KGSubQuery(SubQuery):
+    pass
 
 class Query(BaseModel):
     query: str = Field(
@@ -145,7 +148,8 @@ class Query(BaseModel):
     sub_queries: List[Union[
         LlamaSubQuery, 
         PerplexicaSubQuery,
-        LLMSubQuery
+        LLMSubQuery,
+        KGSubQuery
     ]] = Field(
         ..., title="Sub Queries", description="The sub queries and their context."
     )
@@ -320,6 +324,16 @@ def get_buyer_research(metadata: dict) -> str:
     return "\n\n".join([d.text for d in docs])
 
 
+def run_kg_subquery(
+    sub_query: KGSubQuery, 
+    sub_query_inputs: Dict[str, str]
+):
+    return ask_kg(
+        sub_query_inputs['seller'],
+        sub_query_inputs['buyer'],
+        sub_query.query,
+    )
+
 def get_buyer_account_plan(metadata: dict) -> str:
     metadata_filters = get_metadata_filters(
         IndexType.BUYER_ACCOUNT_PLAN, metadata
@@ -390,21 +404,6 @@ def run_sub_queries(
     assert all(a in inputs for a in ['buyer', 'seller']), (
         f"Buyer and Seller metadata not found in inputs: {inputs.keys()}"
     )
-    # seller, buyer = inputs["seller"], inputs["buyer"]
-    
-    # buyer_context = get_buyer_research(inputs)
-    # buyer_foundational_plan = get_buyer_account_plan(inputs)
-    # buyer_seller_context = f"Answer the question in context to the seller as {seller} selling their products to a potential buyer: {buyer}"
-    
-    # sub_queries_context = [
-    #     {
-    #         "query": "Buyer Research Information",
-    #         "context": (
-    #             f"{buyer_seller_context}"
-    #             f"{buyer_context}\n\nAccount Plan: {buyer_foundational_plan}"
-    #         )
-    #     }
-    # ]
     sub_queries_context = []
     sub_query_outputs = dict()
 
@@ -428,10 +427,13 @@ def run_sub_queries(
             context = query_content(sub_query.query, metadata_filters)\
             if context_extraction_mode == ContextExtractionMode.QUERY_ENGINE\
             else retrieve_content(sub_query.query, metadata_filters)
+        elif isinstance(sub_query, KGSubQuery):
+            context = run_kg_subquery(sub_query, sub_query_inputs)
         else:
-            raise ValueError(
-                f"Unknown sub query type: {type(sub_query)}. Supported types are LlamaSubQuery and PerplexicaSubQuery."
-            )
+            raise ValueError((
+                f"Unknown sub query type: {type(sub_query)}. "
+                "Supported types are LlamaSubQuery and PerplexicaSubQuery."
+            ))
         
         sub_query_outputs[sub_query.output_name] = context
             
