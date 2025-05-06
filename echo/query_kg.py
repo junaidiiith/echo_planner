@@ -244,10 +244,11 @@ def get_org_graph(org):
     graph_storage_path = db_storage_path() / 'graphs'
     os.makedirs(graph_storage_path, exist_ok=True)
     
-    graph_file_path = graph_storage_path / f'{org}.pkl'
+    graph_file_path = graph_storage_path / f'{org.lower()}.pkl'
     if os.path.exists(graph_file_path):
         with open(graph_file_path, 'rb') as f:
             all_graphs = pickle.load(f)
+        print(f"Loaded {len(all_graphs)} graphs from {graph_file_path}")
         return add_economic_buyer_tag(all_graphs['Investment in R&D (building new products, integrating AI, enhancing existing platform)'].graph)
     else:
         raise FileNotFoundError(f"Graph storage path {graph_file_path} does not exist.")
