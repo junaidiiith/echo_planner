@@ -93,13 +93,18 @@ def find_teams(buyer, seller, response_value_prop):
 
 
   1. Predict all relevant teams that may be involved in the buying committee.
-  2. For each team:
-    a. Include job titles that would likely participate in the buying process.
-    b. Capture alternate title variations commonly used on LinkedIn (e.g., "VP of Talent Acquisition", "Head of Talent", "Director - TA"). For each team except Direct Owner Team, limit to max of 5 titles. For Direct Owner Team, include max 10 titles.
+  2. For each team, follow the below rules strictly:
+    a. Include job titles that would likely participate in the buying process based on the initiative, reasoning of why that initiative is important to the team and team owning it.
+    b. Capture alternate title variations commonly used on LinkedIn (e.g., "VP of Talent Acquisition", "Head of Talent", "Director - TA"). Predict alternate titles only if the main titles arent common and could have subjective variations.
+    For each team except Direct Owner Team, limit to max of 5 titles. For Direct Owner team , give max 3 roles. For champions, include max 10 titles.
     c. Keep titles as general as possible and as short as possible. For example - dont use titles like Learning Experience Designer or Learning Experience Manager. Use titles like Learning Manager or Learning Designer.
     d. Focus on senior titles and decision influencers. for Direct owner teams, keep some senior IC's but not too many.
     e. Maintain realistic seniority: include ICs in titles only if they are decision influencers or operational champions.
     f. Prioritize titles used in mid-sized to large tech companies (500+ headcount).
+    g. Exclude purely technical or low-influence roles like "Software Engineer," "Developer," "QA Engineer," "Analyst," or any title that is not typically part of buying committees.
+    h. Prioritize Director, VP, Head, or C-level titles wherever possible.
+
+Prioritize Director, VP, Head, or C-level titles wherever possible.
   3. Return the output structured by:
     - Direct Owner Team
     - Economic Buyer
@@ -530,6 +535,7 @@ def generate_value_props_for_stakeholders(
     name_to_node_id = {
         data.get("name"): node_id for node_id, data in graph.graph.nodes(data=True)
     }
+    betweenness = nx.betweenness_centrality(graph.graph, weight='weight', normalized=True)
 
     for tag, stakeholders in top_targets.items():
         for full_name, score in stakeholders:
@@ -552,13 +558,18 @@ def generate_value_props_for_stakeholders(
         - Function Type: {function}
         - Influence Score: {influence}
         - Known Initiatives: {initiative}
+        - Node betweenness and influence in graph - {betweenness.get(node_id, 0.0)}
         """
 
             value_prop_alignment = Query(
                 query=f""" Following is the buyer initiative at {buyer} that an enterprise seller at {seller} is selling to.
-                    He is trying to sell to "title" at {buyer} company. Given the buyer background, sellers value add and pains it solves
+                    He is trying to sell to {role} at {buyer}. Given the buyer background, sellers value add and pains it solves
                     and buyer initiatives, what is the business case and value prop to build for the stakeholder based on his / her title, buyer industry and 
-                    buyer product.
+                    buyer product. Answer using the following reasoning methodology
+                    1.) Deeply understnad the buyer initiative mentioned.
+                    2) Deeply understahd the stakeholders title, role and function type and what would he or she contrubute to the initiative.
+                    3) Understand the KPI's, vocabukary and priorities of the stakeholder, their concerns and how he or she makes decisions and success criteria.
+                    4) finally align the sellers value prop to the stakeholder and the initiative and build a business case for the stakeholder.
                     here are details of the stakeholder in {buyer} company: 
 
                     {stakeholder_context}
@@ -567,7 +578,8 @@ def generate_value_props_for_stakeholders(
 
                     ### {full_name} ({tag})
                     **Full Value Prop:** <your value prop here>  
-                    **1-liner Email Summary:** <your summary here>
+                    **Short Email:** <Sample email reachout>
+                    **Ideal Channel:** <email, linkedin, exec sponsor, peer intro (if high betweenness) etc>
                     **Possible Objections:** <anticipated objections the stakeholder of that role and buyer initiative could raise>
                     **Their role and KPIs:** <What would their role be in this initiative and what KPI's would they care about and how to address them>
               """,
@@ -1268,21 +1280,24 @@ class StakeholderGraph:
                 incoming_sorted = sorted(incoming, key=lambda x: x[1], reverse=True)[
                     :top_k
                 ]
-                print("len = ")
-                print(len(incoming_sorted))
+                #print("len = ")
+                #print(len(incoming_sorted))
                 all_results_md += f"\n#### {target_node.get('name', target_id)} ({target_node.get('default_position_title', 'N/A')})\n"
                 all_results_md += (
                     "| Influencer | Title | Influence Weight |\n|---|---|---|\n"
                 )
                 summary_md += f"- {target_node.get('name', target_id)} ({tag}):\n"
-
-                for src_id, weight in incoming_sorted:
-                    src = self.graph.nodes[src_id]
-                    name = src.get("name", src_id)
-                    title = src.get("default_position_title", "N/A")
-                    all_results_md += f"| {name} | {title} | {round(weight, 2)} |\n"
-                    summary_md += f"   - {name} ({title}), weight: {round(weight, 2)}\n"
-
+                if len(incoming_sorted) > 0:
+                  all_results_md += "| Influencer | Title | Influence Weight |\n|---|---|---|\n"
+                  for src_id, weight in incoming_sorted:
+                      src = self.graph.nodes[src_id]
+                      name = src.get("name", src_id)
+                      title = src.get("default_position_title", "N/A")
+                      all_results_md += f"| {name} | {title} | {round(weight, 2)} |\n"
+                      summary_md += f"   - {name} ({title}), weight: {round(weight, 2)}\n"
+                else:
+                  all_results_md += "_No strong influencer paths found. Suggested medium: **Direct reachout**._\n"
+                  summary_md += "   - No strong influencer path. Use **direct outreach**.\n"
         return all_results_md, summary_md
 
     # considers centraliy for champion and influence for other categories

@@ -102,6 +102,10 @@ def add_buyer_web_search_data(buyer: str, seller: str):
             IndexType.BUYER_WEB_SEARCH,
         )
     
+
+    # add queries on top of full text or index here?
+    #and return that instead
+
     return {
         'full_text': full_text,
         'summarized_text': summarized_text
