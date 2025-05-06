@@ -1,9 +1,7 @@
 import copy
 import networkx as nx
 import math
-import networkx as nx
 from typing import List, Dict, Any
-import math
 import openai
 import matplotlib.pyplot as plt
 from pyvis.network import Network
@@ -11,19 +9,21 @@ from collections import defaultdict
 import plotly.graph_objects as go
 
 from echo.data.indexes import IndexType
-from echo.data.index_enums import SellerIndexQueryTypes, BuyerIndexQueryTypes
+from echo.data.index_enums import BuyerIndexQueryTypes
 
 from echo.query_executor import Query, LlamaSubQuery
 
 from echo.query_executor import arun_query_chain
-
-# from echo.query_executor import aget_query_response
 import asyncio
-from echo.query_executor import Query, LlamaSubQuery, QueryChain
+from echo.query_executor import QueryChain
 import re
-import nest_asyncio
 import requests
-nest_asyncio.apply()
+import json
+from sentence_transformers import SentenceTransformer, util
+import datetime
+from rapidfuzz import fuzz
+import rapidfuzz
+
 
 
 def create_value_prop(buyer, seller, buyer_initiatives, seller_info):
@@ -446,14 +446,6 @@ dummy_json_title_data = """
 
 """
 # parse prev response
-import json
-import pickle
-from sentence_transformers import SentenceTransformer, util
-import datetime
-from rapidfuzz import fuzz
-import pickle
-import rapidfuzz
-
 
 def get_people_titles_to_search(strategy_data: str):
     if "json" in strategy_data:
@@ -655,21 +647,21 @@ def extract_relevant_person_data(person_data, target_company):
 
     # call llm here only ?
 
-    enrich_profile_llm_system = f"""
+    enrich_profile_llm_system = """
   You are an expert data analyst. Given an api response data on various employees in a company,
   you need to extract data from the response per employee from the json provided.
 
   Given the person's title and headline, infer their org unit (e.g., Sales, Marketing, RevOps, Enablement, Executive), suborganization unit as well (say Engineering at Azure Cloud vs Engineering at Bing Ads or Human Resources Hiring or Human resources Talent Recruiting)
-  and seniority level on a 1–7 scale (1 = junior IC, 7 = C-level) and Function type (strategic, tactical, IC).
+  and seniority level on a 1-7 scale (1 = junior IC, 7 = C-level) and Function type (strategic, tactical, IC).
 
   Here's what you need to extract finally and output as a json
   Final Output format -
-  {{
-  "Org Unit" - infer from title
-  "Suborg Unit" - Say sales enablement , sales ops instead of just sales (infer from title)
-  "Seniority Level" (1–7)
-  "Function Type" (Strategic, Tactical, IC)
-  }}
+  {
+    "Org Unit" - infer from title
+    "Suborg Unit" - Say sales enablement , sales ops instead of just sales (infer from title)
+    "Seniority Level" (1-7)
+    "Function Type" (Strategic, Tactical, IC)
+  }
 
   OUtput only json with the 4 fields and nothing else.
   """
@@ -709,7 +701,8 @@ print(response['choices'][0]['message']['content'])
             person_role_response.output_text.split("```json")[1].strip("`")
         )
         return person_data_relevant
-    except:
+    except Exception as e:
+        print(f"Error in parsing json from llm {e}")
         return {}
 
 

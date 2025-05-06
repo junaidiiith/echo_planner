@@ -192,7 +192,7 @@ def format_response(x: TaskOutput):
 
 def get_crew_llm():
     llm = LLM(
-        model=os.getenv("FIREWORKS_MODEL_NAME"),
+        model=os.getenv("FIREWORKS_DEEPSEEK_V3"),
         base_url="https://api.fireworks.ai/inference/v1",
         api_key=os.getenv("FIREWORKS_API_KEY"),
     )

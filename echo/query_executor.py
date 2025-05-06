@@ -390,7 +390,7 @@ def run_sub_queries(
     assert all(a in inputs for a in ['buyer', 'seller']), (
         f"Buyer and Seller metadata not found in inputs: {inputs.keys()}"
     )
-    seller, buyer = inputs["seller"], inputs["buyer"]
+    # seller, buyer = inputs["seller"], inputs["buyer"]
     
     # buyer_context = get_buyer_research(inputs)
     # buyer_foundational_plan = get_buyer_account_plan(inputs)
