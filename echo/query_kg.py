@@ -20,22 +20,22 @@ class BestPathInputs(BaseModel):
     buyer: str = Field(..., description="Name of the buyer.")
     seller: str = Field(..., description="Name of the seller.")
     source: Literal[
-        "Champions", 
-        "Economic Buyer", 
-        "Internal Influencers",
-        "Cross-Functional Reviewers",
-        "Direct Owner Team"
-    ] = Field(
+        'Champions',
+        'Cross-Functional Reviewers',
+        'Internal Influencers',
+        'Direct Owner Team',
+        'Economic Buyer'
+        ] = Field(
         default="Champions",
         description="Source node type. Must be one of Champions, Economic Buyer, Internal Influencers, Cross-Functional Reviewers, or Direct Owner Team.",
     )
     target: Literal[
-        "Champions", 
-        "Economic Buyer", 
-        "Internal Influencers",
-        "Cross-Functional Reviewers",
-        "Direct Owner Team"
-    ] = Field(
+        'Champions',
+        'Cross-Functional Reviewers',
+        'Internal Influencers',
+        'Direct Owner Team',
+        'Economic Buyer'
+        ] = Field(
         default="Champions",
         description="Target node type. Must be one of Champions, Economic Buyer, Internal Influencers, Cross-Functional Reviewers, or Direct Owner Team.",
     )
@@ -43,7 +43,15 @@ class BestPathInputs(BaseModel):
 
 class BestPathExtractor(BaseTool):
     name: str = "Best Path Extractor"
-    description: str = "Extract the best path between two types of nodes from the organization graph of a company."
+    description: str = (
+        "Extract the best path between two types of nodes from the organization graph of a company. "
+        "Guidelines: "
+        "Decision Influencers are usually Champions and Internal Influencers. "
+        "Decision Makers are usually Economic Buyers. "
+        "Cross-Functional Reviewers are usually the blockers. "
+        "Direct Owner Team are usually the ones who are responsible for the decision. "
+        "Discovery should involve the Champions and Direct Owner Team. "
+    )
     args_schema: Type[BaseModel] = BestPathInputs
 
     def _run(
@@ -63,7 +71,7 @@ class BestPathExtractor(BaseTool):
             path = find_shortest_path(graph, source, target)
             paths.append(path)
         paths = sorted_paths_by_cost(graph, paths)
-        paths_str = " --> ".join(paths[0]) if paths else None
+        paths_str = print_path(paths[0]) if paths else None
         # print(f"Best path from {source} to {target}: {paths_str}")
         return paths_str
 
@@ -74,12 +82,12 @@ class BestNodeTypeInputs(BaseModel):
     buyer: str = Field(..., description="Name of the buyer.")
     seller: str = Field(..., description="Name of the seller.")
     node_types: List[Literal[
-        "Champions", 
-        "Economic Buyer", 
-        "Internal Influencers",
-        "Cross-Functional Reviewers",
-        "Direct Owner Team"
-    ]] = Field(
+        'Champions',
+        'Cross-Functional Reviewers',
+        'Internal Influencers',
+        'Direct Owner Team',
+        'Economic Buyer'
+        ]] = Field(
         ..., description="List of node types to find best nodes for."
     )
     top_n: int = Field(default=-1, description="Number of best nodes to return.")
@@ -87,7 +95,15 @@ class BestNodeTypeInputs(BaseModel):
 
 class BestNodeTypesExtractor(BaseTool):
     name: str = "Best Node Types Extractor"
-    description: str = "Extract the best nodes of a specific type from the organization graph of a company."
+    description: str = (
+        "Extract the best nodes of a specific type from the organization graph of a company."
+        "Guidelines: "
+        "Decision Influencers are usually Champions and Internal Influencers. "
+        "Decision Makers are usually Economic Buyers. "
+        "Cross-Functional Reviewers are usually the blockers. "
+        "Direct Owner Team are usually the ones who are responsible for the decision. "
+        "Discovery should involve the Champions and Direct Owner Team. "
+    )
     args_schema: Type[BaseModel] = BestNodeTypeInputs
 
     def _run(
@@ -103,9 +119,11 @@ class BestNodeTypesExtractor(BaseTool):
 
 
 def print_path(g, p):
-    for node in p:
-        print(node, f"({g.nodes[node]['tag']})", end=" ")
-    print()
+    path_str = p[0] + f"({g.nodes[p[0]]['tag']})"
+    for node in p[1:]:
+        path_str += node + f"({g.nodes[node]['tag']})"
+
+    return path_str
 
 
 def get_nodes_by_tag(graph, tag):
@@ -236,7 +254,7 @@ def best_path(
         path = find_shortest_path(graph, source, target)
         paths.append(path)
     paths = sorted_paths_by_cost(graph, paths)
-    return paths[0] if paths else None
+    return print_path(graph, paths[0]) if paths else None
 
 
 def get_best_nodes(graph: nx.Graph, tags: List[str], top_n=-1):
@@ -274,6 +292,9 @@ def get_org_graph(seller: str, buyer: str):
     """
     Get the org graph for the given org.
     """
+    
+    print(f"Getting org graph for {seller} and {buyer}")
+    
     graph_storage_path = db_storage_path() / "graphs"
     os.makedirs(graph_storage_path, exist_ok=True)
 
