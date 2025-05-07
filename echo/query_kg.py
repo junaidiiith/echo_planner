@@ -288,6 +288,18 @@ def get_best_nodes(graph: nx.Graph, tags: List[str], top_n=-1):
     return best_tag_elements
 
 
+def save_org_graph(graph, seller: str, buyer: str):
+    """
+    Save the org graph to a file.
+    """
+    graph_storage_path = db_storage_path() / "graphs"
+    os.makedirs(graph_storage_path, exist_ok=True)
+
+    graph_file_path = graph_storage_path / f"{seller.lower()}_{buyer.lower()}.pkl"
+    with open(graph_file_path, "wb") as f:
+        pickle.dump({"Investment in R&D (building new products, integrating AI, enhancing existing platform)": graph}, f)
+    print(f"Saved {len(graph)} graphs to {graph_file_path}")
+
 def get_org_graph(seller: str, buyer: str):
     """
     Get the org graph for the given org.
