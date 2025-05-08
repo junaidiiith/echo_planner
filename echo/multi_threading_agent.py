@@ -24,6 +24,57 @@ import datetime
 from rapidfuzz import fuzz
 import rapidfuzz
 
+<<<<<<< Updated upstream
+=======
+class Account_Plan(BaseModel):
+  buyer:str
+  seller:str
+  Top_initiatives: str
+  Triggers :str
+  ICP_Fit :str
+  Tech_stack_fit: str
+  Value_Aligned: str
+  User_Feedback: str
+
+
+def account_plan_extract_data(account_research_data: str, buyer, seller):
+  account_research_system_prompt = f"""
+  You are a strategic account executive selling {seller} products to {buyer}. You need to extract signals from the data provided below on {buyer} and create a detailed account plan for the buyer {buyer}.
+  You need to extract the following data points from the data provided below:
+  1. Top initiatives and goals of the buyer this year
+  2. Triggers for the buyer - (funding, new product launches, hiring trends, leadership changes, etc.)
+  3. ICP Fit - (right type of company for {seller}, correct initiatives to solve for {buyer}, are they feeling the pains the seller can solve for , etc.) - Low, Meidium, High with a reasoning.
+  4. Tech stack fit - (is the buyer's tech stack aligned with the sellers product, are they using similar products, what gaps do w) - Low, Medium, High with a reasoning.
+  5. Value Aligned - List how the seller can solve for the buyers initiatives above and how well positioned are the seller to solve it.
+  6. User Feedback - (what are the users saying about the product, what are the reviews, what are the customers saying about the product, etc.)
+  
+  
+  """
+  account_research_user_prompt = f"""
+  here is the data on {buyer} and {seller} - {account_research_data}
+  """
+  api_key = os.getenv("OPENAI_API_KEY")
+  client = openai.OpenAI(api_key=api_key)
+
+  response_account_research = client.responses.parse(
+      model="o4-mini",
+      reasoning={"effort": "medium"},
+      input=[
+          {
+
+              "role": "system",
+              "content": account_research_system_prompt
+          },
+          {
+
+              "role": "user",
+              "content": account_research_user_prompt
+          },
+      ],
+      text_format=Account_Plan,
+  )
+  return response_account_research.output_parsed
+>>>>>>> Stashed changes
 
 
 def create_value_prop(buyer, seller, buyer_initiatives, seller_info):
