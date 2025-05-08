@@ -1447,8 +1447,10 @@ def get_graphs_for_initiatives(strategy_people_data_scored):
    return graphs
 
 
-
-
+import tldextract
+def get_company_from_url(url):
+    extracted = tldextract.extract(url)
+    return extracted.domain if extracted.domain else None
       
 
 
@@ -1468,9 +1470,10 @@ print("Step2 - teams created")
 
 # then call this person enrichment function on each person object element
 # extract buyer name only from website
-people_strategy_data = get_people_data(buyer, teams.model_dump())#step2_team_data)
+buyer_api = get_company_from_url(buyer)
+people_strategy_data = get_people_data(buyer_api, teams.model_dump())#step2_team_data)
 print(people_strategy_data)
-people_strategy_data_enriched = enrich_people_data(buyer, people_strategy_data)
+people_strategy_data_enriched = enrich_people_data(buyer_api, people_strategy_data)
 print(people_strategy_data_enriched)
 print("Step3 - people strategy joined")
 
