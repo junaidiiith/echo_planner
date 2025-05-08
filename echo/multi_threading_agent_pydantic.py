@@ -27,6 +27,8 @@ import nest_asyncio
 import requests
 nest_asyncio.apply()
 from pydantic import BaseModel
+import requests
+import datetime
 
 #type(a)
 import networkx as nx
@@ -38,6 +40,20 @@ import matplotlib.pyplot as plt
 from pyvis.network import Network
 from collections import defaultdict
 
+class StrategicInitiative(BaseModel):
+    Buyer_Initiative_Or_Pain: str
+    Buyer_Goals:str
+    Seller_Alignment: str
+    Relevance: str
+    Is_Cross_Functional:bool
+    IsStrategic:bool
+    Timing:str # planning, executing, evaluating)
+    Buyer_Industry:str
+    ExecAwareness:bool
+
+
+class StrategicInitiatives(BaseModel):
+    Initiatives: list[StrategicInitiative]
 
 
 class Account_Plan(BaseModel):
@@ -50,14 +66,6 @@ class Account_Plan(BaseModel):
   Value_Aligned: str
   User_Feedback: str
 
-
-class StrategicInitiative(BaseModel):
-    Buyer_Initiative_Or_Pain: str
-    Seller_Alignment: str
-    Relevance: str
-
-class StrategicInitiatives(BaseModel):
-    Initiatives: list[StrategicInitiative]
 
 
 
@@ -165,62 +173,168 @@ def create_value_prop_pydantic(buyer, seller, buyer_initiatives, seller_info):
 
   return response_value_prop.output_parsed
 
+
+
+
+
+
+def create_value_prop(buyer, seller, buyer_initiatives, seller_info):
+
+
+  value_align_prompt_system = f"""You are a strategic sales executive at {seller}\n
+  You are trying to find the initiatives of the buyer {buyer} and align them to your product."""
+
+
+  value_align_prompt_user= f"""The top initiatives of the buyer and the details of your product are given. Of all initiatives, find the most relevant ones
+  the sellers product can help solve and achieve. rate the relevance and problem solution fit as well. if all seem important, its okay to mark as relevant but make sure you assess properly.
+  Output format in json:
+  Buyer Initiative or pain
+  Why the seller can help? - be specific and dont force fit.
+  Relevance of seller to solving the pain or initiative
+  "Is_Cross_Functional" :true / false based if its a broad initiative like AI adoption that will span multiple teams. Initiatives like better CSAT or onboarding is not cross functional as its owned entirely by one org unit.
+  "IsStrategic":true or false based on if the initiative is strategic or more tactical and operational.
+  "Timing":  planning, executing, evaluating along with reasoning of why based on maturity of initiative from signals like hiring now, talks about maturity, implementation of it going on, exploring vendors and partners along with reasoning of why.
+  "Buyer_Industry":Industry of buyer - healthtech, pharma, Saas etc
+  "ExecAwareness":true / false based on if execs are aware of it or not and need to be brought into.
+
+  Sample output:
+  {{
+    "Strategic Initiatives": [
+      {{
+        "Buyer Initiative or pain": "International Expansion (hiring 100+ engineers in Bengaluru, scaling globally)",
+        "What is the buyer trying to achieve":"Product Expansion, Faster Ship speed",
+        "Why the seller can help?": "Whatfix’s in-app guidance and onboarding flows accelerate time‑to‑productivity for new hires across geographies. Localized self‑help modules, task lists, and smart tips ensure consistent training and process adherence, reducing reliance on instructor‑led sessions and enabling Rippling to scale its workforce efficiently in India and beyond.",
+        "Relevance of seller to solving the pain or initiative": "High"
+        "Is_Cross_Functional" :true / false based on if initiative is huge and cross fucntional and not limited to a single org unit
+        "IsStrategic":true or false based on if the initiative is strategic or more tactical and operational.
+  "Timing":  planning, executing, evaluating along with reasoning of why based on maturity of initiative from signals like hiring now, talks about maturity, implementation of it going on, exploring vendors and partners along with reasoning of why.
+        "Buyer_Industry":Industry of buyer - healthtech, pharma, Saas etc
+        "ExecAwareness":true / false based on if execs are aware of it or not and need to be brought into.
+      }},
+      {{
+        "Buyer Initiative or pain": "Investment in R&D (building new products, integrating AI, enhancing existing platform)",
+        "What is the buyer trying to achieve":"Competitor differentiation",
+        "Why the seller can help?": "Whatfix streamlines internal adoption of newly developed tools and features by embedding contextual walkthroughs and in‑app prompts. This ensures Rippling’s engineers and early adopters can instantly learn and validate new product capabilities, accelerating feedback loops and reducing friction in beta testing and rollout phases.",
+        "Relevance of seller to solving the pain or initiative": "Medium"
+        "Is_Cross_Functional" :true / false based on if initiative is huge and cross fucntional and not limited to a single org unit
+        "IsStrategic":true or false based on if the initiative is strategic or more tactical and operational.
+  "Timing":  planning, executing, evaluating along with reasoning of why based on maturity of initiative from signals like hiring now, talks about maturity, implementation of it going on, exploring vendors and partners along with reasoning of why.
+        "Buyer_Industry":Industry of buyer - healthtech, pharma, Saas etc
+        "ExecAwareness":true / false based on if execs are aware of it or not and need to be brought into.
+      }},
+      {{
+        "Buyer Initiative or pain": "Enhancing IT Security and Automation (data privacy, compliance, identity & device management, reducing manual tasks)",
+        "What is the buyer trying to achieve":"Security, Lesser support tickets",
+        "Why the seller can help?": "Whatfix embeds real‑time guidance and compliance checks directly within Rippling’s IT and security workflows. By guiding users through standardized processes, enforcing policy steps via task lists, and capturing process analytics, Whatfix helps minimize human error, automate repetitive tasks, and strengthen overall security posture.",
+        "Relevance of seller to solving the pain or initiative": "High"
+        "Is_Cross_Functional" :true / false based on if initiative is huge and cross fucntional and not limited to a single org unit
+        "IsStrategic":true or false based on if the initiative is strategic or more tactical and operational.
+  "Timing":  planning, executing, evaluating along with reasoning of why based on maturity of initiative from signals like hiring now, talks about maturity, implementation of it going on, exploring vendors and partners along with reasoning of why.
+        "Buyer_Industry":Industry of buyer - healthtech, pharma, Saas etc
+        "ExecAwareness":true / false based on if execs are aware of it or not and need to be brought into.
+      }}
+    ]
+  }}
+
+  Here is the initiative on buyer
+  {buyer_initiatives}
+
+  Here is the sellers details and pains they solve for their customers
+  {seller_info}
+
+  Output only the json and nothing else. Dont make anything up and answer from context provided.
+  """
+  api_key = os.getenv("OPENAI_API_KEY")
+  client = openai.OpenAI(api_key=api_key)
+  response_value_prop = client.responses.parse(
+      model="o4-mini",
+      reasoning={"effort": "medium"},
+      input=[
+          {
+
+              "role": "system",
+              "content": value_align_prompt_system
+          },
+          {
+
+              "role": "user",
+              "content": value_align_prompt_user
+          },
+      ],
+      text_format=StrategicInitiatives
+  )
+
+  return response_value_prop.output_parsed
+
+
 class Team(BaseModel):
   team: str
   Relevance: str
-  titles: list[str]
 
 
-class Direct_Owner_Team(BaseModel):
+class Decision_Maker(BaseModel):
   teams:list[Team]
 
 class Economic_Buyer(BaseModel):
   teams:list[Team]
 
-class Cross_Functional_Reviewers(BaseModel):
-  teams:list[Team]
-
-class Internal_Influencers(BaseModel):
-  teams:list[Team]
-
 class Champions(BaseModel):
   teams:list[Team]
 
-class StrategicInitiative(BaseModel):
+class Influencers(BaseModel):
+  teams:list[Team]
+
+class Blockers(BaseModel):
+  teams:list[Team]
+
+class BuyerCommittee(BaseModel):
     Buyer_Initiative_Or_Pain: str
     Seller_Alignment: str
     Relevance: str
-    Direct_Owner_Team:Direct_Owner_Team
+    Decision_Maker:Decision_Maker
     Economic_Buyer:Economic_Buyer
-    Cross_Functional_Reviewers:Cross_Functional_Reviewers
-    Internal_Influencers:Internal_Influencers
+    Blockers:Blockers
+    Influencers:Influencers
     Champions:Champions
 
-class StrategicInitiatives(BaseModel):
-    Initiatives: list[StrategicInitiative]
+class BuyerCommittees(BaseModel):
+    Initiatives: list[BuyerCommittee]
 
-def find_teams_pydantic(buyer, seller, response_value_prop):
+def find_teams(buyer, seller, response_value_prop, seller_info):
   best_fit_team_system_prompt = f"""
 
   You are a sales executive at {seller} who is an expert at mapping the buying committees for different buyer initiatives.
   You have the top relevant initiatives of buyer {buyer} and info on how the seller can solve these. For each initiative thats relevant (dont pick poor relevant ones),
-  You need to find the teams and titles that would be involved in making the purchase decision.
+  Ypu need to predict the possible buyer committee responsible for the initiative.
+  This is how to work through:
+  For each initiative:
+  1. Identify teams split by tag where each team belongs to one of these
+
+  "Accounting", "Administrative", "Arts and Design", "Business Development", "Community and Social Services", "Consulting", "Education", "Engineering", "Entrepreneurship", "Finance", "Healthcare Services", "Human Resources", "Information Technology", "Legal", "Marketing", "Media and Communication", "Military and Protective Services", "Operations", "Product Management", "Program and Project Management", "Purchasing", "Quality Assurance", "Real Estate", "Research", "Sales", "Customer Success and Support"
 
 
-  1. Predict all relevant teams that may be involved in the buying committee.
+
+
+    - Decision Maker - Based on the initiative, find which team owns the initiative.
+
+    - Economic Buyer: Based on the initiative, find which team is the cost center. If the initiative is too strategic and
+      involves multiple teams, finance will be the cost center for the initiative.
+
+    - Blockers :This involves every team thats risk averse and can be badly impacted
+      by the initiative and sellers tool. Think IT for high integration tools,
+      compliance if the product is highly regulatory in nature and industry.
+      Make sure that this isnt the same as the team that directly uses the tool.
+
+    - Influencers: This involves both direct teams that are consulted by the decision maker and have a say in the initiative
+    as well as cross functional teams that would have a say in the decision making process for the initiative.
+      Say RevOps and enablement for sales tools as well. Dont be too broad.
+
+    - Champions: The team that directly feels the pain and needs it solved.
+
   2. For each team:
-    a. Include job titles that would likely participate in the buying process.
-    b. Capture alternate title variations commonly used on LinkedIn (e.g., "VP of Talent Acquisition", "Head of Talent", "Director - TA"). For each team except Direct Owner Team, limit to max of 5 titles. For Direct Owner Team and champions, include max 10 titles.
-    c. Keep titles as general as possible and as short as possible. For example - dont use titles like Learning Experience Designer or Learning Experience Manager. Use titles like Learning Manager or Learning Designer.
-    d. Focus on senior titles and decision influencers. for Direct owner teams, keep some senior IC's but not too many.
-    e. Maintain realistic seniority: include ICs in titles only if they are decision influencers or operational champions.
-    f. Prioritize titles used in mid-sized to large tech companies (500+ headcount).
-  3. Return the output structured by:
-    - Direct Owner Team
-    - Economic Buyer
-    - Cross-Functional Reviewers
-    - Internal Influencers
-    - Champions
+    justify why they would play the role in the buying committee.
+
+  3. Teams can be both decision makers and champions for example. There shouldnt be too much overlap though.
 
   Sample output:
   {{
@@ -230,24 +344,24 @@ def find_teams_pydantic(buyer, seller, response_value_prop):
         "Why the seller can help?": "Whatfix’s in-app guidance and onboarding flows accelerate time‑to‑productivity for new hires across geographies. Localized self‑help modules, task lists, and smart tips ensure consistent training and process adherence, reducing reliance on instructor‑led sessions and enabling Rippling to scale its workforce efficiently in India and beyond.",
         "Relevance of seller to solving the pain or initiative": "High",
         {{
-    "Direct Owner Team": [
-      {{"team": "Sales", "Relevance":"why its relevant","titles": ["VP of Sales", "Director of Sales", "Sales Enablement Manager"]}}
+    "Decision Maker": [
+      {{"team": "Sales", "Relevance":"why its relevant"}}
     ],
     "Economic Buyer": [
-      {{"team": "Finance", "Relevance":"why its relevant","titles": ["CFO", "VP of Finance"]}}
-    ],
-    "Cross-Functional Reviewers": [
-      {{"team": "IT", "Relevance":"why its relevant","titles": ["IT Manager", "Director of Security"]}},
-      {{"team": "Legal", "Relevance":"why its relevant","titles": ["Legal Counsel"]}},
-      {{"team": "Procurement", "Relevance":"why its relevant","titles": ["Procurement Manager"]}}
-    ],
-    "Internal Influencers": [
-      {{"team": "Customer Success", "Relevance":"why its relevant","titles": ["VP of Customer Success", "Director of CS"]}},
-      {{"team": "RevOps", "Relevance":"why its relevant","titles": ["Revenue Operations Manager"]}}
+      {{"team": "Finance", "Relevance":"why its relevant"}}
     ],
     "Champions": [
-      {{"team": "Sales", "Relevance":"why its relevant","titles": ["Account Executive"]}},
-      {{"team": "Enablement", "Relevance":"why its relevant","titles": ["Sales Enablement Lead"]}}
+      {{"team": "IT", "Relevance":"why its relevant"}},
+      {{"team": "Legal", "Relevance":"why its relevant"}},
+      {{"team": "Procurement", "Relevance":"why its relevant"}}
+    ],
+    "Influencers": [
+      {{"team": "Customer Success", "Relevance":"why its relevant"}},
+      {{"team": "RevOps", "Relevance":"why its relevant"}}
+    ],
+    "Blockers": [
+      {{"team": "Sales", "Relevance":"why its relevant"}},
+      {{"team": "Enablement", "Relevance":"why its relevant"}}
     ]
   }}
       }},
@@ -256,35 +370,42 @@ def find_teams_pydantic(buyer, seller, response_value_prop):
         "Why the seller can help?": "Whatfix streamlines internal adoption of newly developed tools and features by embedding contextual walkthroughs and in‑app prompts. This ensures Rippling’s engineers and early adopters can instantly learn and validate new product capabilities, accelerating feedback loops and reducing friction in beta testing and rollout phases.",
         "Relevance of seller to solving the pain or initiative": "Medium",
         {{
-    "Direct Owner Team": [
-      {{"team": "Sales","Relevance":"why its relevant", "titles": ["VP of Sales", "Director of Sales", "Sales Enablement Manager"]}}
+    "Decision Maker": [
+      {{"team": "Sales","Relevance":"why its relevant"}}
     ],
     "Economic Buyer": [
-      {{"team": "Finance", "Relevance":"why its relevant","titles": ["CFO", "VP of Finance"]}}
-    ],
-    "Cross-Functional Reviewers": [
-      {{"team": "IT", "Relevance":"why its relevant","titles": ["IT Manager", "Director of Security"]}},
-      {{"team": "Legal", "Relevance":"why its relevant","titles": ["Legal Counsel"]}},
-      {{"team": "Procurement", "Relevance":"why its relevant","titles": ["Procurement Manager"]}}
-    ],
-    "Internal Influencers": [
-      {{"team": "Customer Success", "Relevance":"why its relevant","titles": ["VP of Customer Success", "Director of CS"]}},
-      {{"team": "RevOps", "Relevance":"why its relevant","titles": ["Revenue Operations Manager"]}}
+      {{"team": "Finance", "Relevance":"why its relevant"}}
     ],
     "Champions": [
-      {{"team": "Sales", "Relevance":"why its relevant","titles": ["Account Executive"]}},
-      {{"team": "Enablement","Relevance":"why its relevant", "titles": ["Sales Enablement Lead"]}}
+      {{"team": "IT", "Relevance":"why its relevant"}},
+      {{"team": "Legal", "Relevance":"why its relevant"}},
+      {{"team": "Procurement", "Relevance":"why its relevant"}}
+    ],
+    "Influencers": [
+      {{"team": "Customer Success", "Relevance":"why its relevant"}},
+      {{"team": "RevOps", "Relevance":"why its relevant"}}
+    ],
+    "Blockers": [
+      {{"team": "Sales", "Relevance":"why its relevant"}},
+      {{"team": "Enablement","Relevance":"why its relevant"}}
     ]
   }}
       }},
     ]
   }}
+
+  Make sure again the teams is one of the ones mentioned ONLY!
   """
 
   best_fit_team_user_prompt = f"""
-  here are the initiaitves identified for the buyer and how well the seller {seller} fits to solve them - {str(a.json())}
+  here are the initiaitves identified for the buyer and how well the seller {seller} fits to solve them -        
+    {str(response_value_prop.model_dump())}
   Output just the json and nothing else.
+
+  Here's details on the sellers' product and pains they solve for - {seller_info}
   """
+  api_key = os.getenv("OPENAI_API_KEY")
+  client = openai.OpenAI(api_key=api_key)
   response_team_guess_reasoning = client.responses.parse(
       model="o4-mini",
       reasoning={"effort": "medium"},
@@ -300,7 +421,7 @@ def find_teams_pydantic(buyer, seller, response_value_prop):
               "content": best_fit_team_user_prompt
           },
       ],
-      text_format=StrategicInitiatives
+      text_format=BuyerCommittees
   )
 
   # response_team_guess = client.responses.create(
@@ -322,110 +443,142 @@ def find_teams_pydantic(buyer, seller, response_value_prop):
   return response_team_guess_reasoning.output_parsed
 
 
+# algo
 
+
+
+# can optimize for DM and economic buyers for seniority as some orgs have multiple VPS
+
+
+
+def get_people_data(buyer,team_data):
+  people_data = {}
+
+  for initiative in team_data["Initiatives"]:
+    initiative_people_data = []
+    decision_makers = initiative["Decision_Maker"]["teams"]
+    economic_buyers = initiative["Economic_Buyer"]["teams"]
+    blockers = initiative["Blockers"]["teams"]
+    influencers = initiative["Influencers"]["teams"]
+    champions = initiative["Champions"]["teams"]
+
+    # do this instead of below
+
+    initiative["Decision_Maker"]["people"] = return_dummy_people() #run_crustdata_query(buyer, "Decision Maker", [team["team"] for team in decision_makers])["profiles"]
+    initiative["Economic_Buyer"]["people"] = []#run_crustdata_query(buyer, "Economic Buyer", [team["team"] for team in decision_makers])["profiles"]
+    initiative["Blockers"]["people"] = []#run_crustdata_query(buyer, "Blockers", [team["team"] for team in decision_makers])["profiles"]
+    initiative["Influencers"]["people"] = []#run_crustdata_query(buyer, "Influencers", [team["team"] for team in decision_makers])["profiles"]
+    initiative["Champions"]["people"] = []#run_crustdata_query(buyer, "Champions", [team["team"] for team in decision_makers])["profiles"]
+
+
+
+    #initiative_people_data.extend(["hello"])
+    #initiative_people_data.extend(run_crustdata_query(buyer, "Decision Maker", [team["team"] for team in decision_makers])["profiles"])
+    #people_data.extend(run_crustdata_query(buyer, "Economic Buyer", [team["team"] for team in economic_buyers]))
+    #people_data.extend(run_crustdata_query(buyer, "Blockers", [team["team"] for team in blockers]))
+    #people_data.extend(run_crustdata_query(buyer, "Influencer", [team["team"] for team in influencers], tenure = ["3 to 5 years","6 to 10 years"] ))
+    #people_data.extend(run_crustdata_query(buyer, "Champions", [team["team"] for team in champions]))
+    #people_data[initiative['Buyer_Initiative_Or_Pain']] = initiative_people_data
+  return team_data
+  #return people_data
+
+def run_crustdata_query(company, tag, departments=[], tenure = ["3 to 5 years","6 to 10 years", "More than 10 years"]):
+
+  seniority_map = {
+      "Decision Maker":["CXO","Vice President"],
+      "Economic Buyer":["Vice President"],
+      "Champions":["Experienced Manager","Director"],
+      "Blockers":["Directors","Vice President"],
+      "Influencers":["Experienced Manager","Senior"]
+  }
+  if tag == "Influencers":
+    response = requests.post(
+    "https://api.crustdata.com/screener/person/search",
+    headers = {
+
+    "Content-Type": "application/json",
+    "Authorization": "Token 8582455305237735a32d0be5b74dda9b22dc9857"
+
+    },
+    json={
+      "filters": [
+        {
+          "filter_type": "CURRENT_COMPANY",
+          "type": "in",
+          "value": [
+            company
+          ]
+        },
+        {
+          "filter_type": "FUNCTION",
+          "type": "in",
+          "value": departments
+        },
+        {
+          "filter_type": "SENIORITY_LEVEL",
+          "type": "in",
+          "value": seniority_map[tag]
+        },
+        {
+          "filter_type": "YEARS_AT_CURRENT_COMPANY",
+          "type": "in",
+          "value": tenure
+        }
+      ],
+      "page": 1
+    }
+  )
+  else:
+    print(company)
+    print(departments)
+    print(seniority_map[tag])
+    response = requests.post(
+    "https://api.crustdata.com/screener/person/search",
+    headers = {
+
+    "Content-Type": "application/json",
+    "Authorization": "Token 8582455305237735a32d0be5b74dda9b22dc9857"
+
+    },
+    json={
+      "filters": [
+        {
+          "filter_type": "CURRENT_COMPANY",
+          "type": "in",
+          "value": [
+            company
+          ]
+        },
+        {
+          "filter_type": "FUNCTION",
+          "type": "in",
+          "value": departments
+        },
+        {
+          "filter_type": "SENIORITY_LEVEL",
+          "type": "in",
+          "value": seniority_map[tag]
+        },
+
+      ],
+      "page": 1
+    }
+  )
+
+  data = response.json()
+  print(data)
+  return data
+
+  # use tenure for influencers only
+
+
+# then use direct people enrichment here
 
 class Person_Enrichment(BaseModel):
   Org_Unit:str
   SubOrg_Unit:str
   Seniority_Level:int
   Function_Type:str
-
-
-# parse prev response
-import json
-import pickle
-#from sentence_transformers import SentenceTransformer, util
-import datetime
-from rapidfuzz import fuzz
-import pickle
-import rapidfuzz
-
-
-def get_people_titles_to_search_pydantic(strategy_data):
-  title_data = strategy_data
-  print(len(title_data["Initiatives"]))
-  # this is what we need
-  final_strategy_data = {}
-  all_titles_to_search = []
-  for initiative in title_data["Initiatives"]:
-    print(initiative["Buyer_Initiative_Or_Pain"])
-    print(type(initiative))
-    print(initiative)
-    final_strategy_data[initiative["Buyer_Initiative_Or_Pain"]] = {}
-    keys = ["Economic_Buyer","Internal_Influencers","Champions","Cross_Functional_Reviewers","Direct_Owner_Team"]
-    titles_data = {}
-    for tag in keys:
-      final_strategy_data[initiative["Buyer_Initiative_Or_Pain"]][tag] = []
-      for teams in initiative[tag]["teams"]:
-        titles_data[teams["team"]] = {"Relevance":teams["Relevance"],"titles":teams["titles"]}
-        all_titles_to_search = all_titles_to_search +teams["titles"]
-        final_strategy_data[initiative["Buyer_Initiative_Or_Pain"]][tag].append(titles_data[teams["team"]] | {"Team":teams["team"]})
-
-  return final_strategy_data, all_titles_to_search
-
-
-
-def fetch_all_profiles(endpoint, header,buyer, all_titles_to_search, delay=1.0):
-    headers = header
-    all_profiles = []
-    page_number = 1
-
-    while True:
-        params = header.copy()
-        params['page_number'] = page_number
-
-        response = requests.post(
-          endpoint,
-          headers=header,
-          json={
-            "filters": [
-              {
-                "filter_type": "CURRENT_COMPANY",
-                "type": "in",
-                "value": [
-                  buyer
-                ]
-              },
-              {
-                "filter_type": "CURRENT_TITLE",
-                "type": "in",
-                "value": all_titles_to_search
-              },
-
-            ],
-            "page": page_number
-          }
-        )
-
-
-
-        if response.status_code != 200:
-            print(f"Error: {response.status_code} - {response.text}")
-            break
-
-        data = response.json()
-        profiles = data.get("profiles", [])
-        total_display_count = data.get("total_display_count", 0)
-
-        if not profiles:
-            print(f"No more profiles returned at page {page_number}. Stopping.")
-            break
-
-        all_profiles.extend(profiles)
-        print(f"Fetched {len(profiles)} profiles on page {page_number}.")
-
-        if len(all_profiles) >= total_display_count:
-            print("Fetched all profiles.")
-            break
-
-        page_number += 1
-        #time.sleep(delay)  # optional delay to avoid rate limits
-
-    return all_profiles
-
-
-
-# match both sets of data here
 
 def get_current_tenure(employer_data):
   tenure = 0.0
@@ -450,15 +603,15 @@ def get_industry_experience(employer_data):
 
   return experience_days // 365
 
-class Person(BaseModel):
-  Org_Unit:str
-  SubOrg_Unit:str
-  Seniority_Level:int
-  Function_Type:str
+
+def return_dummy_people():
+  return [{'name': 'Gricelda V.', 'location': 'Netherlands', 'linkedin_profile_url': 'https://www.linkedin.com/in/ACwAAAMAopIBMOK1jg6smiZdVZbMTZTZgTGAQZE', 'linkedin_profile_urn': 'ACwAAAMAopIBMOK1jg6smiZdVZbMTZTZgTGAQZE', 'default_position_title': 'Non Executive Director', 'default_position_company_linkedin_id': '96821337', 'default_position_is_decision_maker': True, 'flagship_profile_url': 'https://www.linkedin.com/in/gricelda-v-242a5314', 'profile_picture_url': None, 'headline': 'Global Head HR, Recruitment & Systems Operations (EMEA, LATAM & APAC) @ Scale-ups, Start-ups,SaaS platforms', 'summary': "Lawyer with 15+ years experience managing and leading International Global HR Operations & Payroll Teams in  APAC, EMEA, Americas (including LATAM & Canada). \n- Specialization in leading HR Operations Strategy, Company Transformations Globally, including USA.\n- Global leader in Compensation & Benefits, Talent Acquisition/Recruitment, Change Management, Payroll processes in 25+ countries worldwide \n-SaaS platforms, EOR HR Internalization Strategy, Entities' setup, creating SOP’s, SOW’s, employee relationship management\n- Labor Relations management across responsible Regions\n- Experience implementing various HRM Systems and employee engagement tools \n- Experience in various industries: High Tech, Start-ups, Scale-ups, SaaS, AI, Oil & Gas, PEO/EOR \n ", 'num_of_connections': 1781, 'related_colleague_company_id': 96821337, 'skills': ['Acquisitions', 'Acquisition Integration', 'Strategic advice to engineers to build HR SaaS', 'System Development', 'Performance Management', 'Executive Development', 'Internal Investigations', 'Employment Tribunal', 'Dispute Resolution', 'Scale up', 'Software as a Service (SaaS)', 'Artificial Intelligence (AI)', 'senior management', 'director', 'Executive Management', 'recruitment', 'Leadership', 'Project Management', 'HR Management', 'Human Resources Information Systems (HRIS)', 'Employment Law Compliance', 'Change Management', 'Works Council', 'European Works Councils', 'Software Testing', 'Pension', 'HR Consulting', 'Group Restructuring and Reorganization', 'Total Rewards Strategies', 'Strategic Recruitment Planning', 'Employee Handbooks', 'Employee Engagement', 'Employee Learning & Development', 'Career Development', 'Employee Benefits Design', 'Training', 'International Recruitment', 'Processes Development', 'Operations Management', 'Payroll Management', 'International Law', 'Arbo', 'HR Project Management', 'Succession Planning', 'Strategic Planning', 'HR Strategy', 'Legal Compliance', 'Legal Advice', 'Compensation & Benefits', 'Labor and Employment Law', 'Onboarding and offboarding processes', 'Strategic Human Resource Planning', 'Team Leadership', 'Senior manager', 'HR Operations', 'Employee Benefits', 'Joint Ventures', 'Mergers & Acquisitions (M&A)', 'New Entity Setup', 'Professional Employer Organization (PEO)', 'Employer Of Record', 'Start-ups', 'HR Transformation', 'Organizational Development', 'Personal Development', 'Talent Acquisition', 'Job Description Creation', 'International Exposure', 'English-Spanish', 'Compliance', 'HR Policy', 'Human Resources', 'Implementation of HRM systems', 'Planning Budgeting & Forecasting', '30% ruling'], 'employer': [{'title': 'Non Executive Director', 'company_name': 'Globalize HR', 'company_linkedin_id': '96821337', 'company_logo_url': 'https://media.licdn.com/dms/image/v2/D4E0BAQEZIQp9OoWpVQ/company-logo_400_400/company-logo_400_400/0/1686136989258?e=1752105600&v=beta&t=cbMIbwE4vrypfBGDBd5qxpRRsSdU0G1iln9NGi43Wjg', 'start_date': '2023-03-01T00:00:00', 'end_date': None, 'position_id': 2196886893, 'description': None, 'location': None, 'rich_media': []}, {'title': ' Global EOR Operations  (HR, SaaS Analysis)', 'company_name': 'Rippling', 'company_linkedin_id': '17988315', 'company_logo_url': 'https://media.licdn.com/dms/image/v2/C560BAQGTg3igNET25Q/company-logo_400_400/company-logo_400_400/0/1654722845874/rippling_logo?e=1752105600&v=beta&t=qGutQiQoqSe9I_ICPUWqkMLG1M0CHhdOWBPSPS_3b88', 'start_date': '2023-06-01T00:00:00', 'end_date': None, 'position_id': 2196889670, 'description': 'Global Operations Strategy, Legal, HR and SaaS platform analysis/compliance ', 'location': None, 'rich_media': []}, {'title': ' Head of People Operations  (Short Project to Launch USA Ops)', 'company_name': 'All Options', 'company_linkedin_id': '53969', 'company_logo_url': 'https://media.licdn.com/dms/image/v2/C4D0BAQGGFMKZA5a4hQ/company-logo_400_400/company-logo_400_400/0/1631307271803?e=1752105600&v=beta&t=dlZ74-4RiZXGchgmE8Qszw_OGheR0LPbPnvIlaEXXBA', 'start_date': '2023-03-01T00:00:00', 'end_date': '2023-05-01T00:00:00', 'position_id': 2139440255, 'description': '• Led a project to setup, build and rollout HR infrastructure for the launch of US Operations in Austin, TX for All Options.\n• Developed and implemented processes to ensure smooth operations and compliance with local regulations.\n• Collaborated with cross-functional teams to streamline onboarding and training processes for new employees.', 'location': None, 'rich_media': []}, {'title': 'Global Sr. HR Manager - APAC, EMEA, Americas (LATAM & Canada)', 'company_name': 'AngioDynamics', 'company_linkedin_id': '29698', 'company_logo_url': 'https://media.licdn.com/dms/image/v2/D560BAQFIYlL15S4B5w/company-logo_400_400/company-logo_400_400/0/1680291922892/angiodynamics_logo?e=1752105600&v=beta&t=WCH3hE_rr2605xIUOVlOUm11bTU3epC0CFoyzEeWl0o', 'start_date': '2021-12-01T00:00:00', 'end_date': '2023-03-01T00:00:00', 'position_id': 1877958506, 'description': 'Member of International Leadership Team Leading Global HR Operations OUS: EMEA, APAC, Americas (LATAM & Canada) at AngioDynamics International ', 'location': None, 'rich_media': []}, {'title': 'Global Head HR Operations ( APAC, EMEA, Americas (LATAM & Canada)', 'company_name': 'Velocity Global, LLC', 'company_linkedin_id': '3681130', 'company_logo_url': 'https://media.licdn.com/dms/image/v2/D4E0BAQFPph4bEZgeQA/company-logo_400_400/company-logo_400_400/0/1686802877723/velocity_global_llc_logo?e=1752105600&v=beta&t=XwKM88GuM90ezG4TX_Frs0tnTlBLJnRnYBxuswuDdis', 'start_date': '2020-06-01T00:00:00', 'end_date': '2021-11-01T00:00:00', 'position_id': 1626754056, 'description': '• Led global HR operations and payroll teams in APAC, EMEA, and Americas, focusing on process transformation and organizational alignment.\n• Advised ELT & Regional MDs on global and regional HR strategies, statutory labor compliance, M&A, and labor union engagement.\n• Managed labor relationships with unions worldwide, ensuring compliance with labor contracts and practices.', 'location': 'Amsterdam, North Holland, Netherlands', 'rich_media': []}, {'title': 'Global Head- HR Operations (EMEA, APAC, LATAM)', 'company_name': 'Gazprom International', 'company_linkedin_id': '818385', 'company_logo_url': 'https://media.licdn.com/dms/image/v2/C4E0BAQEdbx38VQe0sg/company-logo_400_400/company-logo_400_400/0/1631311744746?e=1752105600&v=beta&t=QnJp3qjkNb9uakxS_G1v2v3Hy20DdFmcMenChX6Dc10', 'start_date': '2013-07-01T00:00:00', 'end_date': '2020-05-01T00:00:00', 'position_id': 497895660, 'description': '• Global Managing role leading HR advisory & strategy for Gazprom Group Companies, including Global Payroll Management, Recruitment, Change Management, Compensation & Benefits strategies.\n• Spearheaded Talent Acquisition campaigns and participated in company-wide reorganization and M&A activities in EMEA.\n• Member of Global International Leadership Team for Wintershall Noordzee and Gazprom Group.', 'location': 'Amsterdam Area, Netherlands', 'rich_media': []}, {'title': 'Senior International Recruitment & HR Consultant @International Desk', 'company_name': 'Martin Ward Anderson ', 'company_linkedin_id': None, 'company_logo_url': None, 'start_date': '2008-07-01T00:00:00', 'end_date': '2013-06-01T00:00:00', 'position_id': 987127792, 'description': 'Senior Recruitment/HR Consultant @ Martin Ward Anderson (A Randstad Company) performing high-level Recruitment (Finance and Tax) and HR consultancy for International Companies in the Netherlands (Retail, Energy, Oil & Gas and IT industries). On the job training, coaching and leading junior consultants @ International level.', 'location': 'Amsterdam Area, Netherlands', 'rich_media': []}, {'title': 'International HR & Recruitment Manager(New Markets)', 'company_name': 'Hong Kong (APAC), London and USA', 'company_linkedin_id': None, 'company_logo_url': None, 'start_date': '2003-01-01T00:00:00', 'end_date': '2006-01-01T00:00:00', 'position_id': 1316384006, 'description': 'As the International HR & Recruitment Project Director, I spearheaded the setup and rollout of HR and Recruitment infrastructure in new markets, ensuring legal compliance and efficient personnel management. I collaborated with cross-functional teams to streamline processes and develop effective recruitment strategies.', 'location': None, 'rich_media': []}], 'education_background': [{'degree_name': 'Master of Laws - LLM', 'institute_name': 'Utrecht University', 'field_of_study': 'Public International Law - Iuris Publiciti Internationalis', 'start_date': None, 'end_date': None, 'institute_linkedin_id': '166740', 'institute_linkedin_url': 'https://www.linkedin.com/school/166740/', 'institute_logo_url': 'https://media.licdn.com/dms/image/v2/C510BAQG6HfmPTdJKXw/company-logo_400_400/company-logo_400_400/0/1631328481154?e=1752105600&v=beta&t=O3_VBlpSeCwBMlWDSUVir1ucUv-GtGivWqhEFJybVO8'}, {'degree_name': 'Bachelor of Science - BSc', 'institute_name': 'Political Science and Government', 'field_of_study': '', 'start_date': None, 'end_date': None, 'institute_linkedin_id': None, 'institute_linkedin_url': None, 'institute_logo_url': None}], 'emails': [], 'websites': [], 'twitter_handle': None, 'languages': ['English', 'Spanish', 'Dutch'], 'pronoun': None, 'query_person_linkedin_urn': 'ACwAAAMAopIBMOK1jg6smiZdVZbMTZTZgTGAQZE', 'linkedin_slug_or_urns': ['gricelda-v-242a5314', 'ACwAAAMAopIBMOK1jg6smiZdVZbMTZTZgTGAQZE'], 'current_title': ' Global EOR Operations  (HR, SaaS Analysis)'}, {'name': 'Tahlia Spiegel', 'location': 'San Francisco, California, United States', 'linkedin_profile_url': 'https://www.linkedin.com/in/ACwAAAE_V1YBnB_dvg8sEe0tJz4l4LcWFuBrdNc', 'linkedin_profile_urn': 'ACwAAAE_V1YBnB_dvg8sEe0tJz4l4LcWFuBrdNc', 'default_position_title': 'VP, Human Resources', 'default_position_company_linkedin_id': '17988315', 'default_position_is_decision_maker': False, 'flagship_profile_url': 'https://www.linkedin.com/in/tahlia-spiegel-3860137', 'profile_picture_url': 'https://media.licdn.com/dms/image/v2/D5603AQEWAG943kG-dQ/profile-displayphoto-shrink_400_400/profile-displayphoto-shrink_400_400/0/1707703384350?e=1752105600&v=beta&t=p1inV8S3N293E-wQBZ-xdjYUKSspROhl2zYSEInL1Zs', 'headline': 'VP, Human Resources at Rippling', 'summary': 'Human Resources Leader with proven ability to develop teams & grow scaling tech companies via effective HR programs & strategic business partnership.', 'num_of_connections': 3854, 'related_colleague_company_id': 17988315, 'skills': ['Human Resources', 'Program Management', 'Performance Management', 'Programming', 'Executive Search', 'Recruiting', 'HR Policies', 'Onboarding', 'Employee Benefits Design', 'E-Learning', 'Benefits Administration', 'Human Resources Information Systems (HRIS)', 'Leadership', 'Management', 'Sourcing', 'People Management', 'People Development', 'Communication', 'Employee Relations', 'Employee Training', 'Offboarding', 'Employee Learning & Development', 'Employee Wellness', 'Employee Handbooks', 'Organizational Learning', 'Leave Administration'], 'employer': [{'title': 'VP, Human Resources', 'company_name': 'Rippling', 'company_linkedin_id': '17988315', 'company_logo_url': 'https://media.licdn.com/dms/image/v2/C560BAQGTg3igNET25Q/company-logo_400_400/company-logo_400_400/0/1654722845874/rippling_logo?e=1752105600&v=beta&t=qGutQiQoqSe9I_ICPUWqkMLG1M0CHhdOWBPSPS_3b88', 'start_date': '2024-10-01T00:00:00', 'end_date': None, 'position_id': 2506840841, 'description': 'Global HR Business Partners, HR Programs, and Workplace', 'location': 'San Francisco Bay Area', 'rich_media': []}, {'title': 'Senior Director, Human Resources', 'company_name': 'Rippling', 'company_linkedin_id': '17988315', 'company_logo_url': 'https://media.licdn.com/dms/image/v2/C560BAQGTg3igNET25Q/company-logo_400_400/company-logo_400_400/0/1654722845874/rippling_logo?e=1752105600&v=beta&t=qGutQiQoqSe9I_ICPUWqkMLG1M0CHhdOWBPSPS_3b88', 'start_date': '2023-08-01T00:00:00', 'end_date': '2024-10-01T00:00:00', 'position_id': 2241483602, 'description': None, 'location': 'San Francisco, California, United States', 'rich_media': []}, {'title': 'Director, Human Resources', 'company_name': 'Rippling', 'company_linkedin_id': '17988315', 'company_logo_url': 'https://media.licdn.com/dms/image/v2/C560BAQGTg3igNET25Q/company-logo_400_400/company-logo_400_400/0/1654722845874/rippling_logo?e=1752105600&v=beta&t=qGutQiQoqSe9I_ICPUWqkMLG1M0CHhdOWBPSPS_3b88', 'start_date': '2022-07-01T00:00:00', 'end_date': '2023-08-01T00:00:00', 'position_id': 2007805813, 'description': None, 'location': 'Los Angeles Metropolitan Area', 'rich_media': []}, {'title': 'VP, People', 'company_name': 'PlayVS', 'company_linkedin_id': '18600748', 'company_logo_url': 'https://media.licdn.com/dms/image/v2/C560BAQH01JTeXKt04g/company-logo_400_400/company-logo_400_400/0/1658090880915/playversus_logo?e=1752105600&v=beta&t=5FOJ4pUORIYW2HTQzWRhdDuCC2mAja11yhX3L2JyzH4', 'start_date': '2020-06-01T00:00:00', 'end_date': '2022-07-01T00:00:00', 'position_id': 1627354317, 'description': 'HR, People Operations & Programs, Total Rewards, & Recruiting', 'location': 'Los Angeles, California, United States', 'rich_media': []}, {'title': 'Human Resources', 'company_name': 'Snap Inc.', 'company_linkedin_id': '15191764', 'company_logo_url': 'https://media.licdn.com/dms/image/v2/D4E0BAQGS67pnekd_qQ/company-logo_400_400/company-logo_400_400/0/1706902360485/snap_inc_co_logo?e=1752105600&v=beta&t=C5QsdEs7jN28kcoyWLmIknl46lRhhlS4-PkDwtbm2Q0', 'start_date': '2018-05-01T00:00:00', 'end_date': '2020-06-01T00:00:00', 'position_id': 1410807610, 'description': 'Product & Engineering', 'location': 'Los Angeles, California', 'rich_media': []}, {'title': 'Recruiting', 'company_name': 'Snap Inc.', 'company_linkedin_id': '15191764', 'company_logo_url': 'https://media.licdn.com/dms/image/v2/D4E0BAQGS67pnekd_qQ/company-logo_400_400/company-logo_400_400/0/1706902360485/snap_inc_co_logo?e=1752105600&v=beta&t=C5QsdEs7jN28kcoyWLmIknl46lRhhlS4-PkDwtbm2Q0', 'start_date': '2017-01-01T00:00:00', 'end_date': '2018-05-01T00:00:00', 'position_id': 1211555541, 'description': 'Go-to-market Teams', 'location': 'Greater New York City Area', 'rich_media': []}, {'title': 'Senior Recruiting Partner', 'company_name': 'SoundCloud', 'company_linkedin_id': '200200', 'company_logo_url': 'https://media.licdn.com/dms/image/v2/D4D0BAQEB1c304FdRcQ/company-logo_400_400/company-logo_400_400/0/1719255466674/soundcloud_logo?e=1752105600&v=beta&t=7p2y1UqMcF_FuXxq6TwvEnXEa39kw0jBcRn6sALNB8w', 'start_date': '2016-08-01T00:00:00', 'end_date': '2016-12-01T00:00:00', 'position_id': 843695215, 'description': 'Sales & Engineering', 'location': 'Greater New York City Area', 'rich_media': []}, {'title': 'Head of Talent & People', 'company_name': 'Reonomy', 'company_linkedin_id': '792049', 'company_logo_url': 'https://media.licdn.com/dms/image/v2/D4E0BAQHrnq7zwA4aXw/company-logo_400_400/company-logo_400_400/0/1730561543028/reonomy_logo?e=1752105600&v=beta&t=sANNat3fCG_ynarumDVIxDtQvgmZs8xiR5SWMTy1x4k', 'start_date': '2015-01-01T00:00:00', 'end_date': '2016-08-01T00:00:00', 'position_id': 634387470, 'description': 'HR, People Ops, & Recruiting', 'location': 'Greater New York City Area', 'rich_media': []}, {'title': 'Director of Recruitment', 'company_name': 'Betts Recruiting', 'company_linkedin_id': '626840', 'company_logo_url': 'https://media.licdn.com/dms/image/v2/C4E0BAQEG4R7AfNmwzw/company-logo_400_400/company-logo_400_400/0/1630616481523/betts_logo?e=1752105600&v=beta&t=VMl5IqoGtAVw1b2JfZVNjahz7g1qQDx9BuHa7cXhRy8', 'start_date': '2014-05-01T00:00:00', 'end_date': '2015-01-01T00:00:00', 'position_id': 550413588, 'description': None, 'location': 'Greater New York City Area', 'rich_media': []}, {'title': 'Executive Recruiter', 'company_name': 'ADVIZA', 'company_linkedin_id': '537041', 'company_logo_url': 'https://media.licdn.com/dms/image/v2/C560BAQGPmWm4exNH3g/company-logo_400_400/company-logo_400_400/0/1661991906527/adviza_logo?e=1752105600&v=beta&t=vRZGcVLwlOwi0MyTJ30gk8oLhG2uj_TJevsp5Sftxes', 'start_date': '2013-01-01T00:00:00', 'end_date': '2014-05-01T00:00:00', 'position_id': 376040417, 'description': None, 'location': 'Sydney, Australia', 'rich_media': []}, {'title': '6 Month Sabbatical', 'company_name': 'UK, Europe, North & Central America', 'company_linkedin_id': None, 'company_logo_url': None, 'start_date': '2012-07-01T00:00:00', 'end_date': '2012-12-01T00:00:00', 'position_id': 369856283, 'description': None, 'location': None, 'rich_media': []}, {'title': 'Business Development', 'company_name': 'pureprofile', 'company_linkedin_id': '48119', 'company_logo_url': 'https://media.licdn.com/dms/image/v2/C4E0BAQHT4iJPSHeCgQ/company-logo_400_400/company-logo_400_400/0/1631308149737?e=1752105600&v=beta&t=jpmQCgERYDP1Tz6hIpqdL2Ewdqmio0PbwnX4lypqgDI', 'start_date': '2008-01-01T00:00:00', 'end_date': '2012-06-01T00:00:00', 'position_id': 138950060, 'description': None, 'location': 'Sydney, Australia', 'rich_media': []}], 'education_background': [{'degree_name': 'Bachelor of Arts (Communication - Public Relations & Organizational Communication)', 'institute_name': 'Charles Sturt University', 'field_of_study': '', 'start_date': None, 'end_date': None, 'institute_linkedin_id': '14243', 'institute_linkedin_url': 'https://www.linkedin.com/school/14243/', 'institute_logo_url': 'https://media.licdn.com/dms/image/v2/D560BAQHoSGy-Lu56Hw/company-logo_400_400/company-logo_400_400/0/1700439378529/charles_sturt_university_logo?e=1752105600&v=beta&t=-o7x2NDT2S0_hYdNftXjVFeynXjSLtgzl6fBv5V-Y_c'}, {'degree_name': 'Higher School Certificate', 'institute_name': "Pymble Ladies'\u200b College", 'field_of_study': '', 'start_date': None, 'end_date': None, 'institute_linkedin_id': '2562469', 'institute_linkedin_url': 'https://www.linkedin.com/school/2562469/', 'institute_logo_url': 'https://media.licdn.com/dms/image/v2/C560BAQEVQhk9oF46PQ/company-logo_400_400/company-logo_400_400/0/1630641513042/pymble_ladies_college_logo?e=1752105600&v=beta&t=GGmU0u31edobLjec0zedqZ6WfzIVLnYpoY6m3Ei5Zi8'}], 'emails': [], 'websites': [], 'twitter_handle': None, 'languages': [], 'pronoun': None, 'query_person_linkedin_urn': 'ACwAAAE_V1YBnB_dvg8sEe0tJz4l4LcWFuBrdNc', 'linkedin_slug_or_urns': ['tahlia-spiegel-3860137', 'ACwAAAE_V1YBnB_dvg8sEe0tJz4l4LcWFuBrdNc'], 'current_title': 'VP, Human Resources'}, {'name': 'Lizzie Jaeger, PHR', 'location': 'San Francisco, California, United States', 'linkedin_profile_url': 'https://www.linkedin.com/in/ACwAAAW2ZoEBj_-RaElUNWliI0sZrxn1TFfjuXs', 'linkedin_profile_urn': 'ACwAAAW2ZoEBj_-RaElUNWliI0sZrxn1TFfjuXs', 'default_position_title': 'Director, HR Business Partnering (Business)', 'default_position_company_linkedin_id': '17988315', 'default_position_is_decision_maker': True, 'flagship_profile_url': 'https://www.linkedin.com/in/lizziejaeger', 'profile_picture_url': 'https://media.licdn.com/dms/image/v2/C4E03AQHcDIB2hGrhQA/profile-displayphoto-shrink_400_400/profile-displayphoto-shrink_400_400/0/1531437647597?e=1752105600&v=beta&t=DWDSm_KvFx21tFo6X78l-VqLFeuTOecwnRYWnheufv4', 'headline': "HR Leader @ Rippling - We're hiring!", 'summary': None, 'num_of_connections': 2002, 'related_colleague_company_id': 17988315, 'skills': ['Product Management', 'Product Development', 'Product Marketing', 'Marketing Strategy', 'Agile Methodologies', 'Agile Project Management', 'Start-ups', 'Data Analysis', 'Data Analytics', 'UX', 'UI', 'Recruiting', 'Human Resources', 'Employee Relations', 'Customer Service', 'Event Planning', 'Payroll', 'Employee Training', 'Training', 'Workday', 'ADP Payroll', 'Sourcing', 'Talent Management', 'Event Management'], 'employer': [{'title': 'Director, HR Business Partnering (Business)', 'company_name': 'Rippling', 'company_linkedin_id': '17988315', 'company_logo_url': 'https://media.licdn.com/dms/image/v2/C560BAQGTg3igNET25Q/company-logo_400_400/company-logo_400_400/0/1654722845874/rippling_logo?e=1752105600&v=beta&t=qGutQiQoqSe9I_ICPUWqkMLG1M0CHhdOWBPSPS_3b88', 'start_date': '2025-04-01T00:00:00', 'end_date': None, 'position_id': 2627208213, 'description': None, 'location': 'San Francisco Bay Area', 'rich_media': []}, {'title': 'Senior Manager, Human Resources Business Partner', 'company_name': 'Rippling', 'company_linkedin_id': '17988315', 'company_logo_url': 'https://media.licdn.com/dms/image/v2/C560BAQGTg3igNET25Q/company-logo_400_400/company-logo_400_400/0/1654722845874/rippling_logo?e=1752105600&v=beta&t=qGutQiQoqSe9I_ICPUWqkMLG1M0CHhdOWBPSPS_3b88', 'start_date': '2024-02-01T00:00:00', 'end_date': '2025-04-01T00:00:00', 'position_id': 2337890137, 'description': None, 'location': 'San Francisco Bay Area', 'rich_media': []}, {'title': 'Senior Human Resources Business Partner', 'company_name': 'Rippling', 'company_linkedin_id': '17988315', 'company_logo_url': 'https://media.licdn.com/dms/image/v2/C560BAQGTg3igNET25Q/company-logo_400_400/company-logo_400_400/0/1654722845874/rippling_logo?e=1752105600&v=beta&t=qGutQiQoqSe9I_ICPUWqkMLG1M0CHhdOWBPSPS_3b88', 'start_date': '2023-10-01T00:00:00', 'end_date': '2024-01-01T00:00:00', 'position_id': 2337034738, 'description': None, 'location': 'San Francisco Bay Area', 'rich_media': []}, {'title': 'Human Resources Business Partner', 'company_name': 'Rippling', 'company_linkedin_id': '17988315', 'company_logo_url': 'https://media.licdn.com/dms/image/v2/C560BAQGTg3igNET25Q/company-logo_400_400/company-logo_400_400/0/1654722845874/rippling_logo?e=1752105600&v=beta&t=qGutQiQoqSe9I_ICPUWqkMLG1M0CHhdOWBPSPS_3b88', 'start_date': '2022-01-01T00:00:00', 'end_date': '2023-09-01T00:00:00', 'position_id': 1913190726, 'description': None, 'location': 'San Francisco, California, United States', 'rich_media': []}, {'title': 'Lead Product Manager', 'company_name': 'Cultivate', 'company_linkedin_id': '18101003', 'company_logo_url': 'https://media.licdn.com/dms/image/v2/D4E0BAQHL2KotNRIDTA/company-logo_400_400/company-logo_400_400/0/1664842759201/trycultivate_logo?e=1752105600&v=beta&t=iR3ClZcqqFsNaQRQT3yZ32GhJs1X-mUXSSkK4lwhYgM', 'start_date': '2020-05-01T00:00:00', 'end_date': '2022-01-01T00:00:00', 'position_id': 1618990923, 'description': None, 'location': None, 'rich_media': []}, {'title': 'Senior Product Manager', 'company_name': 'Reflektive', 'company_linkedin_id': '6390927', 'company_logo_url': 'https://media.licdn.com/dms/image/v2/C560BAQFY3ZLvwcspZg/company-logo_400_400/company-logo_400_400/0/1630661509660/reflektive_logo?e=1752105600&v=beta&t=No5JFL6om2q20sAkFT7svB0ejd5Y2wIkTqP7fEIJTcw', 'start_date': '2019-09-01T00:00:00', 'end_date': '2020-04-01T00:00:00', 'position_id': 1528972815, 'description': None, 'location': None, 'rich_media': []}, {'title': 'Product Manager', 'company_name': 'Reflektive', 'company_linkedin_id': '6390927', 'company_logo_url': 'https://media.licdn.com/dms/image/v2/C560BAQFY3ZLvwcspZg/company-logo_400_400/company-logo_400_400/0/1630661509660/reflektive_logo?e=1752105600&v=beta&t=No5JFL6om2q20sAkFT7svB0ejd5Y2wIkTqP7fEIJTcw', 'start_date': '2018-03-01T00:00:00', 'end_date': '2019-09-01T00:00:00', 'position_id': 1271571038, 'description': None, 'location': None, 'rich_media': []}, {'title': 'Product Manager', 'company_name': 'Sipree, Inc.', 'company_linkedin_id': '2245302', 'company_logo_url': None, 'start_date': '2017-10-01T00:00:00', 'end_date': '2018-03-01T00:00:00', 'position_id': 1528973807, 'description': None, 'location': None, 'rich_media': []}, {'title': 'Product Manager', 'company_name': 'Zenefits', 'company_linkedin_id': '2997680', 'company_logo_url': 'https://media.licdn.com/dms/image/v2/D560BAQGefoLIAXO9Zg/company-logo_400_400/company-logo_400_400/0/1688260427614?e=1752105600&v=beta&t=iPvyUvtp3EgLmw_1UK8qhujkNaaqGeLgWmgoAcZ85Q4', 'start_date': '2016-03-01T00:00:00', 'end_date': '2017-10-01T00:00:00', 'position_id': 789504811, 'description': '•Product Manager on the Zenefits Payroll team which offers Zenefits Payroll, Vacation & Time Off Tracking, Time & Attendance, and Third Party Payroll Integrations\n\n•Full ownership of the Time & Attendance and Time Off products serving over 180,000 users, bringing in over 3.5 million in ARR\n\n•Full ownership of the Zenefits Company Pay Schedule product - an effort to move to a unified data model - with over 50,000 users\n\n•SWAT team Product Manager, assisting additional teams to stabilize, driving process and a triage system for interrupt live sites weighing severity, users impacted and engineering effort required to determine priority - focusing on root cause oriented fixes\n\n•Manage the product lifecycle, from both development and marketing perspective\n\n•Recognized for shipping iterative versions of features with quick user facing deliverables without sacrificing quality\n\n•Analyze and join current, former, and prospective user data to drive roadmap prioritization that aligns with company initiatives \n\n•Collaborate with UX designers, copywriters, and tech leads to reimagine current product offerings\n\n•Lead an effort for compliance - proactively seeking and developing a legal audit of products at Zenefits, comparing the actual product behavior with legal recommended product behavior\n\n•Acting as Product Marketing Manager for Time & Attendance product\n\n•Lead 200% growth of the Time & Attendance product in past 6 months while decreasing support cost by 40%\n•Developed and delivered original webinar content for our users, receiving record high engagement 4x the Zenefits average - initiated a new source of lead gen across the entire company\n\n•Regularly host break out sessions at user conferences (Roadshows, Z2, Z22U) - speaking to 50+ prospective and current users\n\n•Mentor product specialists interested in career growth\n\n•Recognized as a SuperZeneWoman - an award given to 5 influential women at Zenefits, determined by both leaders and peers\n', 'location': 'San Francisco Bay Area', 'rich_media': []}, {'title': 'Senior Client HR Business Partner (HRBP)', 'company_name': 'Zenefits', 'company_linkedin_id': '2997680', 'company_logo_url': 'https://media.licdn.com/dms/image/v2/D560BAQGefoLIAXO9Zg/company-logo_400_400/company-logo_400_400/0/1688260427614?e=1752105600&v=beta&t=iPvyUvtp3EgLmw_1UK8qhujkNaaqGeLgWmgoAcZ85Q4', 'start_date': '2015-03-01T00:00:00', 'end_date': '2016-03-01T00:00:00', 'position_id': 1802259884, 'description': 'Provided HR consulting for leaders of our large client base, while leveraging software issues and client requests to collaborate with the product and engineering teams to improve the product.', 'location': 'San Francisco, California, United States', 'rich_media': []}, {'title': 'Human Resources Manager', 'company_name': 'Four Seasons Hotels and Resorts', 'company_linkedin_id': '163883', 'company_logo_url': 'https://media.licdn.com/dms/image/v2/D560BAQEAgE4l2Z40Ig/company-logo_400_400/company-logo_400_400/0/1685134371955/four_seasons_hotels_and_resorts_logo?e=1752105600&v=beta&t=yt7bmKi0djNxMKpSZ9zKC-DVMU0SEPFPIUqjcZjgWSM', 'start_date': '2012-02-01T00:00:00', 'end_date': '2015-02-01T00:00:00', 'position_id': 507285005, 'description': '•\tNominated for 2014 Manager of the Quarter\n•\tResponsible for unemployment claims, FMLA and medical leaves, benefits, workers’ compensation\nHandled all employee grievances and concerns, at all levels of the organization through fair and consistent practice\n•\tDirectly managed two employees, an HR intern and an HR coordinator\n•\tCreated new recruitment procedures including formal pre-screening, what to expect during your interview email correspondence, and automatic emails to all applicants.\n•\tSelected to assist the Four Seasons Orlando property on task force during their opening and mass hiring and orientation of 400+ new employees.\n•\tSelected to assist the Four Seasons Vail property on task force to cover the Senior Assistant Director’s leave\n•\tSelected to be a Bluewater Ambassador, an Innovation Ambassador for Four Seasons\n•\tCo-chair of the Community Outreach Committee\n•\tSuccessfully managed 2014 Employee Engagement Survey and achieved a 99% participation rate\n•\tManage all employee relations including monthly celebrations, quarterly service award recognition, and annual employee party\n•\tResponsible for all hourly recruitment, 70+ hires annually\n•\tCreated and maintained relationships with local universities and culinary art institutions\n•\tFluent in ADP Enterprise, Timesaver, eTime and Workday systems', 'location': 'Greater Chicago Area', 'rich_media': []}, {'title': 'Front Office Supervisor', 'company_name': 'Hilton Gaslamp Quarter', 'company_linkedin_id': None, 'company_logo_url': None, 'start_date': '2011-09-01T00:00:00', 'end_date': '2012-02-01T00:00:00', 'position_id': 218270902, 'description': '•\tDirectly supervised 11 guest service agents, 1 concierge, and 7 bellmen at a 283-room hotel which runs 91% occupancy year round\n•\tPerformed Manager on Duty (MOD) shifts \n•\tRecognized twice consecutively as the “Blue Energy Story of the Month,” which is an award given to an employee recognizing their customer service to hotel guests and/or hotel employees\n•\tDoubled the number of Hilton Honors Enrollments per month through non monetary incentives\n•\tCreated a quantitative tracking system for each agent to record guest satisfaction surveys and positive comments', 'location': None, 'rich_media': []}, {'title': 'Guest Service Agent', 'company_name': 'Loews Coronado Bay Resort', 'company_linkedin_id': None, 'company_logo_url': None, 'start_date': '2009-11-01T00:00:00', 'end_date': '2010-12-01T00:00:00', 'position_id': 164783924, 'description': 'Recognized as Team Member of the Month, May 2010', 'location': None, 'rich_media': []}, {'title': 'Location Manager', 'company_name': 'American Thoracic Society\t\t\t\tMay 2009', 'company_linkedin_id': None, 'company_logo_url': None, 'start_date': '2008-05-01T00:00:00', 'end_date': '2008-05-01T00:00:00', 'position_id': 164783925, 'description': 'Communicated with three other managers to ensure a 14,000 person international conference ran smoothly\nImproved ability to multi-task in a fast paced environment', 'location': None, 'rich_media': []}], 'education_background': [{'degree_name': 'Bachelors of Science', 'institute_name': 'San Diego State University-California State University', 'field_of_study': 'Hospitality and Tourism Management', 'start_date': '2008-01-01T00:00:00', 'end_date': '2012-01-01T00:00:00', 'institute_linkedin_id': '6206', 'institute_linkedin_url': 'https://www.linkedin.com/school/6206/', 'institute_logo_url': 'https://media.licdn.com/dms/image/v2/D560BAQFcwgUDxDXz3Q/company-logo_400_400/company-logo_400_400/0/1666719462484/san_diego_state_university_logo?e=1752105600&v=beta&t=FA-GeXq_DO8OeWNHBY4gfX4kNiGQofyT6erFddAMOkk'}, {'degree_name': 'Study Abroad', 'institute_name': 'National University of Ireland, Galway', 'field_of_study': 'History, Psychology, and Irish Studies', 'start_date': '2011-01-01T00:00:00', 'end_date': '2011-01-01T00:00:00', 'institute_linkedin_id': '7899', 'institute_linkedin_url': 'https://www.linkedin.com/school/7899/', 'institute_logo_url': 'https://media.licdn.com/dms/image/v2/D4E0BAQGs-MjKBicdRg/company-logo_400_400/company-logo_400_400/0/1688394521630/universityofgalway_logo?e=1752105600&v=beta&t=DjNFLx1Kn8luyRfspx9Bsx95ZWeug1AWdp6lpT1loJQ'}, {'degree_name': 'High School', 'institute_name': 'Casa Grande High School', 'field_of_study': 'Honors', 'start_date': '2004-01-01T00:00:00', 'end_date': '2008-01-01T00:00:00', 'institute_linkedin_id': None, 'institute_linkedin_url': None, 'institute_logo_url': None}], 'emails': [], 'websites': [], 'twitter_handle': None, 'languages': ['English'], 'pronoun': 'She/Her', 'query_person_linkedin_urn': 'ACwAAAW2ZoEBj_-RaElUNWliI0sZrxn1TFfjuXs', 'linkedin_slug_or_urns': ['lizziejaeger', 'ACwAAAW2ZoEBj_-RaElUNWliI0sZrxn1TFfjuXs'], 'current_title': 'Director, HR Business Partnering (Business)'}, {'name': 'Mike Leary', 'location': 'Albany, New York Metropolitan Area', 'linkedin_profile_url': 'https://www.linkedin.com/in/ACwAAAAuOuYBQub0LuK-cyoCRMZ47eV5EYmQNJ8', 'linkedin_profile_urn': 'ACwAAAAuOuYBQub0LuK-cyoCRMZ47eV5EYmQNJ8', 'default_position_title': 'VP, Global Talent Acquisition', 'default_position_company_linkedin_id': '17988315', 'default_position_is_decision_maker': False, 'flagship_profile_url': 'https://www.linkedin.com/in/mleary', 'profile_picture_url': 'https://media.licdn.com/dms/image/v2/D4E03AQHUzVuBr3PhJw/profile-displayphoto-shrink_400_400/profile-displayphoto-shrink_400_400/0/1693964070263?e=1752105600&v=beta&t=7mDx4g4gRfb4dexaGOj31jWzhIuO-FKwHntw1hPzTcI', 'headline': 'TA leader for Rippling, father, gardener, wannabe chef, bowling fanatic, cancer survivor ', 'summary': "Experienced HR executive with expertise building scalable, global recruiting engines.\n\nCurrent: \nLead global recruiting for Rippling\n\nPrior:\nLed global talent acquisition for GLOBALFOUNDRIES, one of the world’s leading semiconductor manufacturers, and the only one with a truly global footprint. Previously at GF I led HR Ops, and drove a transformation to a centralized HR Shared Services model, and I led the HR Reporting and Analytics as well. We went public in 2021 and have over 15K employees in 15+ locations globally.\n\nPrior experience :\nAnaplan: Rebuilt and led TA for Anaplan from pre-IPO, with 350 ee's, through an IPO and beyond, and over 1200 ee's.\n\nNetSuite / Oracle:\nGlobal VP for the leading provider of cloud-based financials / ERP and omnichannel commerce software suites. Lead a recruiting team of 100+ globally to support a hiring demand of over 2K hires per year. \n\nZenefits:\nBuilt and led recruiting for Zenefits, the fastest growing SaaS company in history at the time. Grew the recruiting team from 5 to 55 recruiters, as hiring increased to a peak of 1800 hires in 2015. Built recruiting processes and operations from scratch. \n\nSAP:\nLed the global TA function for this 75K employee company. Led a recruiting team of 300+ globally that yielded 15K hires annually. Drove a major org and budget overhaul that resulted in a centralized, efficient, scalable, operationally sound recruiting model. Yielded large budget savings while increasing production per recruiter and quality of hire.", 'num_of_connections': 13963, 'related_colleague_company_id': 17988315, 'skills': ['Recruiting', 'SaaS', 'Talent Acquisition', 'HCM', 'Enterprise Software', 'Salesforce.com', 'Applicant Tracking Systems', 'Talent Management', 'Technical Recruiting', 'Cloud Computing', 'Solution Selling', 'Internet Recruiting', 'Sourcing', 'Executive Search', 'Account Management', 'Sales Process', 'CRM', 'Sandwiches', 'Global Management', 'International Recruitment', 'Hugs', 'Strategy', 'Lead Generation', 'Sales', 'Business Development', 'Management', 'Pre-sales', 'global HCM', 'Global Talent Acquisition', 'Team Leadership', 'Start-ups', 'Analytics', 'Team Management', 'Temporary Placement', 'Software Industry', 'Strategic Partnerships', 'Networking', 'Consulting', 'Business Alliances', 'Complex Sales', 'Vendor Management', 'Go-to-market Strategy', 'Outsourcing', 'Hiring', 'Executive Management', 'Sales Enablement', 'SAP', 'Demand Generation', 'SuccessFactors', 'Customer Relationship Management (CRM)'], 'employer': [{'title': 'VP, Global Talent Acquisition', 'company_name': 'Rippling', 'company_linkedin_id': '17988315', 'company_logo_url': 'https://media.licdn.com/dms/image/v2/C560BAQGTg3igNET25Q/company-logo_400_400/company-logo_400_400/0/1654722845874/rippling_logo?e=1752105600&v=beta&t=qGutQiQoqSe9I_ICPUWqkMLG1M0CHhdOWBPSPS_3b88', 'start_date': '2023-01-01T00:00:00', 'end_date': None, 'position_id': 2100844847, 'description': None, 'location': 'NY / SF', 'rich_media': []}, {'title': 'VP, Talent Acquisition, HR Operations', 'company_name': 'GLOBALFOUNDRIES', 'company_linkedin_id': '241309', 'company_logo_url': 'https://media.licdn.com/dms/image/v2/D4E0BAQEzX3Ke-SvR5A/company-logo_400_400/company-logo_400_400/0/1697741489495/globalfoundries_logo?e=1752105600&v=beta&t=Ms-VvZ-pGgaBL4Y5uNFGhGfcTrbYqDMgdyp3avXqzRo', 'start_date': '2019-10-01T00:00:00', 'end_date': '2022-12-01T00:00:00', 'position_id': 1533534214, 'description': 'Led Global Talent Acquisition during a time of unprecedented demand and growth in the semiconductor industry, and during GF’s journey from pre to post IPO. Our TA team had 70+ recruiters across the US, Germany, Singapore and Bangalore. Also led a transformation of HR Operations, shifting all global ops work into a centralized hub in Bangalore. ', 'location': 'Malta, NY', 'rich_media': []}, {'title': 'Global Head of Talent Acquisition', 'company_name': 'Anaplan', 'company_linkedin_id': '658814', 'company_logo_url': 'https://media.licdn.com/dms/image/v2/D560BAQGYt40mQR_WYw/company-logo_400_400/B56ZUXZoi4GsAk-/0/1739854350849/anaplan_logo?e=1752105600&v=beta&t=ufmRANwJxjVNpVXXda1Zs2BjMtkOsYtvMg8VzthfqF0', 'start_date': '2017-06-01T00:00:00', 'end_date': '2019-10-01T00:00:00', 'position_id': 1022112619, 'description': '\nGlobal Head of Talent Acquisition at Anaplan\n\nBuilt and led the Global Talent Acquisition team for Anaplan during a time of massive growth and change, going from pre-IPO, sub-500 employees to a highly successful IPO and over 1600+ employees globally. ', 'location': 'San Francisco Bay Area', 'rich_media': []}, {'title': 'VP Global Talent Acquisition', 'company_name': 'NetSuite', 'company_linkedin_id': '6137', 'company_logo_url': 'https://media.licdn.com/dms/image/v2/D560BAQEsZ3b3bX6srg/company-logo_400_400/company-logo_400_400/0/1706795717115/netsuite_logo?e=1752105600&v=beta&t=1CqvIVCRN3WK_YS0WKNYIlSRySNQM01voePI8H_gMdE', 'start_date': '2016-05-01T00:00:00', 'end_date': '2017-06-01T00:00:00', 'position_id': 809120370, 'description': 'Led Global TA for all of Netsuite prior and through the acquisition into Oracle. \n\n•\tResponsible for a global team of 110 across EMEA, APJ and Americas\n•\tCreated a completely revised recruiting org model and strategy in order to centralize efforts, improve efficiencies, delivery and quality, and decrease spend. Net result: sourcing strategy and org overhaul, a shift to low cost locations and centralization, improved branding and social, and stronger resourcing and higher capacity and yield per recruiter across TA. \n•\tRebuilt a close partnership and synergy with FP&A and the LOB Operations teams, which previously did not exist. Established cadence of synching and reporting that led to improved reliability and accuracy of forecasting and hiring planning. \n•\tOver 2K hires in 2016. 35% increase in hires/quarter/recruiter YOY.\n•\tLed NetSuite TA through acquisition of NetSuite to Oracle which was announced during 3rd month at NetSuite.\n', 'location': 'New York', 'rich_media': []}, {'title': 'VP Talent', 'company_name': 'Zenefits', 'company_linkedin_id': '2997680', 'company_logo_url': 'https://media.licdn.com/dms/image/v2/D560BAQGefoLIAXO9Zg/company-logo_400_400/company-logo_400_400/0/1688260427614?e=1752105600&v=beta&t=iPvyUvtp3EgLmw_1UK8qhujkNaaqGeLgWmgoAcZ85Q4', 'start_date': '2014-11-01T00:00:00', 'end_date': '2016-03-01T00:00:00', 'position_id': 604609976, 'description': 'Led recruiting for what was, at one time, the fastest growing Saas company in history. \n•\tEstablished a consolidated recruiting org for the first time in company history. Grew team from 5 to 56 at peak.\n•\tDesigned company’s first ever hiring plan, working w Finance/FP&A, business leaders, CEO and COO.\n•\tDrove numerous strategic initiatives, including interview training, succession planning, internal and external benchmarking for recruiting targets, recruiter pitch certification, ATS setup and reporting, company recruiting video, facilities planning, equity burn analysis and adjustment. \n•\t1859 hires in 2015, having entered the year with 300 total employees, company-wide. ', 'location': 'San Francisco Bay Area', 'rich_media': []}, {'title': 'Head of Global Recruiting, SAP', 'company_name': 'Vice President and Global Lead, Talent Acquisition, SAP', 'company_linkedin_id': None, 'company_logo_url': None, 'start_date': '2013-11-01T00:00:00', 'end_date': '2014-11-01T00:00:00', 'position_id': 483238318, 'description': 'Led Talent Acquisition globally for SAP. Obsessively focused on candidate quality, hiring manager satisfaction, candidate experience, and enabling our world class recruiting org of 300 plus team members. \n\nOver 15K hires globally in 2014, a 110% increase year over year. 69 hires per FTE, vs 50 in 2013 and 46 in 2012. \n\nLed the integration and merging of three TA orgs (SAP, SuccessFactors and Ariba), with three different systems and processes, into one unified global team. \n\nRebuilt and centralized the global sourcing org, lowering cost and increasing production. \n\nBuilt "License to Recruit" program: rolled out an annual interview training and pitch certification project to “license” managers and recruiters to interview properly and effectively, enabling better hiring decisions. \n\nRebuilt and reestablished a strong presence on social. Built new sourcing channels and increased career site traffic by 4x. Established first in-house video production team within SAP TA. \n\nCareer site redesign – mobile friendly, simple and bold, more engaging dynamic content.', 'location': 'Newtown Square, PA', 'rich_media': []}, {'title': 'VP, WW Cloud Recruiting, SAP', 'company_name': 'SuccessFactors, an SAP Company', 'company_linkedin_id': '166185', 'company_logo_url': 'https://media.licdn.com/dms/image/v2/D4E0BAQG5P2DKlvtkZQ/company-logo_400_400/company-logo_400_400/0/1719839665866/sapsuccessfactors_logo?e=1752105600&v=beta&t=jGoe5qaPwfXAAqoRJh2UcGH6fjequ3uVWctox1MkmfQ', 'start_date': '2010-10-01T00:00:00', 'end_date': '2013-11-01T00:00:00', 'position_id': 147873225, 'description': 'Global VP of Recruiting for all of the Cloud for SAP.\n\nSuccessFactors is the leading provider of cloud-based Business Execution Software, and delivers business alignment, team execution, people performance, and learning management solutions to organizations of all sizes across more than 60 industries. With approximately 15 million subscription seats globally, we strive to delight our customers by delivering innovative solutions, content and analytics, process expertise and best practices insights from serving our broad and diverse customer base. Today, we have more than 3,500 customers in more than 168 countries using our application suite in 35 languages.', 'location': None, 'rich_media': []}, {'title': 'Global Director of Recruiting, Sales, PS and Marketing', 'company_name': 'SuccessFactors', 'company_linkedin_id': '166185', 'company_logo_url': 'https://media.licdn.com/dms/image/v2/D4E0BAQG5P2DKlvtkZQ/company-logo_400_400/company-logo_400_400/0/1719839665866/sapsuccessfactors_logo?e=1752105600&v=beta&t=jGoe5qaPwfXAAqoRJh2UcGH6fjequ3uVWctox1MkmfQ', 'start_date': '2007-08-01T00:00:00', 'end_date': '2010-10-01T00:00:00', 'position_id': 21189334, 'description': 'Drive recruiting globally for sales, presales, and marketing.', 'location': None, 'rich_media': []}, {'title': 'Manager, Enterprise Sales and Executive Sales Recruiting', 'company_name': 'salesforce.com', 'company_linkedin_id': '3185', 'company_logo_url': 'https://media.licdn.com/dms/image/v2/C560BAQHZ9xYomLW7zg/company-logo_400_400/company-logo_400_400/0/1630658255326/salesforce_logo?e=1752105600&v=beta&t=v_pKVYyy0mI3KqLlmz5ssCRqvmjlHr8WNQ2ZaE_omPY', 'start_date': '2005-05-01T00:00:00', 'end_date': '2007-08-01T00:00:00', 'position_id': 4147176, 'description': 'May 2005-August 2007\nSalesforce.com, San Francisco, CA \nA global provider of on-demand customer relationship management (CRM) services.\n\nDrive recruiting for sales, PS, presales, and other functions as needed, nationwide (US).', 'location': None, 'rich_media': []}, {'title': 'Senior Staff Recruiter', 'company_name': 'Symantec formerly VERITAS Software', 'company_linkedin_id': '1231', 'company_logo_url': 'https://media.licdn.com/dms/image/v2/D560BAQGwqTRMsfuUsg/company-logo_400_400/B56ZWpgIAqGUAc-/0/1742305527529/symantec_logo?e=1752105600&v=beta&t=MnBDsDTIewVH8fwSqVMlorrH5FtupQpErbmTw1LSsNE', 'start_date': '2003-04-01T00:00:00', 'end_date': '2005-05-01T00:00:00', 'position_id': 4615030, 'description': 'August 2003-May 2005 \nVERITAS Software \nLeading provider of products and services for data protection, storage and server management, high availability and application performance management. \n\nRecruiting, Field Sales, PS, nationwide (US)', 'location': None, 'rich_media': []}], 'education_background': [{'degree_name': 'BS', 'institute_name': 'Fairfield University', 'field_of_study': 'Business', 'start_date': None, 'end_date': None, 'institute_linkedin_id': '16708', 'institute_linkedin_url': 'https://www.linkedin.com/school/16708/', 'institute_logo_url': 'https://media.licdn.com/dms/image/v2/C4E0BAQE3wYIz3Q372A/company-logo_400_400/company-logo_400_400/0/1644977665248/fairfield_university_logo?e=1752105600&v=beta&t=4yhugyS0jTnPkrZ4Dd1zNijCi1QEYryPiaMDw47uYHE'}, {'degree_name': None, 'institute_name': 'Wheatley', 'field_of_study': '', 'start_date': None, 'end_date': None, 'institute_linkedin_id': None, 'institute_linkedin_url': None, 'institute_logo_url': None}], 'emails': [], 'websites': [], 'twitter_handle': 'mikelearylive', 'languages': [], 'pronoun': 'He/Him', 'query_person_linkedin_urn': 'ACwAAAAuOuYBQub0LuK-cyoCRMZ47eV5EYmQNJ8', 'linkedin_slug_or_urns': ['ACwAAAAuOuYBQub0LuK-cyoCRMZ47eV5EYmQNJ8', 'mleary'], 'current_title': 'VP, Global Talent Acquisition'}]
 
 
 # extract relevant fields only from the person data dict provided
-def extract_relevant_person_data_pydantic(person_data, target_company):
+def extract_relevant_person_data(person_data, target_company):
+  print("PERson data = \n")
+  print(person_data)
   person_data_relevant = {}
   fields = ["name","default_position_title","num_of_connections",]
   person_data_relevant = {k:person_data[k] for k in fields}
@@ -490,7 +643,8 @@ def extract_relevant_person_data_pydantic(person_data, target_company):
   here is the title - {person_data["default_position_title"]} and here is the headline - {person_data["headline"]}
 
   """
-
+  api_key = os.getenv("OPENAI_API_KEY")
+  client = openai.OpenAI(api_key=api_key)
   person_role_response = client.responses.parse(
     model="gpt-4o",
     #reasoning={"effort": "medium"},
@@ -509,79 +663,41 @@ def extract_relevant_person_data_pydantic(person_data, target_company):
     text_format = Person_Enrichment
   )
 
+
+  """
+  Alt endpoint - faster and cheaper
+  .ChatCompletion.create(
+    model="gpt-3.5-turbo-0125",
+    messages=[
+        {"role": "system", "content": enrich_profile_llm_system },
+        {"role": "user", "content": enrich_profile_llm_user }
+    ],
+    temperature=0,  # deterministic
+    top_p=0.0,      # use for deterministic/simple tasks
+)
+
+print(response['choices'][0]['message']['content'])
+
+  """
   print(person_role_response.output_text)
   try:
-    person_data_relevant["role_enriched"] = person_role_response.output_parsed.dict() #json.loads(person_role_response.output_text.split("json")[1].strip("```"))
+    person_data_relevant["role_enriched"] = person_role_response.output_parsed.model_dump() #json.loads(person_role_response.output_text.split("json")[1].strip("```"))
     return person_data_relevant
   except:
-    return {}
+    return person_data_relevant
 
 
-def fuzzy_match(title1, title2, threshold=85):
-  print(title1)
-  print(title2)
-  score = fuzz.partial_ratio(title1.lower().strip(), title2.lower().strip())
-  if score >= threshold:
-    return True
-  return False
 
-
-def semantic_match(model,title1, title2, threshold=0.7):
-
-
-  emb1 = model.encode(title1.lower().strip(), convert_to_tensor=True)
-  emb2 = model.encode(title2.lower().strip(), convert_to_tensor=True)
-  score = util.cos_sim(emb1, emb2).item()
-  if score >= threshold:
-    return True
-  return False
-
-# extract relevant data from people api responses and match with the titles needes for that strategy
-def match_people_strategy_data(people_data, strategic_data, buyer):
-  #model = SentenceTransformer("all-MiniLM-L6-v2")
-  # iterate strategy data
-  strategic_data_temp = {}
-  for strategy in strategic_data:
-    strategic_data_temp[strategy] = {}
-    for tag in strategic_data[strategy]:
-      strategic_data_temp[strategy][tag] = []
-      for team in strategic_data[strategy][tag]:
-        persons = []
-        person_names = set()
-        titles_needed = team["titles"]
-        for title in titles_needed:
-          for people in people_data["profiles"]:
-            #if semantic_match(model,title, people["default_position_title"],0.70) or ((float(rapidfuzz.fuzz.token_set_ratio(title, people["default_position_title"])) / 100.0) > 0.80):
-            if ((float(rapidfuzz.fuzz.token_set_ratio(title, people["default_position_title"])) / 100.0) > 0.80):
-              #print("true")
-              print(title)
-              print(people["default_position_title"])
-              if people["name"] not in person_names:
-                person_names.add(people["name"])
-                persons.append(extract_relevant_person_data_pydantic(people,buyer))
-        team |= {"people":persons}
-        strategic_data_temp[strategy][tag].append(team)
-
-  return strategic_data_temp
-
-
-#print(people_data)
-#print(final_strategy_data)
-
-def join_people_strategy_data(people_data,final_strategy_data):
-  headers = {
-          "Content-Type": "application/json",
-          "Authorization": "Token 8582455305237735a32d0be5b74dda9b22dc9857"
-        },
-  endpoint = "https://api.crustdata.com/screener/person/search",
-  buyer = "rippling.com"
-  #people_data = fetch_all_profiles(endpoint, headers, buyer, all_titles_to_search)
-  # we have a sample pickle dict for people_data
-  # with open('./sample_data/people_data.pkl', 'rb') as f:
-  #   people_data = pickle.load(f)
-  #all_titles_to_search=list(set(all_titles_to_search))
-  people_strategy_data = match_people_strategy_data(people_data,final_strategy_data,buyer)
-  #print(result)
+def enrich_people_data(buyer, people_strategy_data):
+  keys = ["Decision_Maker","Economic_Buyer","Champions","Influencers","Blockers"]
+  for initiative in people_strategy_data["Initiatives"]:
+    for tag in keys:
+      people_enriched = []
+      for person in initiative[tag]["people"]:
+        person_data_relevant = extract_relevant_person_data(person, buyer)
+        if person_data_relevant:
+          people_enriched.append(person_data_relevant)
+      initiative[tag]["people"] = people_enriched
   return people_strategy_data
 
 
@@ -592,118 +708,122 @@ class Influence(BaseModel):
   reason:str
 
 
-def get_influence_score_pydantic(strategy_people_data):
+def get_influence_score(strategy_people_data):
   strategy_people_data_temp={}
-  for strategy in strategy_people_data:
-    strategy_people_data_temp[strategy]={}
-    for tag in strategy_people_data[strategy]:
-      strategy_people_data_temp[strategy][tag]=[]
-      for team in strategy_people_data[strategy][tag]:
-
-        copied_team = copy.deepcopy(team)
-        copied_team["people"] = []  # re-init
-
-        for person in team["people"]:
-            try:
-              influence_score_prompt_system = """
-              Given this stakeholder’s title, company initiative, tenure at the company,
-              organization of the stakeholder ,total career tenure in industry,
-              Seniority score in the buyers company and type of role (Strategic, IC , manager)
-              and social reach (follower or connections count),
-              predict their influence score from 0 to 100 in the company’s decision-making process. Consider all factors given,
-              Relevance of initiative to the stakeholders team and title and Score according to the weight given below.
+  keys = ["Decision_Maker","Economic_Buyer","Champions","Influencers","Blockers"]
+  for initiative in people_strategy_data["Initiatives"]:
+    for tag in keys:
+      people_enriched = []
+      for person in initiative[tag]["people"]: 
+        try:
+          influence_score_prompt_system = """
+          Given this stakeholder’s title, company initiative, tenure at the company,
+          organization of the stakeholder ,total career tenure in industry,
+          Seniority score in the buyers company and type of role (Strategic, IC , manager)
+          and social reach (follower or connections count),
+          predict their influence score from 0 to 100 in the company’s decision-making process. Consider all factors given,
+          Relevance of initiative to the stakeholders team and title and Score according to the weight given below.
 
 
-              Weigh:
+          Weigh:
 
-              Seniority (30%)
+          Seniority (30%)
 
-              Relevance of initiative to seller org - (10%)
+          Relevance of initiative to seller org - (10%)
 
-              Tenure at company (20%)
+          Tenure at company (20%)
 
-              Industry tenure (20%)
+          Industry tenure (20%)
 
-              Follower count (5%)
+          Follower count (5%)
 
-              Suborganization relevance to initiative - 10%
+          Suborganization relevance to initiative - 10%
 
-              Role (strategic, IC etc) - 5%
+          Role (strategic, IC etc) - 5%
 
-              Input:
+          Input:
 
 
-              Title: Head of Revenue Operations
+          Title: Head of Revenue Operations
 
-              Tenure in company: 5 years
+          Tenure in company: 5 years
 
-              Career: 15 years
+          Career: 15 years
 
-              Connection count: 400
+          Connection count: 400
 
-              Industry Experience : 10 years
+          Industry Experience : 10 years
 
-              org_unit
+          org_unit
 
-              suborg_unit - Say sales enablement , sales ops instead of just sales
+          suborg_unit - Say sales enablement , sales ops instead of just sales
 
-              seniority_level (1–7)
+          seniority_level (1–7)
 
-              function_type (Strategic, Tactical, IC)
+          function_type (Strategic, Tactical, IC)
 
-              Outputformat:
-              Output a json with
+          Outputformat:
+          Output a json with
+          {
+            "influence_score": 100,
+            "Reason": "Explain the influence and the reasons for high or low influence to an account executive"
+          }
+
+          """
+
+          influence_score_prompt_user = f"""
+          here is persona data - {str(person)} and here is the buyer company's initiative - {str(initiative["Buyer_Initiative_Or_Pain"])}
+          """
+          api_key = os.getenv("OPENAI_API_KEY")
+          client = openai.OpenAI(api_key=api_key)
+          node_influence = client.responses.parse(
+          model="gpt-4o",
+          #reasoning={"effort": "medium"},
+          input=[
               {
-                "influence_score": 100,
-                "Reason": "Explain the influence and the reasons for high or low influence to an account executive"
-              }
+                  "role": "system",
+                  "content": influence_score_prompt_system
+              },
+              {
+                  "role": "user",
+                  "content": influence_score_prompt_user
+              },
+            ],
+          text_format = Influence
+          )
+          print(node_influence.output_parsed)
+          print("\n\n\n\n")
+        
+          person_enriched = person | node_influence.output_parsed.model_dump()
+          print(node_influence)
+        except Exception as e:
+          print(e)
+          print("error")
+          person_enriched = person | {
+              "influence_score": 50,
+              "Reason": "Default Score"
+          }
+        people_enriched.append(person_enriched)
 
-              """
-
-              influence_score_prompt_user = f"""
-              here is persona data - {str(person)} and here is the buyer company's initiative - {str(strategy)}
-              """
-
-              node_influence = client.responses.parse(
-                model="gpt-4o",
-                #reasoning={"effort": "medium"},
-                input=[
-                    {
-                        "role": "system",
-                        "content": influence_score_prompt_system
-                    },
-                    {
-                        "role": "user",
-                        "content": influence_score_prompt_user
-                    },
-                  ],
-                text_format = Influence
-                )
-              print(node_influence.output_parsed)
-              print("\n\n\n\n")
-              # node_influence = """
-              # ```json
-              # {
-              #     "influence_score": 100,
-              #     "Reason": "Reasoning for the score"
-              # }
-              # """
-              #node_data = json.loads(node_influence.output_text.split("```json")[1].strip("`").strip())
-              person_enriched = person | node_influence.output_parsed.dict()
-              print(node_influence)
-            except Exception as e:
-                print(e)
-                print("error")
-                person_enriched = person | {
-                    "influence_score": 50,
-                    "Reason": "Default Score"
-                }
-            copied_team["people"].append(person_enriched)
-
-        strategy_people_data_temp[strategy][tag].append(copied_team)
-  return strategy_people_data_temp
+      initiative[tag]["people"] = people_enriched
+  return strategy_people_data
 
 
+
+
+
+
+#type(a)
+import networkx as nx
+import math
+import networkx as nx
+from typing import List, Dict, Any
+import math
+import matplotlib.pyplot as plt
+from pyvis.network import Network
+from collections import defaultdict
+
+from sqlalchemy import all_
 
 class StakeholderGraph:
     def __init__(self, initiative_name, people_data):
@@ -821,7 +941,7 @@ class StakeholderGraph:
 
 
         # Role tags boost
-        tags_weights = {"Champion":3, "Economic Buyer":5, "Direct Owner Team":3, "Cross-Functional Reviewers":1, "Internal Influencers":2}
+        tags_weights = {"Champions":3, "Economic_Buyer":4, "Decision_Maker":5, "Blockers":2, "Influencers":2}
         weight+=tags_weights.get(a.get("tag", ""), 0)
         #print(a.get("tag", "Default"))
         #print(a)
@@ -1113,7 +1233,8 @@ class StakeholderGraph:
 
           Write a 3–4 line personalized engagement strategy for how to approach this stakeholder, based on their role, org unit, influence, and tags. Be specific.
           """
-
+          api_key = os.getenv("OPENAI_API_KEY")
+          client = openai.OpenAI(api_key=api_key)
           response_engagement_strategy = client.responses.create(
           model="gpt-4o",
           #reasoning={"effort": "medium"},
@@ -1258,6 +1379,8 @@ class StakeholderGraph:
 
 
                 """
+      api_key = os.getenv("OPENAI_API_KEY")
+      client = openai.OpenAI(api_key=api_key)
       response_explain_strategy = client.responses.create(
       model="gpt-4o",
       #reasoning={"effort": "medium"},
@@ -1296,77 +1419,80 @@ def remove_duplicates(people):
     else:
       all_people_deduped.append(person)
       all_people_names[person["name"]] = True
-  print(all_people_deduped)
+  #print(all_people_deduped)
   return all_people_deduped
 
 
-def get_graphs_for_initiatives(strategy_people_data_scores):
-  graphs = {}
-  a = strategy_people_data_scored
-  all_people = {}
-  for initiative in a:
-    #print(initiative)
-    all_people[initiative] = []
-    for tag in a[initiative]:
-      #print(tag)
+def get_graphs_for_initiatives(strategy_people_data_scored):
+   graphs = {}
+   a = strategy_people_data_scored
+   all_people = {}
+   for initiatives in a["Initiatives"]:
+       initiative_name = initiatives["Buyer_Initiative_Or_Pain"]
+       all_people[initiative_name] = []
+       keys = ["Decision_Maker","Economic_Buyer","Champions","Influencers","Blockers"]
 
-      for teams in a[initiative][tag]:
-        #print(teams["Team"])
-        #print("\n")
-        people_temp = copy.deepcopy(teams["people"])
-        #people_temp = remove_duplicates(teams["people"])
-        #print(people_temp
+       for tag in keys:
+        #print(tag)
+        #print(initiatives[tag])
+        people_temp = copy.deepcopy(initiatives[tag]["people"])
         for person in people_temp:
-          person |= {"tag":tag}
-          #print(person)
-        all_people[initiative] += people_temp
-        for person in teams["people"]:
-          continue
-          #print(person)
-
-  for initiative in a:
-    all_people[initiative] = remove_duplicates(copy.deepcopy(all_people[initiative]))
-
-
-  for initiative in a:
-    graph = StakeholderGraph(initiative, all_people[initiative])
-    graphs[initiative] = graph
-  return graphs
+            person |= {"tag":tag}
+        all_people[initiative_name] += people_temp
+       all_people[initiative_name] = remove_duplicates(copy.deepcopy(all_people[initiative_name]))
+       #print("People dtaa")
+       #print(all_people[initiative_name])
+       graph = StakeholderGraph(initiative_name, all_people[initiative_name])
+       graphs[initiative_name] = graph
+   return graphs
 
 
 
-"""
-a = create_value_prop_pydantic(buyer, seller, buyer_initiatives,seller_info)
-print(a)
 
-b = find_teams_pydantic(buyer, seller, a)
-print(b)
+      
 
 
-import pickle
-with open('./sample_data/people_data.pkl', 'rb') as f:
-  people_data = pickle.load(f)
+# main func
 
-# for k in b.dict()['Initiatives']:
-#   print(k["Buyer_Initiative_Or_Pain"])
-#print(b.dict()['Initiatives'])
-final_strategy_data, all_titles_to_search = get_people_titles_to_search_pydantic(b.dict())
-print(final_strategy_data)
-people_strategy_data_final = join_people_strategy_data(people_data, final_strategy_data)
+buyer = ""
+seller = ""
+seller_info = ""
+buyer_initiatives = ""
 
-strategy_people_data_scored = get_influence_score_pydantic(people_strategy_data_final)
-print(strategy_people_data_scored)
+value_prop = create_value_prop(buyer, seller, buyer_initiatives,seller_info)
+print("Step1 - value prop created")
 
+teams = find_teams(buyer, seller, value_prop,seller_info)
+print("Step2 - teams created")
+
+
+# then call this person enrichment function on each person object element
+# extract buyer name only from website
+people_strategy_data = get_people_data(buyer, teams.model_dump())#step2_team_data)
+print(people_strategy_data)
+people_strategy_data_enriched = enrich_people_data(buyer, people_strategy_data)
+print(people_strategy_data_enriched)
+print("Step3 - people strategy joined")
+
+strategy_people_data_scored = get_influence_score(people_strategy_data_enriched)
+print("Step4 - people strategy data scored")
 
 
 #all_graphs = get_graphs_for_initiatives(strategy_people_data_scored)
-all_graphs = get_graphs_for_initiatives(strategy_people_data_scored2)
+all_graphs = get_graphs_for_initiatives(strategy_people_data_scored)
 import pickle
-with open("./sample_data/all_graphs_pydantic.pkl", "wb") as f:
-  pickle.dump(all_graphs, f)
+# with open("./sample_data/all_graphs_pydantic.pkl", "wb") as f:
+#   pickle.dump(all_graphs, f)
 for g in all_graphs:
-  print(all_graphs[g].graph.edges)
-  print("\n")
+  print(all_graphs[g].initiative)
+  print(all_graphs[g].graph.edges(data=True))
+print("Step5 - graphs created")
 
 
-"""
+
+
+
+
+
+
+
