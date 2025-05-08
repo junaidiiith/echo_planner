@@ -711,7 +711,7 @@ class Influence(BaseModel):
 def get_influence_score(strategy_people_data):
   strategy_people_data_temp={}
   keys = ["Decision_Maker","Economic_Buyer","Champions","Influencers","Blockers"]
-  for initiative in people_strategy_data["Initiatives"]:
+  for initiative in strategy_people_data["Initiatives"]:
     for tag in keys:
       people_enriched = []
       for person in initiative[tag]["people"]: 
