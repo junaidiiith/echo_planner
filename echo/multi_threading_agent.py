@@ -4,6 +4,7 @@ import math
 from typing import List, Dict, Any
 import openai
 import matplotlib.pyplot as plt
+from pydantic import BaseModel
 from pyvis.network import Network
 from collections import defaultdict
 import plotly.graph_objects as go
@@ -24,8 +25,6 @@ import datetime
 from rapidfuzz import fuzz
 import rapidfuzz
 
-<<<<<<< Updated upstream
-=======
 class Account_Plan(BaseModel):
   buyer:str
   seller:str
@@ -74,7 +73,6 @@ def account_plan_extract_data(account_research_data: str, buyer, seller):
       text_format=Account_Plan,
   )
   return response_account_research.output_parsed
->>>>>>> Stashed changes
 
 
 def create_value_prop(buyer, seller, buyer_initiatives, seller_info):
