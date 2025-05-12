@@ -4,14 +4,27 @@ import datetime
 import math
 import os
 from collections import defaultdict
+import plotly.graph_objects as go
 
-import matplotlib.pyplot as plt
+from echo.data.indexes import IndexType
+from echo.data.index_enums import SellerIndexQueryTypes, BuyerIndexQueryTypes
+
+from echo.llm_utils import run_openai_query
+from echo.query_executor import Query, LlamaSubQuery
+
+from echo.query_executor import arun_query_chain
+
+# from echo.query_executor import aget_query_response
+import asyncio
+from echo.query_executor import Query, LlamaSubQuery, QueryChain
+import re
 import nest_asyncio
 import networkx as nx
 import openai
 import plotly.graph_objects as go
 import requests
-import tldextract
+
+nest_asyncio.apply()
 from pydantic import BaseModel
 from pyvis.network import Network
 
@@ -35,14 +48,370 @@ class StrategicInitiatives(BaseModel):
 
 
 class Account_Plan(BaseModel):
-    buyer: str
-    seller: str
-    Top_initiatives: str
-    Triggers: str
-    ICP_Fit: str
-    Tech_stack_fit: str
-    Value_Aligned: str
-    User_Feedback: str
+  buyer:str
+  seller:str
+  Industry_Details:str
+  Top_initiatives: str
+  Triggers :str
+  ICP_Fit :str
+  Tech_stack_fit: str
+  Value_Aligned: str
+  User_Feedback: str
+  Sources:str
+
+class POV(BaseModel):
+   Inititative:str
+   Tag:str # champion / dm/ exec buyer ect
+   what_they_care_about:str
+   triggers_and_motivations:str
+   likely_objections:str
+   emotional_drivers:str
+   POV:str
+
+def format_account_plan_markdown(plan: dict) -> str:
+    def format_section(title: str, content: str) -> str:
+        lines = content.strip().splitlines()
+        formatted_lines = []
+        for line in lines:
+            line = line.strip()
+            if line.startswith("•") or line.startswith("- "):
+                formatted_lines.append(f"- {line.lstrip('•').strip()}")
+            elif line[:2].isdigit() and line[2:3] in {".", ")"}:
+                formatted_lines.append(f"1. {line[3:].strip()}")
+            else:
+                formatted_lines.append(line)
+        return f"## {title}\n" + "\n".join(formatted_lines) + "\n"
+
+    def format_sources(sources):
+        if not sources:
+            return ""
+        
+        # If sources is a string, attempt to parse as list
+        if isinstance(sources, str):
+            try:
+                import json
+                sources = json.loads(sources)
+                if not isinstance(sources, list):
+                    sources = [sources]
+            except Exception:
+                sources = [sources]  # fallback to single string
+
+        source_lines = []
+        for i, src in enumerate(sources, 1):
+            if isinstance(src, dict) and "title" in src and "url" in src:
+                source_lines.append(f"{i}. [{src['title']}]({src['url']})")
+            elif isinstance(src, str):
+                source_lines.append(f"{i}. {src}")
+        return "## 🔗 Sources\n" + "\n".join(source_lines)
+
+    sections = [
+        ('🏭 Industry Details', plan.get('Industry_Details', '')),
+        ('🚀 Top Strategic Initiatives', plan.get('Top_initiatives', '')),
+        ('⚡️ Triggers', plan.get('Triggers', '')),
+        ('✅ ICP Fit', plan.get('ICP_Fit', '')),
+        ('🔌 Tech Stack Fit', plan.get('Tech_stack_fit', '')),
+        ('🎯 Value Alignment', plan.get('Value_Aligned', '')),
+        ('📣 User Feedback', plan.get('User_Feedback', '')),
+    ]
+
+    formatted = [
+        f"# 🧠 Account Plan for **{plan.get('buyer', '')}**",
+        f"_Seller: {plan.get('seller', '')}_",
+        "\n---\n",
+    ]
+
+    for title, content in sections:
+        if content:
+            formatted.append(format_section(title, content))
+
+    if "Sources" in plan:
+        formatted.append(format_sources(plan["Sources"]))
+
+    return "\n".join(formatted).strip()
+
+
+
+def format_stakeholder_pov(data:dict):
+    def format_list(text):
+        return '\n'.join(f"- {line.strip()}" for line in text.strip().split('\n') if line.strip())
+
+    initiative = data.get("Inititative", "N/A")
+    tag = data.get("Tag", "N/A").replace("_", " ")
+    pov = data.get("POV", "N/A")
+
+    care_about = format_list(data.get("what_they_care_about", ""))
+    triggers = format_list(data.get("triggers_and_motivations", ""))
+    emotions = format_list(data.get("emotional_drivers", ""))
+    objections = format_list(data.get("likely_objections", ""))
+
+    return f"""
+## 🧠 Stakeholder Insight
+
+**🎯 Initiative**  
+{initiative}
+
+**🏷️ Stakeholder Type**  
+`{tag}`
+
+---
+
+### 💡 What They Care About
+{care_about}
+
+### 🚀 Triggers & Motivations
+{triggers}
+
+### ❤️ Emotional Drivers
+{emotions}
+
+### ❗ Likely Objections
+{objections}
+
+### 🗣️ Tailored POV
+> {pov}
+""".strip()
+
+# Example usage
+sample_input = {
+  'Inititative': 'Investment in Research and Development',
+  'Tag': 'Decision_Maker',
+  'what_they_care_about': '- Rapidly onboarding new hires and up-skilling existing employees on emerging AI and R&D tools to drive platform enhancements\n- Achieving high engagement and adoption rates for both HR systems (onboarding, performance) and R&D applications with minimal support overhead\n- Success metric: measurable reduction in training time and support tickets (e.g., 30–50% faster time-to-productivity, 90%+ feature adoption)',
+  'triggers_and_motivations': '- As a new VP, Tahlia needs early, visible wins to cement her credibility and demonstrate HR’s strategic value in Rippling’s R&D push\n- Avoids the risk of low adoption or stalled product launches that could reflect poorly on HR enablement and budget stewardship\n- Winning means being seen as the catalyst who accelerated both people and technology adoption—earning trust from the C-suite and R&D teams',
+  'likely_objections': '- Skepticism over adding another tool on top of Rippling’s own platform or existing LMS—concerns about overlap and tool sprawl\n- Questions about integration with Rippling’s HRIS/data model, data security, compliance, and how ROI will be measured and reported\n- Worries about the effort required from HR (content creation, maintenance) to configure in-app guidance',
+  'emotional_drivers': '- Fear: that as a newcomer she’ll be blamed if employees struggle with new tech or if training costs balloon\n- Pride: eager to prove herself as an innovative, people-first leader who modernizes HR processes and fuels company growth',
+  'POV': '“Tahlia, Whatfix lets you launch in-app guidance for every new AI feature and HR tool without burdening your team—cut onboarding time by up to 50% and slash support tickets, so you can score quick wins that showcase HR’s impact on Rippling’s R&D success and protect your budget.”'
+}
+
+
+
+def export_graph_to_dict(G):
+    tag_colors = {
+        'Decision Maker': '#FF5733',
+        'Economic Buyer': '#33FF57',
+        'Champion': '#3357FF',
+        'Influencer': '#F1C40F',
+        'Blocker': '#E74C3C',
+    }
+
+    nodes = []
+    for node, attrs in G.nodes(data=True):
+        tag = attrs.get('tag', 'Unknown')
+        influence = round(attrs.get('influence_score', 0.0), 2)
+        color = tag_colors.get(tag, '#CCCCCC')  # fallback color
+        nodes.append({
+            'id': node,
+            'label': node,
+            'fill': color,
+            'data': {
+                'tag': tag,
+                'influence': influence
+            }
+        })
+
+    edges = []
+    for i, (source, target, attrs) in enumerate(G.edges(data=True), start=1):
+        influence = round(attrs.get('weight', 0.0), 3)
+        edges.append({
+            'id': str(i),
+            'source': source,
+            'target': target,
+            'label': str(influence),
+            'data': {
+                'edge_influence': influence
+            }
+        })
+
+    return {"nodes":nodes, "edges":edges}
+
+from collections import defaultdict
+import networkx as nx
+
+def get_yes_strategy(G, decision_maker, top_k_per_tag=1):
+    tag_to_top_influencers = defaultdict(list)
+
+    for node in G.nodes:
+        if node == decision_maker or not nx.has_path(G, node, decision_maker):
+            continue
+
+        tag = G.nodes[node].get("tag", "Unknown")
+        if tag in {"Decision_Maker", "Unknown"}:
+            continue
+
+        path = nx.shortest_path(G, source=node, target=decision_maker)
+        influence_score = sum(
+            G.get_edge_data(path[i], path[i+1]).get("influence", 0)
+            for i in range(len(path) - 1)
+        )
+
+        tag_to_top_influencers[tag].append({
+            "node": node,
+            "name": G.nodes[node].get("label", node),
+            "title": G.nodes[node].get("title", ""),
+            "path": path,
+            "influence": influence_score,
+            "path_length": len(path)
+        })
+
+    # Keep top-K per tag based on influence, then proximity
+    for tag in tag_to_top_influencers:
+        tag_to_top_influencers[tag] = sorted(
+            tag_to_top_influencers[tag],
+            key=lambda x: (-x["influence"], x["path_length"])
+        )[:top_k_per_tag]
+
+    return tag_to_top_influencers
+
+def format_yes_strategy_md(strategy_by_tag, decision_maker_label):
+    md = f"## Strategy to Get a Yes from **{decision_maker_label}**\n\n"
+    md += "For each stakeholder type, target the most influential individuals who can sway the decision-maker:\n\n"
+
+    for tag, influencers in strategy_by_tag.items():
+        md += f"### {tag}\n"
+        for inf in influencers:
+            md += f"- **{inf['name']}** ({inf['title']}): influence score **{inf['influence']}**, path: `{inf['path']}`\n"
+        md += "\n"
+    
+    return md
+
+def format_buyer_initiatives_markdown(data: dict) -> str:
+    def status_badge(status: str) -> str:
+        return {
+            "Executing": "🟢 **Executing**",
+            "Planning": "🟡 **Planning**",
+            "Delayed": "🔴 **Delayed**"
+        }.get(status, f"📌 {status}")
+
+    def relevance_icon(relevance: str) -> str:
+        return {
+            "High": "🔥 High",
+            "Medium": "⚡ Medium",
+            "Low": "🧊 Low"
+        }.get(relevance, relevance)
+
+    def bool_icon(value: bool) -> str:
+        return "✅" if value else "❌"
+
+    markdown = "## 🎯 Strategic Buyer Initiatives\n\n"
+    markdown += "Summary of active initiatives where your solution aligns with strategic goals:\n\n---\n"
+
+    for i, item in enumerate(data.get("Initiatives", []), 1):
+        markdown += f"### {i}. 🚀 **{item.get('Buyer_Initiative_Or_Pain', 'Untitled Initiative')}**\n\n"
+
+        markdown += f"- **Status:** {status_badge(item.get('Timing', 'Unknown'))}\n"
+        markdown += f"- **Industry:** {item.get('Buyer_Industry', 'N/A')} | **Executive Awareness:** {bool_icon(item.get('ExecAwareness', False))}\n"
+        markdown += f"- **Strategic:** {bool_icon(item.get('IsStrategic', False))} | **Cross-Functional:** {bool_icon(item.get('Is_Cross_Functional', False))}\n"
+        markdown += f"- **Relevance:** {relevance_icon(item.get('Relevance', 'Unknown'))}\n\n"
+
+        markdown += f"**🧭 Buyer Goals:**\n{item.get('Buyer_Goals', 'N/A')}\n\n"
+        markdown += f"**🤝 Seller Alignment:**\n{item.get('Seller_Alignment', 'N/A')}\n\n"
+        markdown += "---\n"
+
+    return markdown
+
+
+def get_POV(graph, name:str, buyer:str, seller:str, initiative:str, seller_info:str):
+   
+
+  node = graph.nodes.get(name)
+  social_research_prompt = f"""
+
+  You are a top research assistant to find detailed social signals on any person in the buyer org a 
+  seller is selling to. Find and summarize the content and social signals on {name} from the company {buyer}.
+  Things to look for:
+  Content they post about
+  Companies they support or associate with 
+  Tools they use right now in their role
+  Their pains and goals theyve talked about publically
+
+  Help the seller find what they post or care about, their driver and goals, their beliefs and tools and other comapnies they post or are in
+  contact with. Understand what they like and dislike in the industry and role in their workplace as well.
+
+  Get all of this from actual sources and dont guess any of this!!
+  """
+  api_key = os.getenv("OPENAI_API_KEY")
+  client = openai.OpenAI(api_key=api_key)
+
+  #response_social = run_openai_query(social_research_prompt, use_tools=True)
+  response_social = client.responses.create(
+    model="gpt-4.1",
+    tools=[{"type": "web_search_preview"}],
+    input=social_research_prompt
+  )
+  print("Social signals for " + name + " = ")
+  print(response_social.output_text)
+  print("\n\n")
+
+
+
+  account_research_system_prompt = f"""
+
+  You are an enterprise sales AI assistant helping AEs understand how to tailor their approach to each stakeholder involved in a B2B deal. 
+  Based on the input data below including social profule of the person, their experience in the company, the buyer initiative
+  the tag(champion, dm) they play in the buying committee of {buyer}, generate a deep understanding 
+  of the stakeholder's mindset,the product being pitched by {seller}, and how to frame a compelling, emotionally resonant Point of View (POV) message for them.
+  Be specific and dont be generic. Use context given as much as possible! Dont make up facts but youre allowed to make a good hypotheiss!
+  Take into account the seniority, the role and the tag in buying committee.Different roles need to be sold on
+  one or a mix of different values -  Strategic value (growth, scale, revenue), Operational value (time, accuracy, workflow) or Personal value (visibility, security, career win
+  You need to output the following
+
+  what_they_care_about:
+  - "<Key goals and outcomes that matter to this stakeholder>"
+  - "<Their perceived success metric within this initiative>"
+
+triggers_and_motivations:
+  - "<Why this initiative matters to them personally or politically>"
+  - "<Risks they might be trying to avoid>"
+  - "<What winning means for them>"
+  - "What kind of value - Strategic value (growth, scale, revenue), Operational value (time, accuracy, workflow) or Personal value (visibility, security, career win)"
+
+likely_objections:
+  - "<What would make them skeptical about a tool like this>"
+  - "<What questions or blockers they might raise internally>"
+
+emotional_drivers:
+  - "<Fear or concern they don't want to admit>"
+  - "<Pride or ambition they want to fulfill>"
+
+recommended_pov:
+  - "<1-2 sentence POV that frames the seller’s message in their language, tying personal gain to initiative success and avoiding risk>"
+  """
+  account_research_user_prompt = f"""
+  here are your inputs:
+  initiative details: {initiative}
+  
+stakeholder:
+  name: {node.get('name',"")}
+  title: {node.get('default_position_title',"")}
+  org_unit: {node.get('role_enriched',{}).get('Org_Unit',"")}
+  tenure: {node.get('tenure',0)}
+  seniority (1-7): {node.get('seniority',0)}
+  relevance_to_initiative: {node.get("reason","")}
+  social_signals: {response_social.output_text}
+  tag: {node.get('tag',"")}
+
+Seller Product Details:
+{seller_info}
+  
+  """
+  
+  response_account_research = client.responses.parse(
+      model="o4-mini",
+      reasoning={"effort": "medium"},
+      input=[
+          {
+
+              "role": "system",
+              "content": account_research_system_prompt
+          },
+          {
+
+              "role": "user",
+              "content": account_research_user_prompt
+          },
+      ],
+      text_format=POV,
+  )
+  return response_account_research.output_parsed
 
 
 def account_plan_extract_data(account_research_data: str, buyer, seller):
@@ -50,12 +419,13 @@ def account_plan_extract_data(account_research_data: str, buyer, seller):
   You are a strategic account executive selling {seller} products to {buyer}. You need to extract signals from the data provided below on {buyer} and create a detailed account plan for the buyer {buyer}.
   You need to extract the following data points from the data provided below:
   1. Top initiatives and goals of the buyer this year
+  2. Industry Details - (what is the industry of the buyer, what are the trends in the industry, what are the challenges in the industry, etc.)
   2. Triggers for the buyer - (funding, new product launches, hiring trends, leadership changes, etc.)
   3. ICP Fit - (right type of company for {seller}, correct initiatives to solve for {buyer}, are they feeling the pains the seller can solve for , etc.) - Low, Meidium, High with a reasoning.
-  4. Tech stack fit - (is the buyer's tech stack aligned with the sellers product, are they using similar products, what gaps do w) - Low, Medium, High with a reasoning.
-  5. Value Aligned - List how the seller can solve for the buyers initiatives above and how well positioned are the seller to solve it.
+  4. Tech stack  - (is the buyer's tech stack aligned with the sellers product, are they using similar products, what gaps do w) - Low, Medium, High with a reasoning.
+  5. Value Alignment - (low,medium, high along with reasoning) - List how the seller can solve for each of the buyers initiatives above and how well positioned are the seller to solve it. keep this detailed.
   6. User Feedback - (what are the users saying about the product, what are the reviews, what are the customers saying about the product, etc.)
-  
+  7. Sources - All the links and sources for above
   
   """
     account_research_user_prompt = f"""
@@ -1468,6 +1838,7 @@ def return_dummy_people():
 
 
 # extract relevant fields only from the person data dict provided
+# add more fields here if needed 
 def extract_relevant_person_data(person_data, target_company):
     print("PERson data = \n")
     print(person_data)
@@ -1709,8 +2080,8 @@ class StakeholderGraph:
 
         for i, a in enumerate(self.people):
             for j, b in enumerate(self.people):
-                if a.get("tag", "") == "Economic Buyer":
-                    continue  # DMs are sinks only
+                if a.get("tag", "") == "Economic_Buyer":
+                  continue  # DMs are sinks only
 
                 if a["name"] == b["name"]:
                     continue  # Skip self
@@ -1723,7 +2094,6 @@ class StakeholderGraph:
                     weight = self._calculate_edge_weight(a, b)
                     raw_weights.append(weight)
                     edge_candidates.append((a["name"], b["name"], weight))
-
         max_raw_weight = max(raw_weights) if raw_weights else 1
         avg_raw_weight = 1.0 * (sum(raw_weights) / (len(raw_weights)))
         normalized_avg_weight = round(avg_raw_weight / max_raw_weight, 3)
@@ -1804,7 +2174,213 @@ class StakeholderGraph:
             1 + math.exp(-0.2 * (weight - 10))
         )  # Adjust center as needed
         return norm_weight
-        # return round(min(weight / 20, 1), 2)
+        #return round(min(weight / 20, 1), 2)
+
+    # new funcs for final ui
+
+    import networkx as nx
+
+def find_economic_buyer(G):
+    economic_buyers = [
+        (node, data.get("influence_score", 0))
+        for node, data in G.nodes(data=True)
+        if data.get("tag") == "Economic_Buyer"
+    ]
+
+    if not economic_buyers:
+        return None
+
+    # Sort by influence score descending
+    sorted_buyers = sorted(economic_buyers, key=lambda x: x[1], reverse=True)
+
+    top_node = sorted_buyers[0][0]
+    return (top_node, G.nodes[top_node].get("influence_score", 0))
+    
+
+def get_all_stakeholders_across_roles(G):
+  blockers = find_top_blockers(G, top_n=3)  
+  champions = rank_champions(G, top_n=3)
+  influencers = find_top_influencers(G, top_n=3)
+  decision_maker = find_best_decision_maker(G)
+  economic_buyer = find_economic_buyer(G)
+  return blockers, champions, influencers, decision_maker, economic_buyer
+
+
+def generate_stakeholder_summary(G):
+    def get_node_data(n):
+        data = G.nodes[n]
+        return {
+            "Name": data.get("name", n),
+            "Title": data.get("default_position_title", ""),
+            "Dept": data.get("role_enriched", {}).get("Org_Unit", ""),
+            "Score": data.get("influence_score", ""),
+            "Notes": data.get("reason", ""),
+            "Industry Experience":data.get('industry_experience', 0),
+            "Tenure": data.get('tenure', 0),
+        }
+    blockers,champions,influencers,decision_maker,economic_buyer = get_all_stakeholders_across_roles(G)
+    rows = []
+    for c in champions:
+        d = get_node_data(c[0])
+        rows.append(("Champion", d["Name"], d["Title"], d["Dept"], d["Score"], d["Notes"],d["Industry Experience"],d["Tenure"]))
+
+    for i in influencers:
+        d = get_node_data(i[0])
+        rows.append(("Influencer", d["Name"], d["Title"], d["Dept"], d["Score"], d["Notes"],d["Industry Experience"],d["Tenure"]))
+
+    for b in blockers:
+        d = get_node_data(b[0])
+        rows.append(("Blocker", d["Name"], d["Title"], d["Dept"], d["Score"], d["Notes"],d["Industry Experience"],d["Tenure"]))
+
+    if decision_maker:
+        d = get_node_data(decision_maker[0])
+        rows.append(("Decision Maker", d["Name"], d["Title"], d["Dept"], d["Score"], d["Notes"],d["Industry Experience"],d["Tenure"]))
+    if economic_buyer:
+        d = get_node_data(economic_buyer[0])
+        rows.append(("Economic Buyer", d["Name"], d["Title"], d["Dept"], d["Score"], d["Notes"],d["Industry Experience"],d["Tenure"]))
+
+    markdown = "| Role | Name | Title | Dept/Function | Influence Score | Notes | Industry Experience | Tenure |\n"
+    markdown += "|------|------|-------|----------------|------------------|-------|\n"
+    for r in rows:
+        markdown += f"| {r[0]} | {r[1]} | {r[2]} | {r[3]} | {r[4]} | {r[5]} | {r[6]} Years | {r[7]} Years|\n"
+
+    return markdown
+
+def find_top_blockers(G, top_n=3):
+    betweenness = nx.betweenness_centrality(G)
+    blocker_scores = []
+
+    for n, data in G.nodes(data=True):
+        if data.get("tag") != "Blockers":
+            continue
+
+        block_score = data.get("blocking_score", 0)
+        indeg = G.in_degree(n)
+        btw = betweenness.get(n, 0)
+
+        score = (
+            0.5 * block_score +
+            0.3 * indeg +
+            0.2 * btw
+        )
+
+        blocker_scores.append((n, score))
+
+    # Sort and return top N
+    top_blockers = sorted(blocker_scores, key=lambda x: x[1], reverse=True)
+    if len(top_blockers) > 0:
+      return top_blockers[:top_n]
+    else:
+      return []
+
+
+def find_top_influencers(G, top_n=3):
+    pageranks = nx.pagerank(G)
+    influencer_scores = []
+
+    for n, data in G.nodes(data=True):
+        if data.get("tag") != "Influencers":
+            continue
+
+        influence = data.get("influence_score", 0)
+        pr = pageranks.get(n, 0)
+        outdeg = G.out_degree(n)
+
+        score = (
+            0.5 * influence +
+            0.3 * pr +
+            0.2 * outdeg
+        )
+
+        influencer_scores.append((n, score))
+
+    # Sort and return top N
+    top_influencers = sorted(influencer_scores, key=lambda x: x[1], reverse=True)
+    if len(top_influencers) > 0:
+      return top_influencers[:top_n]
+    else:
+      return []
+
+
+def find_best_decision_maker(G):
+    pageranks = nx.pagerank(G)
+    candidates = []
+
+    for n, data in G.nodes(data=True):
+        if data.get("tag") != "Decision_Maker":
+            continue
+
+        influence = data.get("influence_score", 0)
+        indegree = G.in_degree(n)
+        pr = pageranks.get(n, 0)
+
+        # Adjusted weighted score
+        score = (
+            0.5 * influence +
+            0.3 * indegree +
+            0.2 * pr
+        )
+
+        candidates.append((n, score))
+
+    if not candidates:
+        return None
+
+    return max(candidates, key=lambda x: x[1])
+
+def rank_champions(G, top_n=3):
+    dms = [n for n, d in G.nodes(data=True) if d.get("tag") == "Decision_Maker"]
+    champion_scores = []
+
+    for n, data in G.nodes(data=True):
+        if data.get("tag") != "Champions":
+            continue
+
+        visibility = 1#data.get("visibility_score", 0)
+        influence = data.get("influence_score", 0)
+
+        # Proximity to decision maker (shortest path)
+        proximity = 0
+        if dms:
+            try:
+                min_dist = min(
+                    [nx.shortest_path_length(G, source=n, target=dm) for dm in dms if nx.has_path(G, n, dm)]
+                )
+                proximity = 1 / (min_dist + 1e-6)  # avoid div by zero
+            except:  # noqa: E722
+                proximity = 0
+
+        # Reachability score (fraction of nodes this node can reach)
+        reachability = len(nx.descendants(G, n)) / max((G.number_of_nodes() - 1), 1)
+
+        # Final weighted score
+        score = (
+            0.35 * visibility +
+            0.25 * influence +
+            0.2 * proximity +
+            0.2 * reachability
+        )
+
+        champion_scores.append((n, score))
+
+    # Sort champions by score descending
+    ranked = sorted(champion_scores, key=lambda x: x[1], reverse=True)
+    if len(ranked) > 0:
+      return ranked[:top_n]
+    else:
+      return []
+
+
+
+
+
+
+
+    # ends here --------------------
+
+
+
+
 
     def get_high_influence_nodes(self, top_n=5):
         influence_scores = [
@@ -2335,23 +2911,22 @@ def get_graphs_for_initiatives(strategy_people_data_scored):
             "Blockers",
         ]
 
-        for tag in keys:
-            # print(tag)
-            # print(initiatives[tag])
-            people_temp = copy.deepcopy(initiatives[tag]["people"])
-            for person in people_temp:
-                person |= {"tag": tag}
-            all_people[initiative_name] += people_temp
-        all_people[initiative_name] = remove_duplicates(
-            copy.deepcopy(all_people[initiative_name])
-        )
-        # print("People dtaa")
-        # print(all_people[initiative_name])
-        graph = StakeholderGraph(initiative_name, all_people[initiative_name])
-        graphs[initiative_name] = graph
-    return graphs
+       for tag in keys:
+        #print(tag)
+        #print(initiatives[tag])
+        people_temp = copy.deepcopy(initiatives[tag]["people"])
+        for person in people_temp:
+            person |= {"tag":tag}
+        all_people[initiative_name] += people_temp
+       all_people[initiative_name] = remove_duplicates(copy.deepcopy(all_people[initiative_name]))
+       print("People data\n\n")
+       print(all_people[initiative_name])
+       graph = StakeholderGraph(initiative_name, all_people[initiative_name])
+       graphs[initiative_name] = graph
+   return graphs
 
 
 def get_company_from_url(url):
     extracted = tldextract.extract(url)
     return extracted.domain if extracted.domain else None
+      
