@@ -1,4 +1,5 @@
 import copy
+import os
 import networkx as nx
 import math
 from typing import List, Dict, Any
@@ -25,19 +26,20 @@ import datetime
 from rapidfuzz import fuzz
 import rapidfuzz
 
+
 class Account_Plan(BaseModel):
-  buyer:str
-  seller:str
-  Top_initiatives: str
-  Triggers :str
-  ICP_Fit :str
-  Tech_stack_fit: str
-  Value_Aligned: str
-  User_Feedback: str
+    buyer: str
+    seller: str
+    Top_initiatives: str
+    Triggers: str
+    ICP_Fit: str
+    Tech_stack_fit: str
+    Value_Aligned: str
+    User_Feedback: str
 
 
 def account_plan_extract_data(account_research_data: str, buyer, seller):
-  account_research_system_prompt = f"""
+    account_research_system_prompt = f"""
   You are a strategic account executive selling {seller} products to {buyer}. You need to extract signals from the data provided below on {buyer} and create a detailed account plan for the buyer {buyer}.
   You need to extract the following data points from the data provided below:
   1. Top initiatives and goals of the buyer this year
@@ -49,30 +51,22 @@ def account_plan_extract_data(account_research_data: str, buyer, seller):
   
   
   """
-  account_research_user_prompt = f"""
+    account_research_user_prompt = f"""
   here is the data on {buyer} and {seller} - {account_research_data}
   """
-  api_key = os.getenv("OPENAI_API_KEY")
-  client = openai.OpenAI(api_key=api_key)
+    api_key = os.getenv("OPENAI_API_KEY")
+    client = openai.OpenAI(api_key=api_key)
 
-  response_account_research = client.responses.parse(
-      model="o4-mini",
-      reasoning={"effort": "medium"},
-      input=[
-          {
-
-              "role": "system",
-              "content": account_research_system_prompt
-          },
-          {
-
-              "role": "user",
-              "content": account_research_user_prompt
-          },
-      ],
-      text_format=Account_Plan,
-  )
-  return response_account_research.output_parsed
+    response_account_research = client.responses.parse(
+        model="o4-mini",
+        reasoning={"effort": "medium"},
+        input=[
+            {"role": "system", "content": account_research_system_prompt},
+            {"role": "user", "content": account_research_user_prompt},
+        ],
+        text_format=Account_Plan,
+    )
+    return response_account_research.output_parsed
 
 
 def create_value_prop(buyer, seller, buyer_initiatives, seller_info):
@@ -501,6 +495,7 @@ dummy_json_title_data = """
 """
 # parse prev response
 
+
 def get_people_titles_to_search(strategy_data: str):
     if "json" in strategy_data:
         strategy_data = strategy_data.split("```json")[1].strip("`")
@@ -584,7 +579,9 @@ def generate_value_props_for_stakeholders(
     name_to_node_id = {
         data.get("name"): node_id for node_id, data in graph.graph.nodes(data=True)
     }
-    betweenness = nx.betweenness_centrality(graph.graph, weight='weight', normalized=True)
+    betweenness = nx.betweenness_centrality(
+        graph.graph, weight="weight", normalized=True
+    )
 
     for tag, stakeholders in top_targets.items():
         for full_name, score in stakeholders:
@@ -1329,24 +1326,30 @@ class StakeholderGraph:
                 incoming_sorted = sorted(incoming, key=lambda x: x[1], reverse=True)[
                     :top_k
                 ]
-                #print("len = ")
-                #print(len(incoming_sorted))
+                # print("len = ")
+                # print(len(incoming_sorted))
                 all_results_md += f"\n#### {target_node.get('name', target_id)} ({target_node.get('default_position_title', 'N/A')})\n"
                 all_results_md += (
                     "| Influencer | Title | Influence Weight |\n|---|---|---|\n"
                 )
                 summary_md += f"- {target_node.get('name', target_id)} ({tag}):\n"
                 if len(incoming_sorted) > 0:
-                  all_results_md += "| Influencer | Title | Influence Weight |\n|---|---|---|\n"
-                  for src_id, weight in incoming_sorted:
-                      src = self.graph.nodes[src_id]
-                      name = src.get("name", src_id)
-                      title = src.get("default_position_title", "N/A")
-                      all_results_md += f"| {name} | {title} | {round(weight, 2)} |\n"
-                      summary_md += f"   - {name} ({title}), weight: {round(weight, 2)}\n"
+                    all_results_md += (
+                        "| Influencer | Title | Influence Weight |\n|---|---|---|\n"
+                    )
+                    for src_id, weight in incoming_sorted:
+                        src = self.graph.nodes[src_id]
+                        name = src.get("name", src_id)
+                        title = src.get("default_position_title", "N/A")
+                        all_results_md += f"| {name} | {title} | {round(weight, 2)} |\n"
+                        summary_md += (
+                            f"   - {name} ({title}), weight: {round(weight, 2)}\n"
+                        )
                 else:
-                  all_results_md += "_No strong influencer paths found. Suggested medium: **Direct reachout**._\n"
-                  summary_md += "   - No strong influencer path. Use **direct outreach**.\n"
+                    all_results_md += "_No strong influencer paths found. Suggested medium: **Direct reachout**._\n"
+                    summary_md += (
+                        "   - No strong influencer path. Use **direct outreach**.\n"
+                    )
         return all_results_md, summary_md
 
     # considers centraliy for champion and influence for other categories
@@ -1708,7 +1711,9 @@ def fetch_all_profiles(header, buyer, all_titles_to_search, max_pages=4, delay=1
     }
 
 
-def get_graphs_for_initiatives(strategy_people_data_scored: Dict[str, Dict[str, List[Dict[str, Any]]]]):
+def get_graphs_for_initiatives(
+    strategy_people_data_scored: Dict[str, Dict[str, List[Dict[str, Any]]]],
+):
     graphs: Dict[str, StakeholderGraph] = {}
     a = strategy_people_data_scored
     all_people: Dict[str, List[Dict[str, Any]]] = {}
@@ -1721,7 +1726,9 @@ def get_graphs_for_initiatives(strategy_people_data_scored: Dict[str, Dict[str, 
             for teams in a[initiative][tag]:
                 # print(teams["Team"])
                 # print("\n")
-                people_temp = list(filter(lambda x: "name" in x, copy.deepcopy(teams["people"])))
+                people_temp = list(
+                    filter(lambda x: "name" in x, copy.deepcopy(teams["people"]))
+                )
                 # people_temp = remove_duplicates(teams["people"])
                 # print(people_temp
                 for person in people_temp:
