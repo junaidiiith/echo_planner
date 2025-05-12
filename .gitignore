@@ -185,3 +185,5 @@ custom_depl_context_dir
 firecrawl_keys*
 test_data*
 old_nbs*
+
+out

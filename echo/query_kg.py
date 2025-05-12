@@ -71,7 +71,7 @@ class BestPathExtractor(BaseTool):
             path = find_shortest_path(graph, source, target)
             paths.append(path)
         paths = sorted_paths_by_cost(graph, paths)
-        paths_str = print_path(paths[0]) if paths else None
+        paths_str = print_path(graph, paths[0]) if paths else None
         # print(f"Best path from {source} to {target}: {paths_str}")
         return paths_str
 
@@ -119,11 +119,11 @@ class BestNodeTypesExtractor(BaseTool):
 
 
 def print_path(g, p):
-    path_str = p[0] + f"({g.nodes[p[0]]['tag']})"
+    path = [p[0] + f"({g.nodes[p[0]]['tag']})"]
     for node in p[1:]:
-        path_str += node + f"({g.nodes[node]['tag']})"
+        path += [node + f"({g.nodes[node]['tag']})"]
 
-    return path_str
+    return " -> ".join(path)
 
 
 def get_nodes_by_tag(graph, tag):
@@ -288,18 +288,6 @@ def get_best_nodes(graph: nx.Graph, tags: List[str], top_n=-1):
     return best_tag_elements
 
 
-def save_org_graph(graph, seller: str, buyer: str):
-    """
-    Save the org graph to a file.
-    """
-    graph_storage_path = db_storage_path() / "graphs"
-    os.makedirs(graph_storage_path, exist_ok=True)
-
-    graph_file_path = graph_storage_path / f"{seller.lower()}_{buyer.lower()}.pkl"
-    with open(graph_file_path, "wb") as f:
-        pickle.dump({"Investment in R&D (building new products, integrating AI, enhancing existing platform)": graph}, f)
-    print(f"Saved {len(graph)} graphs to {graph_file_path}")
-
 def get_org_graph(seller: str, buyer: str):
     """
     Get the org graph for the given org.
@@ -349,7 +337,7 @@ def ask_kg(seller: str, buyer: str, query: str) -> str:
         "graph_querying_task": dict(
             name="Organizational Graph Data Extraction",
             description=(
-                "You can extract relevant data from the organization graph of {buyer} that is a buyer of a seller, i.e., {seller} using a natural language query."
+                "You can extract relevant data from the organization graph of '{buyer}' that is a buyer of a seller, i.e., '{seller}' using a natural language query."
                 "Provide the answer to the below query -\n"
                 "{query}"
                 "If you infer that the query will be better answered by using the tools, then use the tools to get the answer."
