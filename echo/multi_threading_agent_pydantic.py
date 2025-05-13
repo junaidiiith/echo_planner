@@ -251,13 +251,16 @@ def get_yes_strategy(G, decision_maker, top_k_per_tag=1):
 
 
 def format_yes_strategy_md(strategy_by_tag, decision_maker_label):
-    md = f"## Strategy to Get a Yes from **{decision_maker_label}**\n\n"
+    md = f"## Who Influences Decision Maker **{decision_maker_label}**\n\n"
     md += "For each stakeholder type, target the most influential individuals who can sway the decision-maker:\n\n"
 
     for tag, influencers in strategy_by_tag.items():
         md += f"### {tag}\n"
-        for inf in influencers:
-            md += f"- **{inf['name']}** ({inf['title']}): influence score **{inf['influence']}**, path: `{inf['path']}`\n"
+        if influencers:
+            for inf in influencers:
+                md += f"- **{inf['name']}** ({inf['title']}): influence score **{inf['influence']}**, path: `{inf['path']}`\n"
+        else:
+            md += f"_No {tag.lower()} currently influencing Decision Maker._\n"
         md += "\n"
 
     return md
@@ -2287,7 +2290,7 @@ def generate_stakeholder_summary(G):
         )
 
     markdown = "| Role | Name | Title | Dept/Function | Influence Score | Notes | Industry Experience | Tenure |\n"
-    markdown += "|------|------|-------|----------------|------------------|-------|\n"
+    markdown += "|------|------|-------|----------------|------------------|-------|----------------------|--------|\n"
     for r in rows:
         markdown += f"| {r[0]} | {r[1]} | {r[2]} | {r[3]} | {r[4]} | {r[5]} | {r[6]} Years | {r[7]} Years|\n"
 
