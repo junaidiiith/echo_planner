@@ -305,7 +305,7 @@ def get_org_graph(seller: str, buyer: str):
         print(f"Loaded {len(all_graphs)} graphs from {graph_file_path}")
         return all_graphs[
             "Investment in R&D (building new products, integrating AI, enhancing existing platform)"
-        ]
+        ]["International Expansion: scaling operations in UK, Ireland, APAC"]
         return add_economic_buyer_tag(
             all_graphs[
                 "Investment in R&D (building new products, integrating AI, enhancing existing platform)"
