@@ -251,19 +251,24 @@ def get_yes_strategy(G, decision_maker, top_k_per_tag=1):
 
 
 def format_yes_strategy_md(strategy_by_tag, decision_maker_label):
-    md = f"## Who Influences Decision Maker **{decision_maker_label}**\n\n"
-    md += "For each stakeholder type, target the most influential individuals who can sway the decision-maker:\n\n"
+    md = f"# 🧠 Influence Strategy: Decision Maker **{decision_maker_label}**\n\n"
+    md += "Below is a breakdown of who influences the decision maker and how you might leverage them for multithreading:\n\n"
 
     for tag, influencers in strategy_by_tag.items():
-        md += f"### {tag}\n"
+        md += f"## 🔹 {tag}\n"
         if influencers:
             for inf in influencers:
-                md += f"- **{inf['name']}** ({inf['title']}): influence score **{inf['influence']}**, path: `{inf['path']}`\n"
+                # Format the path as a nice arrow-separated string
+                path_str = " ➝ ".join(inf.get('path', [])) if isinstance(inf.get('path'), list) else inf.get('path', 'N/A')
+                md += (
+                    f"- **{inf['name']}** — *{inf['title']}*\n"
+                    f"  - 🧲 **Influence Score**: `{inf['influence']}`\n"
+                    f"  - 🧭 **Path to Decision Maker**: `{path_str}`\n\n"
+                )
         else:
-            md += f"_No {tag.lower()} currently influencing Decision Maker._\n"
-        md += "\n"
-
+            md += f"> ⚠️ _No **{tag.lower()}s** currently influencing the Decision Maker._\n\n"
     return md
+
 
 
 def format_buyer_initiatives_markdown(data: dict) -> str:
