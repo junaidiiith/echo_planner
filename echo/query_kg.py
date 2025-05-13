@@ -20,22 +20,22 @@ class BestPathInputs(BaseModel):
     buyer: str = Field(..., description="Name of the buyer.")
     seller: str = Field(..., description="Name of the seller.")
     source: Literal[
-        'Champions',
-        'Cross-Functional Reviewers',
-        'Internal Influencers',
-        'Direct Owner Team',
-        'Economic Buyer'
-        ] = Field(
+        "Champions",
+        "Cross-Functional Reviewers",
+        "Internal Influencers",
+        "Direct Owner Team",
+        "Economic Buyer",
+    ] = Field(
         default="Champions",
         description="Source node type. Must be one of Champions, Economic Buyer, Internal Influencers, Cross-Functional Reviewers, or Direct Owner Team.",
     )
     target: Literal[
-        'Champions',
-        'Cross-Functional Reviewers',
-        'Internal Influencers',
-        'Direct Owner Team',
-        'Economic Buyer'
-        ] = Field(
+        "Champions",
+        "Cross-Functional Reviewers",
+        "Internal Influencers",
+        "Direct Owner Team",
+        "Economic Buyer",
+    ] = Field(
         default="Champions",
         description="Target node type. Must be one of Champions, Economic Buyer, Internal Influencers, Cross-Functional Reviewers, or Direct Owner Team.",
     )
@@ -81,15 +81,15 @@ class BestNodeTypeInputs(BaseModel):
 
     buyer: str = Field(..., description="Name of the buyer.")
     seller: str = Field(..., description="Name of the seller.")
-    node_types: List[Literal[
-        'Champions',
-        'Cross-Functional Reviewers',
-        'Internal Influencers',
-        'Direct Owner Team',
-        'Economic Buyer'
-        ]] = Field(
-        ..., description="List of node types to find best nodes for."
-    )
+    node_types: List[
+        Literal[
+            "Champions",
+            "Cross-Functional Reviewers",
+            "Internal Influencers",
+            "Direct Owner Team",
+            "Economic Buyer",
+        ]
+    ] = Field(..., description="List of node types to find best nodes for.")
     top_n: int = Field(default=-1, description="Number of best nodes to return.")
 
 
@@ -292,9 +292,9 @@ def get_org_graph(seller: str, buyer: str):
     """
     Get the org graph for the given org.
     """
-    
+
     print(f"Getting org graph for {seller} and {buyer}")
-    
+
     graph_storage_path = db_storage_path() / "graphs"
     os.makedirs(graph_storage_path, exist_ok=True)
 
@@ -304,8 +304,8 @@ def get_org_graph(seller: str, buyer: str):
             all_graphs = pickle.load(f)
         print(f"Loaded {len(all_graphs)} graphs from {graph_file_path}")
         return all_graphs[
-                "Investment in R&D (building new products, integrating AI, enhancing existing platform)"
-            ]
+            "Investment in R&D (building new products, integrating AI, enhancing existing platform)"
+        ]
         return add_economic_buyer_tag(
             all_graphs[
                 "Investment in R&D (building new products, integrating AI, enhancing existing platform)"
@@ -355,9 +355,24 @@ def ask_kg(seller: str, buyer: str, query: str) -> str:
     }
 
     crew = get_crew(agent_templates=agents, task_templates=tasks)
-    response = crew.kickoff(inputs={
-        "seller": seller, 
-        "buyer": buyer, 
-        "query": query
-    })
+    response = crew.kickoff(inputs={"seller": seller, "buyer": buyer, "query": query})
     return response.raw
+
+
+def save_org_graph(graph, seller: str, buyer: str):
+    """
+    Save the org graph to a file.
+    """
+    graph_storage_path = db_storage_path() / "graphs"
+    os.makedirs(graph_storage_path, exist_ok=True)
+    seller = seller.replace("/", "_")
+    buyer = buyer.replace("/", "_")
+    graph_file_path = graph_storage_path / f"{seller.lower()}_{buyer.lower()}.pkl"
+    with open(graph_file_path, "wb") as f:
+        pickle.dump(
+            {
+                "Investment in R&D (building new products, integrating AI, enhancing existing platform)": graph
+            },
+            f,
+        )
+    print(f"Saved {len(graph)} graphs to {graph_file_path}")
