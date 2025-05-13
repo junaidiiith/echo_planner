@@ -15,10 +15,10 @@ from echo.llama_llm_embed_utils import get_embed_model
 from echo.utils import db_storage_path
 
 from echo.utils import (
-    serialize_dict,
-    url_to_sql_name
+    serialize_dict
 )
 import echo.sqldb as sqldb
+import tldextract
 
 
 def get_vector_index(index_name: str, index_type: IndexType):
@@ -27,7 +27,8 @@ def get_vector_index(index_name: str, index_type: IndexType):
         if index_type == IndexType.CURRENT_CALL
         else index_type
     )
-    index_name = url_to_sql_name(index_name)
+    # index_name = url_to_sql_name(index_name)
+    index_name = tldextract.extract(index_name).domain
     chroma_db_path = db_storage_path(index_name)
     db = chromadb.PersistentClient(path=str(chroma_db_path))
     chroma_collection = db.get_or_create_collection(f"{index_type.value}")
