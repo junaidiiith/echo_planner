@@ -2202,11 +2202,11 @@ def generate_stakeholder_summary(G):
     def get_node_data(n):
         data = G.nodes[n]
         return {
-            "Name": data.get("name", n),
-            "Title": data.get("default_position_title", ""),
+            "Name": data.get("name", n).strip("\n"),
+            "Title": data.get("default_position_title", "").strip("\n"),
             "Dept": data.get("role_enriched", {}).get("Org_Unit", ""),
             "Score": data.get("influence_score", ""),
-            "Notes": data.get("reason", ""),
+            "Notes": data.get("reason", "").strip("\n"),
             "Industry Experience": data.get("industry_experience", 0),
             "Tenure": data.get("tenure", 0),
         }
