@@ -251,16 +251,24 @@ def get_yes_strategy(G, decision_maker, top_k_per_tag=1):
 
 
 def format_yes_strategy_md(strategy_by_tag, decision_maker_label):
-    md = f"## Strategy to Get a Yes from **{decision_maker_label}**\n\n"
-    md += "For each stakeholder type, target the most influential individuals who can sway the decision-maker:\n\n"
+    md = f"# 🧠 Influence Strategy: Decision Maker **{decision_maker_label}**\n\n"
+    md += "Below is a breakdown of who influences the decision maker and how you might leverage them for multithreading:\n\n"
 
     for tag, influencers in strategy_by_tag.items():
-        md += f"### {tag}\n"
-        for inf in influencers:
-            md += f"- **{inf['name']}** ({inf['title']}): influence score **{inf['influence']}**, path: `{inf['path']}`\n"
-        md += "\n"
-
+        md += f"## 🔹 {tag}\n"
+        if influencers:
+            for inf in influencers:
+                # Format the path as a nice arrow-separated string
+                path_str = " ➝ ".join(inf.get('path', [])) if isinstance(inf.get('path'), list) else inf.get('path', 'N/A')
+                md += (
+                    f"- **{inf['name']}** — *{inf['title']}*\n"
+                    f"  - 🧲 **Influence Score**: `{inf['influence']}`\n"
+                    f"  - 🧭 **Path to Decision Maker**: `{path_str}`\n\n"
+                )
+        else:
+            md += f"> ⚠️ _No **{tag.lower()}s** currently influencing the Decision Maker._\n\n"
     return md
+
 
 
 def format_buyer_initiatives_markdown(data: dict) -> str:
@@ -2199,11 +2207,11 @@ def generate_stakeholder_summary(G):
     def get_node_data(n):
         data = G.nodes[n]
         return {
-            "Name": data.get("name", n),
-            "Title": data.get("default_position_title", ""),
+            "Name": data.get("name", n).strip("\n"),
+            "Title": data.get("default_position_title", "").strip("\n"),
             "Dept": data.get("role_enriched", {}).get("Org_Unit", ""),
             "Score": data.get("influence_score", ""),
-            "Notes": data.get("reason", ""),
+            "Notes": data.get("reason", "").strip("\n"),
             "Industry Experience": data.get("industry_experience", 0),
             "Tenure": data.get("tenure", 0),
         }
@@ -2287,7 +2295,7 @@ def generate_stakeholder_summary(G):
         )
 
     markdown = "| Role | Name | Title | Dept/Function | Influence Score | Notes | Industry Experience | Tenure |\n"
-    markdown += "|------|------|-------|----------------|------------------|-------|\n"
+    markdown += "|------|------|-------|----------------|------------------|-------|----------------------|--------|\n"
     for r in rows:
         markdown += f"| {r[0]} | {r[1]} | {r[2]} | {r[3]} | {r[4]} | {r[5]} | {r[6]} Years | {r[7]} Years|\n"
 
