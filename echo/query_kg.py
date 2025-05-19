@@ -1,7 +1,8 @@
-from itertools import product
 import os
+import enum
+from itertools import product
 import pickle
-from typing import List, Literal
+from typing import List
 import networkx as nx
 import numpy as np
 
@@ -14,30 +15,29 @@ from crewai.tools import BaseTool
 from pydantic import BaseModel, Field
 
 
+class UserType(enum.Enum):
+    DECISION_MAKER = "Decision_Maker"
+    ECONOMIC_BUYER = "Economic Buyer"
+    CHAMPIONS = "Champions"
+    INFLUENCERS = "Influencers"
+    BLOCKER = "Blocker"
+
+
 class BestPathInputs(BaseModel):
     """Input schema to get the best path between two types of nodes in the org graph."""
 
     buyer: str = Field(..., description="Name of the buyer.")
     seller: str = Field(..., description="Name of the seller.")
-    source: Literal[
-        "Champions",
-        "Cross-Functional Reviewers",
-        "Internal Influencers",
-        "Direct Owner Team",
-        "Economic Buyer",
-    ] = Field(
-        default="Champions",
-        description="Source node type. Must be one of Champions, Economic Buyer, Internal Influencers, Cross-Functional Reviewers, or Direct Owner Team.",
+    initiative: str = Field(
+        ..., description="Initiative for which the seller is focusing on the buyer"
     )
-    target: Literal[
-        "Champions",
-        "Cross-Functional Reviewers",
-        "Internal Influencers",
-        "Direct Owner Team",
-        "Economic Buyer",
-    ] = Field(
-        default="Champions",
-        description="Target node type. Must be one of Champions, Economic Buyer, Internal Influencers, Cross-Functional Reviewers, or Direct Owner Team.",
+    source: str = Field(
+        default=UserType.CHAMPIONS.value,
+        description="Source node type. Must be one of Decision_Maker, Economic Buyer, Champions, Influencers, or Blocker.",
+    )
+    target: str = Field(
+        default=UserType.DECISION_MAKER.value,
+        description="Target node type. Must be one of Decision_Maker, Economic Buyer, Champions, Influencers, or Blocker."
     )
 
 
@@ -45,12 +45,19 @@ class BestPathExtractor(BaseTool):
     name: str = "Best Path Extractor"
     description: str = (
         "Extract the best path between two types of nodes from the organization graph of a company. "
+        "The path represents the people that need to be convinced or won over to get the deal done. "
         "Guidelines: "
-        "Decision Influencers are usually Champions and Internal Influencers. "
-        "Decision Makers are usually Economic Buyers. "
-        "Cross-Functional Reviewers are usually the blockers. "
-        "Direct Owner Team are usually the ones who are responsible for the decision. "
-        "Discovery should involve the Champions and Direct Owner Team. "
+        "This tool is used to extract the best path between two types of nodes in the organization graph. "
+        "Whenever there is a need to find a path between two types of nodes, this tool should be used. "
+        "The source and target node types can be specified by the user. "
+        "If the source is not provided by the user, it defaults to Champions. "
+        "If the target is not provided by the user, it defaults to Decision_Maker. "
+        "The source and target node types must be one of Decision_Maker, Economic Buyer, Champions, Influencers, or Blocker. "
+        
+        "\nArgs: \n"
+        "  - buyer: Name of the buyer. \n"
+        "  - seller: Name of the seller. \n"
+        "  - initiative: Initiative for which the seller is focusing on the buyer. \n"
     )
     args_schema: Type[BaseModel] = BestPathInputs
 
@@ -58,10 +65,11 @@ class BestPathExtractor(BaseTool):
         self,
         seller: str,
         buyer: str,
-        source: str = "Champions",
-        target: str = "Economic Buyer",
+        initiative: str,
+        source: str = UserType.CHAMPIONS.value,
+        target: str = UserType.DECISION_MAKER.value,
     ) -> str:
-        graph = get_org_graph(seller, buyer)
+        graph = get_org_graph(seller, buyer, initiative)
         source_nodes = get_nodes_by_tag(graph, source)
         target_nodes = get_nodes_by_tag(graph, target)
         paths = list()
@@ -73,6 +81,8 @@ class BestPathExtractor(BaseTool):
         paths = sorted_paths_by_cost(graph, paths)
         paths_str = print_path(graph, paths[0]) if paths else None
         # print(f"Best path from {source} to {target}: {paths_str}")
+        if paths_str is None:
+            return f"No path found from {source} to {target}."
         return paths_str
 
 
@@ -81,15 +91,12 @@ class BestNodeTypeInputs(BaseModel):
 
     buyer: str = Field(..., description="Name of the buyer.")
     seller: str = Field(..., description="Name of the seller.")
-    node_types: List[
-        Literal[
-            "Champions",
-            "Cross-Functional Reviewers",
-            "Internal Influencers",
-            "Direct Owner Team",
-            "Economic Buyer",
-        ]
-    ] = Field(..., description="List of node types to find best nodes for.")
+    initiative: str = Field(
+        ..., description="Initiative for which the seller is focusing on the buyer"
+    )
+    node_types: List[UserType] = Field(
+        ..., description="List of node types to find best nodes for."
+    )
     top_n: int = Field(default=-1, description="Number of best nodes to return.")
 
 
@@ -98,18 +105,28 @@ class BestNodeTypesExtractor(BaseTool):
     description: str = (
         "Extract the best nodes of a specific type from the organization graph of a company."
         "Guidelines: "
-        "Decision Influencers are usually Champions and Internal Influencers. "
-        "Decision Makers are usually Economic Buyers. "
-        "Cross-Functional Reviewers are usually the blockers. "
-        "Direct Owner Team are usually the ones who are responsible for the decision. "
-        "Discovery should involve the Champions and Direct Owner Team. "
+        "This tool is used to extract the best nodes of a specific type in the organization graph. "
+        "Whenever there is a need to find the best nodes of a specific type, this tool should be used. "
+        "The node types can be specified by the user. "
+        "If the node types are not provided by the user, it defaults to Decision_Maker, Economic Buyer, Champions, Influencers, or Blocker. "
+        
+        "\nArgs: \n"
+        "  - buyer: Name of the buyer. \n"
+        "  - seller: Name of the seller. \n"
+        "  - initiative: Initiative for which the seller is focusing on the buyer. \n"
     )
     args_schema: Type[BaseModel] = BestNodeTypeInputs
 
     def _run(
-        self, seller: str, buyer: str, node_types: List[str], top_n: int = -1
+        self,
+        seller: str,
+        buyer: str,
+        initiative: str,
+        node_types: List[UserType],
+        top_n: int = -1,
     ) -> str:
-        graph = get_org_graph(seller, buyer)
+        graph = get_org_graph(seller, buyer, initiative)
+        node_types = [node_type.value for node_type in node_types]
         best_nodes = get_best_nodes(graph, node_types, top_n=top_n)
         best_nodes = [
             f"{node['data']['tag']}:{node['name']} ({node['data']['default_position_title']})"
@@ -146,16 +163,16 @@ def add_economic_buyer_tag(g):
 
     # print(tag_dict.keys())
 
-    champions = tag_dict.get("Champions", set())
+    champions = tag_dict.get(UserType.CHAMPIONS.value, set())
     for champion in champions:
         for tag, nodes in tag_dict.items():
-            if tag != "Champions" and len(nodes) > 5:
+            if tag != UserType.CHAMPIONS.value and len(nodes) > 5:
                 for node in list(nodes):
                     # print(f"Source node: {champion}, Target node: {node}")
                     pl = nx.shortest_path_length(u_g, source=champion, target=node)
                     # print(pl)
                     if pl > 2:
-                        u_g.nodes[node]["tag"] = "Economic Buyer"
+                        u_g.nodes[node]["tag"] = UserType.ECONOMIC_BUYER.value
                         # print(f"Node {node} tagged as 'Economic Buyer'")
     return u_g
 
@@ -163,7 +180,7 @@ def add_economic_buyer_tag(g):
 def compute_node_costs(G, type_penalty=100.0, influence_weight=1.0):
     """
     Annotate each node in G with a 'node_cost' =
-      type_penalty (if it's a Cross-Functional Reviewer)
+      type_penalty (if it's a Blocker)
       + influence_weight * (1 - normalized_influence_score).
     """
     # collect all influence scores
@@ -182,7 +199,7 @@ def compute_node_costs(G, type_penalty=100.0, influence_weight=1.0):
         # heavy penalty for reviewer nodes
         type_cost = (
             type_penalty
-            if data.get("node_type") == "Cross-Functional Reviewers"
+            if data.get("node_type") == UserType.BLOCKER.value
             else 0.0
         )
 
@@ -244,11 +261,13 @@ def sorted_paths_by_cost(G, paths, type_penalty=100.0, influence_weight=1.0):
 
 def best_path(
     graph,
-    src_type="Champions",
-    tgt_type="Economic Buyer",
+    src_type=UserType.CHAMPIONS.value,
+    tgt_type=UserType.ECONOMIC_BUYER.value,
 ):
     source_nodes = get_nodes_by_tag(graph, src_type)
     target_nodes = get_nodes_by_tag(graph, tgt_type)
+    print(f"Source nodes: {source_nodes}")
+    print(f"Target nodes: {target_nodes}")
     paths = list()
     for source, target in product(source_nodes, target_nodes):
         path = find_shortest_path(graph, source, target)
@@ -288,7 +307,7 @@ def get_best_nodes(graph: nx.Graph, tags: List[str], top_n=-1):
     return best_tag_elements
 
 
-def get_org_graph(seller: str, buyer: str):
+def get_org_graph(seller: str, buyer: str, initiative: str):
     """
     Get the org graph for the given org.
     """
@@ -305,17 +324,12 @@ def get_org_graph(seller: str, buyer: str):
         print(f"Loaded {len(all_graphs)} graphs from {graph_file_path}")
         return all_graphs[
             "Investment in R&D (building new products, integrating AI, enhancing existing platform)"
-        ]
-        return add_economic_buyer_tag(
-            all_graphs[
-                "Investment in R&D (building new products, integrating AI, enhancing existing platform)"
-            ]
-        )
+        ][initiative].graph.to_undirected()
     else:
         raise FileNotFoundError(f"Graph storage path {graph_file_path} does not exist.")
 
 
-def ask_kg(seller: str, buyer: str, query: str) -> str:
+def ask_kg(seller: str, buyer: str, initiative: str, query: str) -> str:
     agents = {
         "OrgGraphDataExtractionExpert": dict(
             role="Organizational Graph Data Extraction Expert",
@@ -323,7 +337,7 @@ def ask_kg(seller: str, buyer: str, query: str) -> str:
                 "You are an expert in extracting relevant data from the organization graph of a company."
             ),
             backstory=(
-                "You have access to the organization graph of {buyer} that is a buyer of a seller, i.e., {seller} and can extract relevant data from it. "
+                "You have access to the organization graph of '{buyer}' that is a buyer of a seller, i.e., '{seller}' for a specific initiative - '{initiative}' and can extract relevant data from it. "
                 "The organization graph is a directed graph where nodes represent people and edges represent relationships between them. "
                 "The graph is annotated with various attributes such as influence score, node type, and tags. "
                 "You can use this information to extract relevant data for the user. "
@@ -340,7 +354,7 @@ def ask_kg(seller: str, buyer: str, query: str) -> str:
         "graph_querying_task": dict(
             name="Organizational Graph Data Extraction",
             description=(
-                "You can extract relevant data from the organization graph of '{buyer}' that is a buyer of a seller, i.e., '{seller}' using a natural language query."
+                "You can extract relevant data from the organization graph of '{buyer}' that is a buyer of a seller, i.e., '{seller}'  for a specific initiative - '{initiative}' using a natural language query."
                 "Provide the answer to the below query -\n"
                 "{query}"
                 "If you infer that the query will be better answered by using the tools, then use the tools to get the answer."
@@ -355,24 +369,31 @@ def ask_kg(seller: str, buyer: str, query: str) -> str:
     }
 
     crew = get_crew(agent_templates=agents, task_templates=tasks)
-    response = crew.kickoff(inputs={"seller": seller, "buyer": buyer, "query": query})
+    response = crew.kickoff(
+        inputs={
+            "seller": seller,
+            "buyer": buyer,
+            "initiative": initiative,
+            "query": query,
+        }
+    )
     return response.raw
 
 
-def save_org_graph(graph, seller: str, buyer: str):
+def save_org_graph(graph, seller: str, buyer: str, initiative: str):
     """
     Save the org graph to a file.
     """
     graph_storage_path = db_storage_path() / "graphs"
     os.makedirs(graph_storage_path, exist_ok=True)
-    seller = seller.replace("/", "_")
-    buyer = buyer.replace("/", "_")
     graph_file_path = graph_storage_path / f"{seller.lower()}_{buyer.lower()}.pkl"
+    if os.path.exists(graph_file_path):
+        with open(graph_file_path, "rb") as f:
+            all_graphs = pickle.load(f)
+    else:
+        all_graphs = {}
+    all_graphs[initiative] = graph
+    
     with open(graph_file_path, "wb") as f:
-        pickle.dump(
-            {
-                "Investment in R&D (building new products, integrating AI, enhancing existing platform)": graph
-            },
-            f,
-        )
+        pickle.dump(all_graphs, f)
     print(f"Saved {len(graph)} graphs to {graph_file_path}")

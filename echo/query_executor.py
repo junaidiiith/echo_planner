@@ -139,7 +139,10 @@ class LLMSubQuery(SubQuery):
     )
 
 class KGSubQuery(SubQuery):
-    pass
+    initiative: str = Field(
+        ..., title="Initiative",
+        description="The initiative for the sub query.",
+    )
 
 class Query(BaseModel):
     query: str = Field(
@@ -331,7 +334,8 @@ def run_kg_subquery(
     return ask_kg(
         sub_query_inputs['seller'],
         sub_query_inputs['buyer'],
-        sub_query.query,
+        initiative=sub_query.initiative,
+        query=sub_query.query,
     )
 
 def get_buyer_account_plan(metadata: dict) -> str:
