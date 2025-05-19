@@ -5,7 +5,7 @@ from echo.utils import (
     get_num_tokens, 
     get_text_upto_tokens
 )
-from typing import List
+from typing import List, Union
 import os
 
 
@@ -49,6 +49,33 @@ def get_llm_name():
     llm_config = llm_configs[llm_type]
     model = llm_config['model']
     return model
+
+
+def run_openai_query(query: Union[str, List[str]], use_tools: bool = False):
+        
+    
+    client = OpenAI()
+    if isinstance(query, str):
+        if use_tools:
+            response = client.responses.create(
+                model="gpt-4o",
+                tools=[{"type": "web_search_preview"}],
+                input=f"{query}",
+            )
+        else:
+            response = client.responses.create(
+                model="gpt-4o",
+                input=f"{query}",
+            )
+    else:
+        chat_response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=query,
+        )
+        response = chat_response.choices[0].message.content
+        
+    return response
+
 
 
 def get_response(messages: List[str], num_retries = 3):
@@ -101,18 +128,3 @@ def summarize_text(text, split_count=5):
         return "\n\n".join(summary for summary in summaries if summary)
 
 
-def run_openai_query(query: str, use_tools: bool = False):
-    client = OpenAI()
-    if use_tools:
-        response = client.responses.create(
-            model="gpt-4o",
-            tools=[{"type": "web_search_preview"}],
-            input=f"{query}",
-        )
-    else:
-        response = client.responses.create(
-            model="gpt-4o",
-            input=f"{query}",
-        )
-    
-    return response
