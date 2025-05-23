@@ -1,7 +1,9 @@
 # from echo.query_executor import aget_query_response
 # from echo.query_executor import aget_query_response
+from ast import List
 import copy
 import datetime
+import keyword
 import math
 import os
 from collections import defaultdict
@@ -13,6 +15,7 @@ import plotly.graph_objects as go
 import requests
 from pydantic import BaseModel
 from pyvis.network import Network
+from sklearn import metrics
 import tldextract
 
 
@@ -49,9 +52,12 @@ class POV(BaseModel):
     Inititative: str
     Tag: str  # champion / dm/ exec buyer ect
     what_they_care_about: str
+    initiative_alignment: str
     triggers_and_motivations: str
+    risks_and_concerns: str
     likely_objections: str
     emotional_drivers: str
+
     POV: str
 
 
@@ -132,6 +138,9 @@ def format_stakeholder_pov(data: dict):
     triggers = format_list(data.get("triggers_and_motivations", ""))
     emotions = format_list(data.get("emotional_drivers", ""))
     objections = format_list(data.get("likely_objections", ""))
+    risks = format_list(data.get("risks_and_concerns", ""))
+    initiative_alignment = format_list(data.get("initiative_alignment", ""))
+    
 
     return f"""
 ## 🧠 Stakeholder Insight
@@ -147,8 +156,14 @@ def format_stakeholder_pov(data: dict):
 ### 💡 What They Care About
 {care_about}
 
+### 🔗 Initiative Alignment
+{initiative_alignment}
+
 ### 🚀 Triggers & Motivations
 {triggers}
+
+### ⚠️ Risks & Concerns
+{risks}
 
 ### ❤️ Emotional Drivers
 {emotions}
@@ -212,6 +227,10 @@ def export_graph_to_dict(G):
     return {"nodes": nodes, "edges": edges}
 
 
+def custom_weight(u, v, attrs):
+    # Example: lower weight = stronger influence
+    return 1 / attrs.get("influence", 1)  # Default to 1 if not present
+
 def get_yes_strategy(G, decision_maker, top_k_per_tag=1):
     tag_to_top_influencers = defaultdict(list)
 
@@ -223,9 +242,9 @@ def get_yes_strategy(G, decision_maker, top_k_per_tag=1):
         if tag in {"Decision_Maker", "Unknown"}:
             continue
 
-        path = nx.shortest_path(G, source=node, target=decision_maker)
+        path = nx.shortest_path(G, source=node, target=decision_maker, weight=custom_weight)
         influence_score = sum(
-            G.get_edge_data(path[i], path[i + 1]).get("influence", 0)
+            1.0 / (1.0* G.get_edge_data(path[i], path[i + 1]).get("influence", 0))
             for i in range(len(path) - 1)
         )
 
@@ -310,7 +329,7 @@ def format_buyer_initiatives_markdown(data: dict) -> str:
 
 
 def get_POV(
-    graph, name: str, buyer: str, seller: str, initiative: str, seller_info: str
+    graph, name: str, buyer: str, seller: str, initiative: str, seller_info: str, buyer_research: str
 ):
     node = graph.nodes.get(name)
     social_research_prompt = f"""
@@ -340,21 +359,28 @@ def get_POV(
     print("Social signals for " + name + " = ")
     print(response_social.output_text)
     print("\n\n")
-
+    #You are an enterprise sales AI assistant helping AEs understand how to tailor their approach to each stakeholder involved in a B2B deal. 
+  
     account_research_system_prompt = f"""
-
-  You are an enterprise sales AI assistant helping AEs understand how to tailor their approach to each stakeholder involved in a B2B deal. 
-  Based on the input data below including social profule of the person, their experience in the company, the buyer initiative
-  the tag(champion, dm) they play in the buying committee of {buyer}, generate a deep understanding 
+    You need to roleplay as a {node.get("default_position_title", "")} at {buyer} and help the seller at {seller} understand how to tailor their approach to you.
+    They need to understand your pains, pov, metrics, fears, emotions etc, given your professional and personal background.
+  Based on the input data below including your social profile, your experience in the company, the initiative of your company, a full research profile of your company's activity ,
+  the tag(champion, dm) you're playing in the buying committee of {buyer}, generate a deep understanding 
   of the stakeholder's mindset,the product being pitched by {seller}, and how to frame a compelling, emotionally resonant Point of View (POV) message for them.
   Be specific and dont be generic. Use context given as much as possible! Dont make up facts but youre allowed to make a good hypotheiss!
   Take into account the seniority, the role and the tag in buying committee.Different roles need to be sold on
   one or a mix of different values -  Strategic value (growth, scale, revenue), Operational value (time, accuracy, workflow) or Personal value (visibility, security, career win
   You need to output the following
 
-  what_they_care_about:
+  what_you_care_about:
   - "<Key goals and outcomes that matter to this stakeholder>"
   - "<Their perceived success metric within this initiative>"
+  - "<KPI's and numbers - based on their role and the initiative and team> - Say CAC for gtm teams, deployment time for product etc along with reasons"
+
+  initiative_alignment:
+  - "<How the initiative aligns with their goals>"
+  - "<What wins in their role can contriute to the initiative success>"
+  - "<How could the initiative be perceived as a risk to them>"
 
 triggers_and_motivations:
   - "<Why this initiative matters to them personally or politically>"
@@ -362,9 +388,15 @@ triggers_and_motivations:
   - "<What winning means for them>"
   - "What kind of value - Strategic value (growth, scale, revenue), Operational value (time, accuracy, workflow) or Personal value (visibility, security, career win)"
 
-likely_objections:
+Risks and Concerns:
+    - "<What risks they might be concerned about in terms of the initiative>"
+    - "<What they might be worried about if the initiative fails>"
+
+
+likely_objections (based on the sellers product context and initiatives):
   - "<What would make them skeptical about a tool like this>"
   - "<What questions or blockers they might raise internally>"
+  - "<based on risks identified, what are the objections they might have>"
 
 emotional_drivers:
   - "<Fear or concern they don't want to admit>"
@@ -390,6 +422,9 @@ stakeholder:
 Seller Product Details:
 {seller_info}
   
+
+Full buyer research and signals:
+{buyer_research}
   """
 
     response_account_research = client.responses.parse(
@@ -575,6 +610,8 @@ def create_value_prop(
 class Team(BaseModel):
     team: str
     Relevance: str
+    keywords:list[str]
+
 
 
 class Decision_Maker(BaseModel):
@@ -589,12 +626,15 @@ class Champions(BaseModel):
     teams: list[Team]
 
 
+
 class Influencers(BaseModel):
     teams: list[Team]
 
 
+
 class Blockers(BaseModel):
     teams: list[Team]
+
 
 
 class BuyerCommittee(BaseModel):
@@ -617,98 +657,78 @@ def find_teams(
 ):
     best_fit_team_system_prompt = f"""
 
-  You are a sales executive at {seller} who is an expert at mapping the buying committees for different buyer initiatives.
+  You are a sales executive at {seller} who is an expert at multithreading and mapping the buying committees for different buyer initiatives.
   You have the top relevant initiatives of buyer {buyer} and info on how the seller can solve these. For each initiative thats relevant (dont pick poor relevant ones),
-  Ypu need to predict the possible buyer committee responsible for the initiative.
+  Ypu need to predict the possible buyer committee responsible for the initiative. make sure to think as an expert multithreader and not just a sales person.
+  Find the best teams to multhread with and the roles they play in the buying committee.
   This is how to work through:
-  For each initiative:
+  For each initiative, using the buyer initiative and aligned value prop mentioned below to identify the teams as part of the buying committee as follows:
   1. Identify teams split by tag where each team belongs to one of these
 
   "Accounting", "Administrative", "Arts and Design", "Business Development", "Community and Social Services", "Consulting", "Education", "Engineering", "Entrepreneurship", "Finance", "Healthcare Services", "Human Resources", "Information Technology", "Legal", "Marketing", "Media and Communication", "Military and Protective Services", "Operations", "Product Management", "Program and Project Management", "Purchasing", "Quality Assurance", "Real Estate", "Research", "Sales", "Customer Success and Support"
+    
 
 
+   Decision Maker
+Definition: The person with final authority to approve or deny the initiative or purchase.
 
+Context Cues: Owns the business problem, accountable for outcomes, usually heads the impacted function.
 
-    - Decision Maker - Based on the initiative, find which team owns the initiative.
+Seniority: VP+, Head of Department, BU Leaders.
 
-    - Economic Buyer: Based on the initiative, find which team is the cost center. If the initiative is too strategic and
-      involves multiple teams, finance will be the cost center for the initiative.
+Example: VP Engineering for a developer hiring initiative; Head of Talent for a recruiting transformation.
 
-    - Blockers :This involves every team thats risk averse and can be badly impacted
-      by the initiative and sellers tool. Think IT for high integration tools,
-      compliance if the product is highly regulatory in nature and industry.
-      Make sure that this isnt the same as the team that directly uses the tool.
+💰 Economic Buyer
+Definition: Controls the budget and has the power to release funds or negotiate pricing.
 
-    - Influencers: This involves both direct teams that are consulted by the decision maker and have a say in the initiative
-    as well as cross functional teams that would have a say in the decision making process for the initiative.
-      Say RevOps and enablement for sales tools as well. Dont be too broad.
+Context Cues: In charge of cost/ROI trade-offs, procurement gates, or fiscal planning.
 
-    - Champions: The team that directly feels the pain and needs it solved.
+Seniority: CFO, VP Finance, COO — or line leaders with P&L ownership.
+
+Example: VP Finance or CFO when large spend is involved, even if they’re not driving the use case.
+
+🧠 Champion
+Definition: Deeply feels the pain in the initiative and your solution; actively sells your value internally.
+They can be both business and technical champions based on buyer and seller. Needs to have pain, influence and urgency to solve the problem.
+
+Context Cues: Motivated to solve the problem, collaborates with your team, introduces you internally.
+
+Seniority: Often mid-to-senior (Manager to Director), sometimes Execs — but with operational urgency.
+
+Example: A Head of RevOps championing your revenue intelligence tool because it helps them hit targets.
+
+champion teams need to feel pain directly but can be multiple and spread across teams having different pains but that can be solved by the buyers product.
+
+⛔ Blocker
+Definition: A stakeholder who can delay or kill the deal due to misalignment, compliance, or competing priorities.
+
+Context Cues: Focused on risk, data governance, budget constraints, or legal barriers.
+
+Functions: IT Security, Legal, Procurement, Finance.
+
+Example: A CISO who denies a vendor due to compliance concerns; Legal who stalls over contract terms.
+
+🧭 Influencer
+Definition: Someone who doesn’t sign but shapes opinions or criteria across the buying group.
+
+Context Cues: Respected internally, consulted by decision makers, may bring critical functional expertise.
+
+Example: A Product Manager influencing tech adoption; a Sales Enablement lead guiding onboarding tools.
+
+These teams may not directly feel the pain always but be involved, impacted or influence the directly involved teams
+
 
   2. For each team:
     justify why they would play the role in the buying committee.
 
   3. Teams can be both decision makers and champions for example. There shouldnt be too much overlap though.
 
-  Sample output:
-  {{
-    "Strategic Initiatives": [
-      {{
-        "Buyer Initiative or pain": "International Expansion (hiring 100+ engineers in Bengaluru, scaling globally)",
-        "Why the seller can help?": "Whatfix’s in-app guidance and onboarding flows accelerate time‑to‑productivity for new hires across geographies. Localized self‑help modules, task lists, and smart tips ensure consistent training and process adherence, reducing reliance on instructor‑led sessions and enabling Rippling to scale its workforce efficiently in India and beyond.",
-        "Relevance of seller to solving the pain or initiative": "High",
-        {{
-    "Decision Maker": [
-      {{"team": "Sales", "Relevance":"why its relevant"}}
-    ],
-    "Economic Buyer": [
-      {{"team": "Finance", "Relevance":"why its relevant"}}
-    ],
-    "Champions": [
-      {{"team": "IT", "Relevance":"why its relevant"}},
-      {{"team": "Legal", "Relevance":"why its relevant"}},
-      {{"team": "Procurement", "Relevance":"why its relevant"}}
-    ],
-    "Influencers": [
-      {{"team": "Customer Success", "Relevance":"why its relevant"}},
-      {{"team": "RevOps", "Relevance":"why its relevant"}}
-    ],
-    "Blockers": [
-      {{"team": "Sales", "Relevance":"why its relevant"}},
-      {{"team": "Enablement", "Relevance":"why its relevant"}}
-    ]
-  }}
-      }},
-      {{
-        "Buyer Initiative or pain": "Investment in R&D (building new products, integrating AI, enhancing existing platform)",
-        "Why the seller can help?": "Whatfix streamlines internal adoption of newly developed tools and features by embedding contextual walkthroughs and in‑app prompts. This ensures Rippling’s engineers and early adopters can instantly learn and validate new product capabilities, accelerating feedback loops and reducing friction in beta testing and rollout phases.",
-        "Relevance of seller to solving the pain or initiative": "Medium",
-        {{
-    "Decision Maker": [
-      {{"team": "Sales","Relevance":"why its relevant"}}
-    ],
-    "Economic Buyer": [
-      {{"team": "Finance", "Relevance":"why its relevant"}}
-    ],
-    "Champions": [
-      {{"team": "IT", "Relevance":"why its relevant"}},
-      {{"team": "Legal", "Relevance":"why its relevant"}},
-      {{"team": "Procurement", "Relevance":"why its relevant"}}
-    ],
-    "Influencers": [
-      {{"team": "Customer Success", "Relevance":"why its relevant"}},
-      {{"team": "RevOps", "Relevance":"why its relevant"}}
-    ],
-    "Blockers": [
-      {{"team": "Sales", "Relevance":"why its relevant"}},
-      {{"team": "Enablement","Relevance":"why its relevant"}}
-    ]
-  }}
-      }},
-    ]
-  }}
-
+  4. For each team,Give an additional list of keywords that these people are most likely to have in their titles.
+  These keywords would be used to run against their subjective titles to see if they match. Dont include seniority and specific titles, just keywords most likely to occur in their job titles. 
+  - enablement, revops, revenue operations, sales enablement, customer success, product management, etc.
+  
   Make sure again the teams is one of the ones mentioned ONLY!
+  Discard low relevant initiatives and keep high relevant ones only. If no high ones present, keep the moddle ones.
   """
 
     best_fit_team_user_prompt = f"""
@@ -760,40 +780,122 @@ def get_people_data(buyer, team_data: dict):
         influencers = initiative["Influencers"]["teams"]
         champions = initiative["Champions"]["teams"]
 
+        # extract titles
+        titles = {}
+        titles["Decision Maker"] = [team["team"] for team in decision_makers]
+        for k in decision_makers:
+            titles["Decision Maker"] += k["keywords"]
+        titles["Economic_Buyer"] = [team["team"] for team in economic_buyers]
+        for k in economic_buyers:
+            titles["Economic_Buyer"] += k["keywords"]
+        titles["Blockers"] = [team["team"] for team in blockers]
+        for k in blockers:
+            titles["Blockers"] += k["keywords"]
+        titles["Influencers"] = [team["team"] for team in influencers]
+        for k in influencers:
+            titles["Influencers"] += k["keywords"]
+        titles["Champions"] = [team["team"] for team in champions]
+        for k in champions:
+            titles["Champions"] += k["keywords"]
+        
+
         # do this instead of below
 
         initiative["Decision_Maker"]["people"] = run_crustdata_query(
-            buyer, "Decision Maker", [team["team"] for team in decision_makers]
+            buyer, "Decision Maker",titles["Decision Maker"], [team["team"] for team in decision_makers], initiative["Buyer_Initiative_Or_Pain"]
         )["profiles"]
         initiative["Economic_Buyer"]["people"] = run_crustdata_query(
-            buyer, "Economic Buyer", [team["team"] for team in decision_makers]
+            buyer, "Economic Buyer", titles["Economic_Buyer"], [team["team"] for team in economic_buyers], initiative["Buyer_Initiative_Or_Pain"]
         )["profiles"]
         initiative["Blockers"]["people"] = run_crustdata_query(
-            buyer, "Blockers", [team["team"] for team in decision_makers]
+            buyer, "Blockers", titles["Blockers"], [team["team"] for team in blockers], initiative["Buyer_Initiative_Or_Pain"]
         )["profiles"]
         initiative["Influencers"]["people"] = run_crustdata_query(
-            buyer, "Influencers", [team["team"] for team in decision_makers]
+            buyer, "Influencers", titles["Influencers"],[team["team"] for team in influencers], initiative["Buyer_Initiative_Or_Pain"]
         )["profiles"]
         initiative["Champions"]["people"] = run_crustdata_query(
-            buyer, "Champions", [team["team"] for team in decision_makers]
+            buyer, "Champions", titles["Champions"],[team["team"] for team in champions], initiative["Buyer_Initiative_Or_Pain"]
         )["profiles"]
 
     return team_data
     # return people_data
 
 
+
+
+class IsRelevantProfile(BaseModel):
+    IsRelevant: bool
+    IsRelevantReason: str
+
+
+def check_profile_relevance_llm(buyer:str,title_at_buyer_company:str,departments:list, seniority:list, buyer_initiative:str):
+    check_profile_system_prompt = f"""
+        You are an expert data validator, you are given the title of a person at a company and a set of criteria to match with consisting of department
+        and seniority and buyer company's name. 
+        You need to check if the title matches the criteria and is very relevant to the buyer initiative and return true or false ONLY.
+        Be lenient with the department validation - say support and operations are close and procurement and purchasing are close.
+    """
+    
+    check_profile_user_prompt = f"""
+    here is the title in current company - {title_at_buyer_company}. here is the buyer name - {buyer}
+    here are the acceptable departments - {departments} and here are the acceptable seniority levels - {seniority} and here is the initiative {buyer_initiative}
+    """
+    api_key = os.getenv("OPENAI_API_KEY")
+    client = openai.OpenAI(api_key=api_key)
+
+    response_account_research = client.responses.parse(
+        model="o4-mini",
+        reasoning={"effort": "medium"},
+        input=[
+            {"role": "system", "content": check_profile_system_prompt},
+            {"role": "user", "content": check_profile_user_prompt},
+        ],
+        text_format=IsRelevantProfile,
+    )
+    return response_account_research.output_parsed
+
+def check_profile_and_correct_title(person:dict, buyer:str,departments:list, seniorities:list, buyer_initiative:str):
+    flag = 0
+    for employee_history in person.get("employer",[]):
+        if employee_history.get("company_name").lower().strip() == buyer.lower().strip() or buyer.lower().strip() in employee_history.get("company_name").lower().strip().split(" "):
+            print("llm called to verify")
+            print(person.get("name","no name"))
+            print(employee_history.get("company_name").lower().strip())
+            relevant = check_profile_relevance_llm(buyer,employee_history.get("title"),departments,seniorities,buyer_initiative)
+            print(relevant.model_dump())
+            if relevant.model_dump().get("IsRelevant", False):
+                flag = 1
+                if person.get("default_position_title","") != employee_history.get("title"):
+                    person["default_position_title"] = employee_history.get("title")
+                return True
+            else:
+                return False
+    if flag == 0:
+        return False
+    else:
+        return True
+
+def remove_fake_profiles(people_data:list, buyer:str,departments:list, seniorities:list, buyer_initiative:str):
+    people_data_cleaned = []
+    for person in people_data:
+        if check_profile_and_correct_title(person, buyer,departments,seniorities,buyer_initiative):
+            people_data_cleaned.append(person)
+    return people_data_cleaned
+
+# current job title, seniority level, current company and for influencers, tenure too
 def run_crustdata_query(
     company,
     tag,
+    current_titles = [],
     departments=[],
-    tenure=["3 to 5 years", "6 to 10 years", "More than 10 years"],
+    tenure=["6 to 10 years", "More than 10 years"], buyer_initiative="None"
 ):
     seniority_map = {
         "Decision Maker": ["CXO", "Vice President"],
-        "Economic Buyer": ["Vice President"],
-        "Champions": ["Experienced Manager", "Director"],
-        "Blockers": ["Directors", "Vice President"],
-        "Influencers": ["Experienced Manager", "Senior"],
+        "Economic Buyer": ["CXO", "Vice President"],
+        "Champions": ["Director","Vice President"],
+        "Blockers": ["Director", "Vice President"],
+        "Influencers": ["Director","Vice President","Experienced Manager"],
     }
     if tag == "Influencers":
         response = requests.post(
@@ -809,25 +911,28 @@ def run_crustdata_query(
                         "type": "in",
                         "value": [company],
                     },
-                    {"filter_type": "FUNCTION", "type": "in", "value": departments},
+                    #{"filter_type": "FUNCTION", "type": "in", "value": departments},
+                    {"filter_type": "CURRENT_TITLE", "type": "in", "value": current_titles},
                     {
                         "filter_type": "SENIORITY_LEVEL",
                         "type": "in",
                         "value": seniority_map[tag],
                     },
-                    {
-                        "filter_type": "YEARS_AT_CURRENT_COMPANY",
-                        "type": "in",
-                        "value": tenure,
-                    },
+                    # {
+                    #     "filter_type": "YEARS_AT_CURRENT_COMPANY",
+                    #     "type": "in",
+                    #     "value": tenure,
+                    # },
                 ],
                 "page": 1,
             },
         )
     else:
+        print(tag)
         print(company)
         print(departments)
         print(seniority_map[tag])
+        print(current_titles)
         response = requests.post(
             "https://api.crustdata.com/screener/person/search",
             headers={
@@ -841,7 +946,8 @@ def run_crustdata_query(
                         "type": "in",
                         "value": [company],
                     },
-                    {"filter_type": "FUNCTION", "type": "in", "value": departments},
+                    #{"filter_type": "FUNCTION", "type": "in", "value": departments},
+                    {"filter_type": "CURRENT_TITLE", "type": "in", "value": current_titles},
                     {
                         "filter_type": "SENIORITY_LEVEL",
                         "type": "in",
@@ -855,14 +961,17 @@ def run_crustdata_query(
         response.raise_for_status()
         data = response.json()
         print(data)
-        return data
+        return {
+            "profiles": remove_fake_profiles(data.get("profiles", []), company, departments, seniority_map[tag], buyer_initiative),
+            "total_display_count": data.get("total_display_count", 0),
+        }
     except Exception as e:
         logger.error(
             f"Error in run_crustdata_query: {e}, company: {company}, tag: {tag}, departments: {departments}, tenure: {tenure}"
         )
         return {
             "profiles": [],
-            "total": 0,
+            "total_display_count": 0,
         }
     # use tenure for influencers only
 
@@ -1931,6 +2040,7 @@ def enrich_people_data(buyer, people_strategy_data: dict):
 class Influence(BaseModel):
     influence_score: float
     reason: str
+    confidence:float
 
 
 def get_influence_score(strategy_people_data):
@@ -1991,8 +2101,9 @@ def get_influence_score(strategy_people_data):
           Output a json with
           {
             "influence_score": 100,
-            "Reason": "Explain the influence and the reasons for high or low influence to an account executive"
-          }
+            "Reason": "Reasoning for the score. Dont explain it mathematically, explain it intuitively based on the different factors like tenure, experience, relevance etc youre using"
+            "Confidence": 0.80 - Based on all the factors present, how confident are you in the score given. 0.0 to 1.0. if there's ambihuity, give a lower score. This especially matters for lower to mid influence scores.
+            }
 
           """
 
@@ -2024,6 +2135,7 @@ def get_influence_score(strategy_people_data):
                     person_enriched = person | {
                         "influence_score": 50,
                         "Reason": "Default Score",
+                        "confidence": 0.5,
                     }
                 people_enriched.append(person_enriched)
 
@@ -2041,35 +2153,45 @@ class StakeholderGraph:
         # self.edge_threshold = edge_threshold
 
     def _should_create_edge(self, a, b):
-        seniority_a = a["role_enriched"].get("Seniority Level", 0)
-        seniority_b = b["role_enriched"].get("Seniority Level", 0)
+        seniority_a = a["role_enriched"].get("Seniority_Level", 0)
+        seniority_b = b["role_enriched"].get("Seniority_Level", 0)
         influence_score_a = a.get("influence_score", 50)
         influence_score_b = b.get("influence_score", 50)
 
         seniority_diff = abs(seniority_a - seniority_b)
         influence_diff = influence_score_a - influence_score_b
+        
+        # Allow edge if they're close in seniority and same org
+        same_org = a["role_enriched"].get("Org_Unit") == b["role_enriched"].get(
+            "Org_Unit"
+        )
+
+
+        if seniority_a > seniority_b:
+            print("no edges as a senior than b")
+            return False
 
         # Prune based on seniority gap
-        if seniority_diff > 2:
+        if (seniority_diff >= 2) and (not same_org):
+            print("no edge as seniority diff is high while in diff org" )
             return False
 
-        # Only connect from more influential to less
-        if influence_score_a <= influence_score_b:
+        if seniority_diff >=3:
+            print("no edge as seniority diff is high >= 3")
             return False
 
-        # Minimum threshold for influence to create edge
-        if influence_score_a < 30:
+        # connect peer edges in same org only if super senior
+        if (seniority_diff==0)  and (same_org) and (seniority_a < 5):
+            print("no edges as same org and seniority diff is 0 and seniority individual <5")
             return False
-
-        # Allow edge if they're close in seniority and same org
-        same_org = a["role_enriched"].get("Org Unit") == b["role_enriched"].get(
-            "Org Unit"
-        )
-        if seniority_diff == 1 and same_org:
-            return True
-
-        # Otherwise only allow if influence diff is significant
-        return influence_diff >= 20
+        
+        # cross functional peers have edges only for seniors
+        if (not same_org) and (seniority_diff == 0) and (seniority_a<4):
+            print("no edges as cross functional peers and seniority diff is 0 and seniority individual <4")
+            return False
+        
+        
+        return True
 
     def _build_graph(self):
         for person in self.people:
@@ -2080,14 +2202,14 @@ class StakeholderGraph:
 
         for i, a in enumerate(self.people):
             for j, b in enumerate(self.people):
-                if a.get("tag", "") == "Economic_Buyer":
+                if a.get("tag", "") == "Economic_Buyer" or a.get("tag", "") == "Decision_Maker":
                     continue  # DMs are sinks only
 
                 if a["name"] == b["name"]:
                     continue  # Skip self
 
-                if a["influence_score"] <= b["influence_score"]:
-                    continue
+                # if a["influence_score"] <= b["influence_score"]:
+                #     continue
                 if not self._should_create_edge(a, b):
                     continue
                 if i != j:  # and a["name"] != b["name"]:
@@ -2095,12 +2217,13 @@ class StakeholderGraph:
                     raw_weights.append(weight)
                     edge_candidates.append((a["name"], b["name"], weight))
         max_raw_weight = max(raw_weights) if raw_weights else 1
-        avg_raw_weight = 1.0 * (sum(raw_weights) / (len(raw_weights)))
+        avg_raw_weight = 1.0 * (sum(raw_weights) / (len(raw_weights))) if raw_weights else 1
         normalized_avg_weight = round(avg_raw_weight / max_raw_weight, 3)
 
         print(max_raw_weight)
         print(avg_raw_weight)
         print(raw_weights)
+        print("len of edges = " + str(len(edge_candidates)))
         for src, tgt, raw_weight in edge_candidates:
             normalized_weight = round(raw_weight / max_raw_weight, 3)
 
@@ -2111,37 +2234,40 @@ class StakeholderGraph:
         weight = 0
 
         # Seniority influence
-        seniority_a = a["role_enriched"].get("Seniority Level", 0)
-        seniority_b = b["role_enriched"].get("Seniority Level", 0)
+        seniority_a = a["role_enriched"].get("Seniority_Level", 0)
+        seniority_b = b["role_enriched"].get("Seniority_Level", 0)
         if seniority_a == seniority_b:
             weight += 5
-        elif seniority_a > seniority_b:
-            weight += 2 * (seniority_a - seniority_b)
+        elif abs(seniority_a - seniority_b) == 1:
+            weight += 3
+        elif abs(seniority_a - seniority_b) == 2:
+            weight +=1
+        
 
         # Org and sub-org alignment
-        if a["role_enriched"].get("Org Unit") == b["role_enriched"].get("Org Unit"):
-            weight += 5
-        if a["role_enriched"].get("Suborg Unit") == b["role_enriched"].get(
-            "Suborg Unit"
-        ):
+        if a["role_enriched"].get("Org_Unit") == b["role_enriched"].get("Org_Unit"):
             weight += 3
+        if a["role_enriched"].get("SubOrg_Unit") == b["role_enriched"].get(
+            "SubOrg_Unit"
+        ):
+            weight += 2
 
         # Function type
         if (
-            a["role_enriched"].get("Function Type") == "Strategic"
-            and b["role_enriched"].get("Function Type") == "Tactical"
+            a["role_enriched"].get("Function_Type") == "Strategic"
+            and b["role_enriched"].get("Function_Type") == "Tactical"
         ):
             weight += 3
 
         # Tenure dynamics
         shared_tenure = min(a.get("tenure", 0), b.get("tenure", 0))
         tenure_diff = max(0, a.get("tenure", 0) - b.get("tenure", 0))
-        weight += shared_tenure
-        weight += tenure_diff * 1.5
+        weight += (shared_tenure*1.5)
+        if a.get("tenure", 0) > b.get("tenure", 0):
+            weight += tenure_diff * 0.75
+    
 
-        # Peer similarity (same seniority)
-        if seniority_a == seniority_b:
-            weight += 2
+       
 
         # A's influence features
         weight += 5 * (a.get("num_of_connections", 0) / self.max_connections)
@@ -2152,10 +2278,12 @@ class StakeholderGraph:
             "Champions": 3,
             "Economic_Buyer": 4,
             "Decision_Maker": 5,
-            "Blockers": 2,
-            "Influencers": 2,
+            "Blockers": 1,
+            "Influencers": 3,
         }
         weight += tags_weights.get(a.get("tag", ""), 0)
+        weight += 0.5 * tags_weights.get(b.get("tag", ""), 0)
+
         # print(a.get("tag", "Default"))
         # print(a)
         # weight+=tags_weights.get(b.get("role", ""), 0)
@@ -2166,13 +2294,24 @@ class StakeholderGraph:
         influence_score_a = a.get("influence_score", 50)
         influence_score_b = b.get("influence_score", 50)
         influence_diff = influence_score_a - influence_score_b
-        diff = min(influence_diff, 50)  # Cap difference
-        weight *= diff / 50  # Scale back to 0–1 range
+        influence_scale = min(influence_score_a / (influence_score_b + 1), 2)  # +1 avoids div by 0
 
+
+        weight *= influence_scale
+        
         # Normalize
         norm_weight = 1 / (
             1 + math.exp(-0.2 * (weight - 10))
         )  # Adjust center as needed
+
+        # Otherwise only allow if influence diff is significant
+        print("Edge between " + a.get("name") + " and " + b.get("name"))
+        print("Titles " + a["default_position_title"] + " and " + b["default_position_title"])
+        print("Departments " + a["role_enriched"].get("Org_Unit") + " and " + b["role_enriched"].get("Org_Unit"))
+        print("Sub Departments " + a["role_enriched"].get("SubOrg_Unit") + " and " + b["role_enriched"].get("SubOrg_Unit"))
+
+        print("Weight: " + str(weight))
+        print("\n")
         return norm_weight
         # return round(min(weight / 20, 1), 2)
 
@@ -2214,6 +2353,7 @@ def generate_stakeholder_summary(G):
             "Notes": data.get("reason", "").strip("\n"),
             "Industry Experience": data.get("industry_experience", 0),
             "Tenure": data.get("tenure", 0),
+            #"Model Confidence": data.get("confidence", 0.5),
         }
 
     blockers, champions, influencers, decision_maker, economic_buyer = (
@@ -2232,6 +2372,7 @@ def generate_stakeholder_summary(G):
                 d["Notes"],
                 d["Industry Experience"],
                 d["Tenure"],
+                #d["confidence"],
             )
         )
 
@@ -2247,6 +2388,7 @@ def generate_stakeholder_summary(G):
                 d["Notes"],
                 d["Industry Experience"],
                 d["Tenure"],
+                #d["confidence"],
             )
         )
 
@@ -2262,6 +2404,7 @@ def generate_stakeholder_summary(G):
                 d["Notes"],
                 d["Industry Experience"],
                 d["Tenure"],
+                #d["confidence"],
             )
         )
 
@@ -2277,6 +2420,7 @@ def generate_stakeholder_summary(G):
                 d["Notes"],
                 d["Industry Experience"],
                 d["Tenure"],
+                #d["confidence"],
             )
         )
     if economic_buyer:
@@ -2291,6 +2435,7 @@ def generate_stakeholder_summary(G):
                 d["Notes"],
                 d["Industry Experience"],
                 d["Tenure"],
+                #d["confidence"],
             )
         )
 
