@@ -662,14 +662,15 @@ def find_teams(
   Ypu need to predict the possible buyer committee responsible for the initiative. make sure to think as an expert multithreader and not just a sales person.
   Find the best teams to multhread with and the roles they play in the buying committee.
   This is how to work through:
-  For each initiative, using the buyer initiative and aligned value prop mentioned below to identify the teams as part of the buying committee as follows:
+  For each initiative, using the buyer initiative and aligned value prop of the sellers product mentioned below,  identify the teams as part of the buying committee as follows:
+  TAKE INTO ACCOUNT BOTH Buyers initiative and Seller's value prop. 
   1. Identify teams split by tag where each team belongs to one of these
 
   "Accounting", "Administrative", "Arts and Design", "Business Development", "Community and Social Services", "Consulting", "Education", "Engineering", "Entrepreneurship", "Finance", "Healthcare Services", "Human Resources", "Information Technology", "Legal", "Marketing", "Media and Communication", "Military and Protective Services", "Operations", "Product Management", "Program and Project Management", "Purchasing", "Quality Assurance", "Real Estate", "Research", "Sales", "Customer Success and Support"
     
 
 
-   Decision Maker
+Decision Maker - 1 team
 Definition: The person with final authority to approve or deny the initiative or purchase.
 
 Context Cues: Owns the business problem, accountable for outcomes, usually heads the impacted function.
@@ -678,7 +679,7 @@ Seniority: VP+, Head of Department, BU Leaders.
 
 Example: VP Engineering for a developer hiring initiative; Head of Talent for a recruiting transformation.
 
-💰 Economic Buyer
+💰 Economic Buyer - 1 team
 Definition: Controls the budget and has the power to release funds or negotiate pricing.
 
 Context Cues: In charge of cost/ROI trade-offs, procurement gates, or fiscal planning.
@@ -687,7 +688,7 @@ Seniority: CFO, VP Finance, COO — or line leaders with P&L ownership.
 
 Example: VP Finance or CFO when large spend is involved, even if they’re not driving the use case.
 
-🧠 Champion
+🧠 Champion - max 3 teams
 Definition: Deeply feels the pain in the initiative and your solution; actively sells your value internally.
 They can be both business and technical champions based on buyer and seller. Needs to have pain, influence and urgency to solve the problem.
 
@@ -698,8 +699,9 @@ Seniority: Often mid-to-senior (Manager to Director), sometimes Execs — but wi
 Example: A Head of RevOps championing your revenue intelligence tool because it helps them hit targets.
 
 champion teams need to feel pain directly but can be multiple and spread across teams having different pains but that can be solved by the buyers product.
+Champions can be the same team as decision makers if they also feel the pain.
 
-⛔ Blocker
+⛔ Blocker - max 2 teams
 Definition: A stakeholder who can delay or kill the deal due to misalignment, compliance, or competing priorities.
 
 Context Cues: Focused on risk, data governance, budget constraints, or legal barriers.
@@ -708,8 +710,8 @@ Functions: IT Security, Legal, Procurement, Finance.
 
 Example: A CISO who denies a vendor due to compliance concerns; Legal who stalls over contract terms.
 
-🧭 Influencer
-Definition: Someone who doesn’t sign but shapes opinions or criteria across the buying group.
+🧭 Influencer - max 1 team
+Definition: Someone who doesn’t sign but shapes opinions or criteria across the buying group. Cross functional teams that dont directly own the problem but can influence the decision making team.
 
 Context Cues: Respected internally, consulted by decision makers, may bring critical functional expertise.
 
@@ -1974,8 +1976,8 @@ def extract_relevant_person_data(person_data, target_company):
   Here's what you need to extract finally and output as a json
   Final Output format -
   {
-  "Org Unit" - infer from title
-  "Suborg Unit" - Say sales enablement , sales ops instead of just sales (infer from title)
+  "Org Unit" - infer from title - say Sales, Marketing, RevOps, Enablement, Executive
+  "Suborg Unit" - Say Ads,Payments, or any specific product or subfunctio. (infer from title and headline). Dont be too subjective, keep it short and brief and if cant infer, keep it same as org unit.
   "Seniority Level" (1–7)
   "Function Type" (Strategic, Tactical, IC)
   }
