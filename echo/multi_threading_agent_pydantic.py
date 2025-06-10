@@ -207,7 +207,7 @@ def export_graph_to_dict(G):
                 "id": node,
                 "label": node,
                 "fill": color,
-                "data": {"tag": tag, "influence": influence},
+                "data": {"tag": tag, "influence": influence, "seniority": attrs.get("role_enriched", {}).get("Seniority_Level",""), "Department": attrs.get("role_enriched", {}).get("Org_Unit", "")},
             }
         )
 
